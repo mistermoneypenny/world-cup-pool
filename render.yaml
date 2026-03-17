@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: world-cup-pool
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: JSONBIN_KEY
+        sync: false
