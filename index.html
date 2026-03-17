@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Cup 2026 Pool</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ── -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="brand-icon">&#9917;</div>
+      <div>
+        <h1 class="brand-title">World Cup 2026</h1>
+        <span class="brand-sub">Pick-by-Round Pool</span>
+      </div>
+    </div>
+
+    <nav class="header-nav">
+      <button class="nav-btn" data-view="rules">Rules</button>
+      <button class="nav-btn active" data-view="bracket">Bracket</button>
+      <button class="nav-btn" data-view="picks">My Picks</button>
+      <button class="nav-btn" data-view="leaderboard">Standings</button>
+      <button class="nav-btn admin-btn" id="admin-nav-btn" data-view="admin">&#9881; Admin</button>
+    </nav>
+
+    <div class="header-right">
+      <div class="status-pill" id="round-status"></div>
+      <div class="session-indicator" id="session-indicator" style="display:none">
+        <span class="session-name" id="session-name"></span>
+        <button class="session-switch-btn" id="session-switch-btn">Switch</button>
+      </div>
+      <div class="player-wrap" id="player-wrap">
+        <label class="player-label">Player:</label>
+        <select id="player-select" class="player-select"></select>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- RULES VIEW -->
+    <section id="view-rules" class="view">
+      <div class="rules-wrapper">
+        <div class="rules-header">
+          <h2 class="view-title">&#128203; Pool Rules</h2>
+          <div id="rules-edit-controls" style="display:none">
+            <button class="btn btn-primary" id="save-rules-btn">Save Rules</button>
+          </div>
+        </div>
+        <div id="rules-body"><!-- Populated by JS --></div>
+      </div>
+    </section>
+
+    <!-- BRACKET VIEW -->
+    <section id="view-bracket" class="view active">
+      <div class="bracket-legend" id="bracket-legend">
+        <span class="legend-item"><span class="dot win"></span>Winner</span>
+      </div>
+      <div class="bracket-scroll">
+        <div class="bracket-wrapper" id="bracket-wrapper">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- PICKS VIEW -->
+    <section id="view-picks" class="view">
+      <div class="view-header">
+        <h2 class="view-title">My Picks</h2>
+        <div class="round-tabs" id="picks-tabs"></div>
+      </div>
+      <div id="picks-body"><!-- Populated by JS --></div>
+      <div class="save-bar" id="save-bar" style="display:none">
+        <span id="save-status" class="save-status"></span>
+        <button class="btn btn-primary" id="save-picks-btn">Save Picks</button>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD VIEW -->
+    <section id="view-leaderboard" class="view">
+      <div class="view-header">
+        <h2 class="view-title">Standings</h2>
+        <div class="round-tabs" id="lb-tabs"></div>
+      </div>
+      <div id="lb-body"><!-- Populated by JS --></div>
+    </section>
+
+    <!-- ADMIN VIEW -->
+    <section id="view-admin" class="view">
+      <div class="admin-wrapper">
+        <h2 class="view-title" style="color:var(--gold)">&#9881; Admin Panel</h2>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Tournament Control</h3>
+          <div class="admin-row">
+            <label>Active Round:</label>
+            <select id="admin-round-sel" class="sel-input"></select>
+            <button class="btn btn-primary" id="set-round-btn">Set Round</button>
+          </div>
+          <div class="admin-row" style="margin-top:0.5rem">
+            <label>Round Status:</label>
+            <select id="admin-status-sel" class="sel-input">
+              <option value="open">Open for Picks</option>
+              <option value="locked">Locked (games in progress)</option>
+              <option value="closed">Closed (results entered)</option>
+            </select>
+            <button class="btn btn-secondary" id="set-status-btn">Update</button>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Enter Results</h3>
+          <div class="admin-row" style="margin-bottom:0.75rem">
+            <label>Round:</label>
+            <select id="results-round-sel" class="sel-input"></select>
+          </div>
+          <div id="results-grid"><!-- Populated by JS --></div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Manage Players</h3>
+          <div class="admin-row" style="margin-bottom:0.75rem">
+            <input type="text" id="new-player-input" class="text-input" placeholder="New player name..." maxlength="30" />
+            <button class="btn btn-primary" id="add-player-btn">Add</button>
+          </div>
+          <div id="players-list"><!-- Populated by JS --></div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Player PINs</h3>
+          <p style="color:var(--text-3);font-size:0.8rem;margin-bottom:0.5rem">Set a 4-digit PIN for each player to protect their login. Leave blank for no PIN.</p>
+          <div id="pins-grid"><!-- Populated by JS --></div>
+          <button class="btn btn-primary" id="save-pins-btn" style="margin-top:0.5rem">Save PINs</button>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Bonus Answers</h3>
+          <p style="color:var(--text-3);font-size:0.8rem;margin-bottom:0.5rem">Bonus questions for the round selected above. Player scores update automatically.</p>
+          <div id="bonus-answers-grid"><!-- Populated by JS --></div>
+          <button class="btn btn-primary" id="save-bonus-btn" style="margin-top:0.5rem">Save Bonus Answers</button>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Knockout Bracket Teams</h3>
+          <p style="color:var(--text-3);font-size:0.8rem;margin-bottom:0.75rem">After group stage ends, update the 32 teams advancing to the Round of 32. Use <strong>Auto-fill from Groups</strong> to populate from entered results, then adjust as needed.</p>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap">
+            <button class="btn btn-secondary" id="autofill-r32-btn">&#9654; Auto-fill from Groups</button>
+            <button class="btn btn-primary"   id="save-r32-btn">Save R32 Bracket</button>
+          </div>
+          <div id="r32-admin-grid"><!-- Populated by JS --></div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Demo Data</h3>
+          <button class="btn btn-secondary" id="demo-data-btn">Load Demo Results &amp; Picks</button>
+          <span class="reset-hint">Fills in a complete simulated tournament for testing.</span>
+        </div>
+
+        <div class="admin-card danger-zone">
+          <h3 class="admin-card-title" style="color:var(--red)">Danger Zone</h3>
+          <button class="btn btn-danger" id="reset-btn">Reset All Data</button>
+          <span class="reset-hint">Clears all picks, results, and players.</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── LOGIN OVERLAY ── -->
+<div id="login-overlay" class="login-overlay" style="display:none">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-icon">&#9917;</div>
+      <div>
+        <div class="login-brand-title">World Cup 2026 Pool</div>
+        <div class="login-brand-sub">Pick-by-Round Pool</div>
+      </div>
+    </div>
+    <h2 class="login-heading">Who are you?</h2>
+    <div class="login-players-grid" id="login-players-grid"></div>
+  </div>
+</div>
+
+<!-- ── PIN MODAL ── -->
+<div id="pin-modal" class="pin-modal-overlay" style="display:none">
+  <div class="pin-modal-card">
+    <h3 class="pin-modal-title">&#128274; Enter PIN</h3>
+    <p class="pin-modal-name">Logging in as <strong id="pin-player-name"></strong></p>
+    <input type="password" id="pin-input" class="pin-modal-input" maxlength="4" placeholder="4-digit PIN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+    <p id="pin-error" class="pin-modal-error" style="display:none">Incorrect PIN. Try again.</p>
+    <div class="pin-modal-btns">
+      <button class="btn btn-secondary" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPin()">Enter</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

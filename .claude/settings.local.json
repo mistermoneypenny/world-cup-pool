@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:Usersmiste -name *.html -newer 'C:\\\\Users\\\\miste\\\\OneDrive\\\\Miscellaneous Stuff\\\\World Cup Pool')",
+      "Bash(find C:Usersmiste -name *bracket* -o -name *madness*)"
+    ]
+  }
+}

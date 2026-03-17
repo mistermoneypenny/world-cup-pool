@@ -1,0 +1,12 @@
+{
+  "name": "world-cup-pool",
+  "version": "1.0.0",
+  "description": "World Cup 2026 Pick-by-Round Pool",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

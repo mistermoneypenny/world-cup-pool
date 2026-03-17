@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 1.25rem; font-weight: 700; color: #58a6ff; letter-spacing: -0.02em; }
+        #last-updated { font-size: 0.72rem; color: #8b949e; }
+
+        .dashboard {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ── Widget shell ─────────────────────────────────────── */
+        .widget {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .widget-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #8b949e;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #238636;
+            flex-shrink: 0;
+            animation: pulse 2.4s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+        .loading { color: #8b949e; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; }
+        .spinner {
+            width: 15px; height: 15px;
+            border: 2px solid #30363d;
+            border-top-color: #58a6ff;
+            border-radius: 50%;
+            animation: spin .75s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error { color: #f85149; font-size: 0.8rem; }
+
+        /* ── Clocks ───────────────────────────────────────────── */
+        #clocks-widget {
+            grid-column: 1 / -1;
+            padding: 10px 16px;
+        }
+        #clocks-widget .widget-title { margin-bottom: 8px; }
+        .clocks-row {
+            display: flex;
+            gap: 16px;
+        }
+        .clock-card {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 7px 12px;
+            text-align: center;
+        }
+        .clock-city  { font-size: .6rem; text-transform: uppercase; letter-spacing: .1em; color: #8b949e; margin-bottom: 2px; }
+        .clock-time  { font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #e6edf3; letter-spacing: -.02em; }
+        .clock-tz    { font-size: .58rem; color: #58a6ff; margin-top: 1px; }
+
+        /* ── Weather ──────────────────────────────────────────── */
+        #weather-widget { grid-column: 1; }
+
+        .weather-city  { font-size: .9rem; font-weight: 600; color: #58a6ff; }
+        .weather-icon  { font-size: 2.4rem; margin: 6px 0 2px; }
+        .weather-temp  { font-size: 2.8rem; font-weight: 700; line-height: 1.1; }
+        .weather-desc  { font-size: .85rem; color: #8b949e; text-transform: capitalize; margin-top: 3px; }
+        .weather-details { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+        .wd { background: #0d1117; border-radius: 7px; padding: 8px 10px; }
+        .wd-label { font-size: .62rem; text-transform: uppercase; color: #8b949e; letter-spacing: .05em; }
+        .wd-value { font-size: .88rem; font-weight: 600; margin-top: 2px; }
+
+        /* ── Stocks ───────────────────────────────────────────── */
+        #stocks-widget { grid-column: 2; }
+
+        .stocks-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .stock-card {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 10px 11px;
+            transition: border-color .15s;
+        }
+        .stock-card:hover { border-color: #58a6ff40; }
+        .stock-symbol { font-size: .8rem; font-weight: 700; color: #58a6ff; }
+        .stock-name   { font-size: .6rem; color: #8b949e; margin-top: 1px; }
+        .stock-price  { font-size: 1rem; font-weight: 700; margin-top: 7px; }
+        .stock-change { font-size: .7rem; font-weight: 600; margin-top: 2px; }
+        .positive { color: #3fb950; }
+        .negative { color: #f85149; }
+
+        /* ── Claude Usage ─────────────────────────────────────── */
+        #claude-widget {
+            grid-column: 1 / -1;
+        }
+        .claude-key-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .claude-key-input {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #e6edf3;
+            font-size: .78rem;
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+        .claude-key-input:focus { border-color: #58a6ff; }
+        .claude-save-btn {
+            background: #238636;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            padding: 6px 12px;
+            font-size: .78rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .claude-save-btn:hover { background: #2ea043; }
+
+        .claude-stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .claude-stat {
+            flex: 1;
+            min-width: 120px;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+        .claude-stat-label { font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: #8b949e; margin-bottom: 4px; }
+        .claude-stat-value { font-size: 1.1rem; font-weight: 700; color: #e6edf3; }
+        .claude-stat-sub   { font-size: .65rem; color: #8b949e; margin-top: 2px; }
+        .claude-console-link {
+            font-size: .68rem;
+            color: #58a6ff;
+            text-decoration: none;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .claude-console-link:hover { text-decoration: underline; }
+
+        /* ── Todo ─────────────────────────────────────────────── */
+        #todo-widget { grid-column: 1; }
+
+        .todo-input-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .todo-input {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #e6edf3;
+            font-size: .82rem;
+            outline: none;
+            font-family: inherit;
+        }
+        .todo-input:focus { border-color: #58a6ff; }
+        .todo-add-btn {
+            background: #238636;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            padding: 6px 12px;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .todo-add-btn:hover { background: #2ea043; }
+
+        .todo-list { display: flex; flex-direction: column; gap: 5px; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #30363d transparent; }
+        .todo-list::-webkit-scrollbar { width: 4px; }
+        .todo-list::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 8px;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 6px;
+        }
+        .todo-check {
+            width: 15px; height: 15px;
+            accent-color: #238636;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .todo-text {
+            flex: 1;
+            font-size: .82rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .todo-text.done {
+            text-decoration: line-through;
+            color: #8b949e;
+        }
+        .todo-del {
+            background: none;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: .85rem;
+            padding: 0 2px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .todo-del:hover { color: #f85149; }
+        .todo-empty { font-size: .8rem; color: #8b949e; text-align: center; padding: 20px 0; }
+        .todo-footer { font-size: .68rem; color: #8b949e; margin-top: 10px; text-align: right; }
+
+        /* ── News ─────────────────────────────────────────────── */
+        #news-widget { grid-column: 2; }
+
+        .news-tabs { display: flex; gap: 7px; margin-bottom: 12px; flex-wrap: wrap; }
+        .news-tab {
+            padding: 4px 13px;
+            border-radius: 20px;
+            font-size: .72rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #30363d;
+            background: transparent;
+            color: #8b949e;
+            transition: all .18s;
+        }
+        .news-tab:hover { border-color: #58a6ff; color: #58a6ff; }
+        .news-tab.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+
+        .news-scroller {
+            height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #30363d transparent;
+        }
+        .news-scroller::-webkit-scrollbar { width: 4px; }
+        .news-scroller::-webkit-scrollbar-track { background: transparent; }
+        .news-scroller::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+        .news-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            border-bottom: 1px solid #21262d;
+            text-decoration: none;
+            color: inherit;
+            transition: background .13s;
+        }
+        .news-item:last-child { border-bottom: none; }
+        .news-item:hover { background: #1c2128; }
+
+        .news-tag {
+            flex-shrink: 0;
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: .62rem;
+            font-weight: 700;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+        .tag-immigration { background: #2d1b69; color: #a371f7; }
+        .tag-minerals    { background: #0f3d2e; color: #3fb950; }
+        .tag-resources   { background: #3a1a00; color: #f0883e; }
+
+        .news-body { flex: 1; min-width: 0; }
+        .news-title { font-size: .84rem; font-weight: 500; line-height: 1.45; color: #e6edf3; }
+        .news-meta { font-size: .68rem; color: #8b949e; margin-top: 4px; display: flex; gap: 6px; align-items: center; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Dashboard</h1>
+    <span id="last-updated">Loading…</span>
+</header>
+
+<div class="dashboard">
+
+    <!-- ── Clocks ──────────────────────────────────────── -->
+    <div class="widget" id="clocks-widget">
+        <div class="widget-title"><span class="dot"></span>World Clock</div>
+        <div class="clocks-row">
+            <div class="clock-card">
+                <div class="clock-city">London</div>
+                <div class="clock-time" id="clock-london">--:--:--</div>
+                <div class="clock-tz" id="tz-london"></div>
+            </div>
+            <div class="clock-card">
+                <div class="clock-city">Eastern</div>
+                <div class="clock-time" id="clock-eastern">--:--:--</div>
+                <div class="clock-tz" id="tz-eastern"></div>
+            </div>
+            <div class="clock-card">
+                <div class="clock-city">California</div>
+                <div class="clock-time" id="clock-california">--:--:--</div>
+                <div class="clock-tz" id="tz-california"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Weather ────────────────────────────────────── -->
+    <div class="widget" id="weather-widget">
+        <div class="widget-title"><span class="dot"></span>Weather — London</div>
+        <div id="weather-content"><div class="loading"><div class="spinner"></div>Loading…</div></div>
+    </div>
+
+    <!-- ── Stocks ─────────────────────────────────────── -->
+    <div class="widget" id="stocks-widget">
+        <div class="widget-title"><span class="dot"></span>Market Prices</div>
+        <div id="stocks-content"><div class="loading"><div class="spinner"></div>Loading…</div></div>
+    </div>
+
+    <!-- ── Claude Usage ──────────────────────────────── -->
+    <div class="widget" id="claude-widget">
+        <div class="widget-title"><span class="dot" style="background:#f78166"></span>Claude API Usage — This Month</div>
+        <div class="claude-key-row">
+            <input class="claude-key-input" id="claude-key-input" type="password" placeholder="Paste your Anthropic API key (sk-ant-…)">
+            <button class="claude-save-btn" id="claude-save-btn">Save & Load</button>
+        </div>
+        <div id="claude-stats-content"><div class="loading" style="color:#8b949e;font-size:.8rem">Enter your API key above to load usage data.</div></div>
+    </div>
+
+    <!-- ── Todo ──────────────────────────────────────── -->
+    <div class="widget" id="todo-widget">
+        <div class="widget-title"><span class="dot" style="background:#a371f7"></span>To-Do List</div>
+        <div class="todo-input-row">
+            <input class="todo-input" id="todo-input" type="text" placeholder="Add a task…" maxlength="200">
+            <button class="todo-add-btn" id="todo-add">Add</button>
+        </div>
+        <div class="todo-list" id="todo-list"></div>
+        <div class="todo-footer" id="todo-footer"></div>
+    </div>
+
+    <!-- ── News ──────────────────────────────────────── -->
+    <div class="widget" id="news-widget">
+        <div class="widget-title"><span class="dot"></span>News Aggregator</div>
+        <div class="news-tabs">
+            <button class="news-tab active" data-tag="all">All Topics</button>
+            <button class="news-tab" data-tag="immigration">🛂 US Immigration</button>
+            <button class="news-tab" data-tag="minerals">⛏ Critical Minerals</button>
+            <button class="news-tab" data-tag="resources">🌍 Natural Resources</button>
+        </div>
+        <div class="news-scroller" id="news-scroller">
+            <div class="loading"><div class="spinner"></div>Loading news…</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════════
+const STOCKS = [
+    { symbol: 'TSLA',  name: 'Tesla'   },
+    { symbol: 'PLTR',  name: 'Palantir'},
+    { symbol: '^GSPC', name: 'S&P 500' },
+];
+
+const NEWS_FEEDS = [
+    {
+        url:   'https://news.google.com/rss/search?q=US+immigration+border+deportation+visa+when:7d&hl=en-US&gl=US&ceid=US:en',
+        tag:   'immigration',
+        label: 'US Immigration',
+    },
+    {
+        url:   'https://news.google.com/rss/search?q=critical+minerals+lithium+cobalt+rare+earth+when:7d&hl=en-US&gl=US&ceid=US:en',
+        tag:   'minerals',
+        label: 'Critical Minerals',
+    },
+    {
+        url:   'https://news.google.com/rss/search?q=natural+resources+oil+gas+mining+commodities+when:7d&hl=en-US&gl=US&ceid=US:en',
+        tag:   'resources',
+        label: 'Natural Resources',
+    },
+];
+
+const REFRESH_MS = 5 * 60 * 1000;
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+// ═══════════════════════════════════════════════════════════════
+//  CLOCKS
+// ═══════════════════════════════════════════════════════════════
+const ZONES = [
+    { id: 'london',     tz: 'Europe/London',        el: 'clock-london',     tzEl: 'tz-london'     },
+    { id: 'eastern',    tz: 'America/New_York',      el: 'clock-eastern',    tzEl: 'tz-eastern'    },
+    { id: 'california', tz: 'America/Los_Angeles',   el: 'clock-california', tzEl: 'tz-california' },
+];
+
+function tickClocks() {
+    const now = new Date();
+    ZONES.forEach(z => {
+        const timeStr = now.toLocaleTimeString('en-US', {
+            timeZone: z.tz,
+            hour: 'numeric', minute: '2-digit', second: '2-digit',
+            hour12: true,
+        });
+        const tzAbbr = now.toLocaleDateString('en-US', { timeZone: z.tz, timeZoneName: 'short' })
+            .split(', ')[1] || z.tz;
+        document.getElementById(z.el).textContent    = timeStr;
+        document.getElementById(z.tzEl).textContent  = tzAbbr;
+    });
+}
+tickClocks();
+setInterval(tickClocks, 1000);
+
+// ═══════════════════════════════════════════════════════════════
+//  WEATHER
+// ═══════════════════════════════════════════════════════════════
+const WEATHER_ICONS = {
+    'Sunny':'☀️','Clear':'🌙','Partly cloudy':'⛅','Cloudy':'☁️','Overcast':'☁️',
+    'Mist':'🌫️','Fog':'🌫️','Freezing fog':'🌫️','Patchy rain possible':'🌦️',
+    'Light rain':'🌧️','Moderate rain':'🌧️','Heavy rain':'🌧️',
+    'Light snow':'❄️','Moderate snow':'❄️','Heavy snow':'❄️',
+    'Blizzard':'🌨️','Thundery outbreaks possible':'⛈️',
+    'Patchy light drizzle':'🌦️','Light drizzle':'🌦️',
+};
+
+async function fetchWeather() {
+    try {
+        const res  = await fetch('https://wttr.in/London?format=j1');
+        const data = await res.json();
+        const cur  = data.current_condition[0];
+        const desc = cur.weatherDesc[0].value;
+        const icon = WEATHER_ICONS[desc] || '🌡️';
+        document.getElementById('weather-content').innerHTML = `
+            <div class="weather-city">London, United Kingdom</div>
+            <div class="weather-icon">${icon}</div>
+            <div class="weather-temp">${cur.temp_C}°C</div>
+            <div class="weather-desc">${desc}</div>
+            <div class="weather-details">
+                <div class="wd"><div class="wd-label">Feels Like</div><div class="wd-value">${cur.FeelsLikeC}°C</div></div>
+                <div class="wd"><div class="wd-label">Humidity</div><div class="wd-value">${cur.humidity}%</div></div>
+                <div class="wd"><div class="wd-label">Wind</div><div class="wd-value">${cur.windspeedKmph} km/h</div></div>
+                <div class="wd"><div class="wd-label">Visibility</div><div class="wd-value">${cur.visibility} km</div></div>
+            </div>`;
+    } catch {
+        document.getElementById('weather-content').innerHTML =
+            '<div class="error">⚠ Could not load weather data.</div>';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STOCKS  (tries multiple proxies)
+// ═══════════════════════════════════════════════════════════════
+async function fetchStocks() {
+    try {
+        const res  = await fetch('/.netlify/functions/stocks', { signal: AbortSignal.timeout(10000) });
+        const data = await res.json();
+        if (!Array.isArray(data) || !data.length) throw new Error('empty');
+
+        const SYMBOL_META = {
+            'TSLA':  { name: 'Tesla',             prefix: '$' },
+            'PLTR':  { name: 'Palantir',           prefix: '$' },
+            '^GSPC': { name: 'S&P 500',            prefix: ''  },
+            'BZ=F':  { name: 'Brent Crude',        prefix: '$' },
+            'CPER':  { name: 'US Copper Index',    prefix: '$' },
+            'EIS':   { name: 'iShares MSCI Israel',prefix: '$' },
+            'GLD':   { name: 'SPDR Gold',          prefix: '$' },
+            'KWEB':  { name: 'CSI China Internet', prefix: '$' },
+            'VOO':   { name: 'Vanguard S&P 500',   prefix: '$' },
+            'VWO':   { name: 'Vanguard Emerg. Mkt',prefix: '$' },
+        };
+
+        const cards = data.map(q => {
+            const meta   = SYMBOL_META[q.symbol] || {};
+            const change = q.price - q.prev;
+            const pct    = (change / q.prev) * 100;
+            const cls    = change >= 0 ? 'positive' : 'negative';
+            const sign   = change >= 0 ? '+' : '';
+            const arrow  = change >= 0 ? '▲' : '▼';
+            const prefix = meta.prefix ?? '$';
+            const label  = q.symbol === '^GSPC' ? 'S&amp;P 500' : q.symbol;
+
+            return `<div class="stock-card">
+                <div class="stock-symbol">${label}</div>
+                <div class="stock-name">${meta.name || q.symbol}</div>
+                <div class="stock-price">${prefix}${q.price.toFixed(2)}</div>
+                <div class="stock-change ${cls}">${arrow} ${sign}${change.toFixed(2)} (${sign}${pct.toFixed(2)}%)</div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('stocks-content').innerHTML =
+            `<div class="stocks-grid">${cards}</div>`;
+    } catch {
+        document.getElementById('stocks-content').innerHTML =
+            '<div class="error">⚠ Could not load market data.</div>';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TODO LIST
+// ═══════════════════════════════════════════════════════════════
+const TODO_KEY = 'dashboard_todos';
+
+function loadTodos() {
+    try { return JSON.parse(localStorage.getItem(TODO_KEY)) || []; }
+    catch { return []; }
+}
+function saveTodos(todos) {
+    localStorage.setItem(TODO_KEY, JSON.stringify(todos));
+}
+
+function renderTodos() {
+    const todos = loadTodos();
+    const list  = document.getElementById('todo-list');
+    const footer = document.getElementById('todo-footer');
+
+    if (!todos.length) {
+        list.innerHTML = '<div class="todo-empty">No tasks yet. Add one above.</div>';
+        footer.textContent = '';
+        return;
+    }
+
+    list.innerHTML = todos.map(t => `
+        <div class="todo-item" data-id="${t.id}">
+            <input class="todo-check" type="checkbox" ${t.done ? 'checked' : ''} data-id="${t.id}">
+            <span class="todo-text ${t.done ? 'done' : ''}">${escHtml(t.text)}</span>
+            <button class="todo-del" data-id="${t.id}" title="Delete">✕</button>
+        </div>`).join('');
+
+    const done  = todos.filter(t => t.done).length;
+    footer.textContent = `${done} of ${todos.length} done`;
+}
+
+function addTodo() {
+    const input = document.getElementById('todo-input');
+    const text  = input.value.trim();
+    if (!text) return;
+    const todos = loadTodos();
+    todos.push({ id: Date.now().toString(), text, done: false });
+    saveTodos(todos);
+    input.value = '';
+    renderTodos();
+}
+
+document.getElementById('todo-add').addEventListener('click', addTodo);
+document.getElementById('todo-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTodo();
+});
+
+document.getElementById('todo-list').addEventListener('change', e => {
+    if (!e.target.classList.contains('todo-check')) return;
+    const todos = loadTodos();
+    const item  = todos.find(t => t.id === e.target.dataset.id);
+    if (item) { item.done = e.target.checked; saveTodos(todos); renderTodos(); }
+});
+
+document.getElementById('todo-list').addEventListener('click', e => {
+    const btn = e.target.closest('.todo-del');
+    if (!btn) return;
+    const todos = loadTodos().filter(t => t.id !== btn.dataset.id);
+    saveTodos(todos);
+    renderTodos();
+});
+
+renderTodos();
+
+// ═══════════════════════════════════════════════════════════════
+//  NEWS
+// ═══════════════════════════════════════════════════════════════
+let allNews    = [];
+let currentTag = 'all';
+
+async function fetchFeed(feed) {
+    const proxyUrl = CORS_PROXY + encodeURIComponent(feed.url);
+    const res      = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
+    const text     = await res.text();
+    const xml      = new DOMParser().parseFromString(text, 'text/xml');
+    const items    = [...xml.querySelectorAll('item')];
+    if (!items.length) return [];
+    return items.slice(0, 25).map(item => {
+        const title   = item.querySelector('title')?.textContent || '';
+        const link    = item.querySelector('link')?.textContent?.trim() || '';
+        const pubDate = item.querySelector('pubDate')?.textContent || '';
+        let source = '';
+        try { source = new URL(link).hostname.replace('www.', ''); } catch {}
+        // Google News wraps real URLs; try <source> tag for publisher name
+        const srcName = item.querySelector('source')?.textContent;
+        if (srcName) source = srcName;
+        return { title, link, source, date: new Date(pubDate), tag: feed.tag, label: feed.label };
+    }).filter(n => n.title && n.link);
+}
+
+async function fetchAllNews() {
+    try {
+        const results = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
+        allNews = results
+            .filter(r => r.status === 'fulfilled')
+            .flatMap(r => r.value)
+            .sort((a, b) => b.date - a.date);
+        renderNews();
+    } catch {
+        document.getElementById('news-scroller').innerHTML =
+            '<div class="error">⚠ Could not load news.</div>';
+    }
+}
+
+function timeAgo(date) {
+    const mins = Math.floor((Date.now() - date) / 60000);
+    if (mins < 1)  return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24)  return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function renderNews() {
+    const list = currentTag === 'all' ? allNews : allNews.filter(n => n.tag === currentTag);
+    if (!list.length) {
+        document.getElementById('news-scroller').innerHTML = '<div class="loading">No articles found.</div>';
+        return;
+    }
+    document.getElementById('news-scroller').innerHTML = list.map(n => `
+        <a class="news-item" href="${n.link}" target="_blank" rel="noopener noreferrer">
+            <span class="news-tag tag-${n.tag}">${n.label}</span>
+            <div class="news-body">
+                <div class="news-title">${escHtml(n.title)}</div>
+                <div class="news-meta">
+                    <span>${escHtml(n.source)}</span>
+                    <span>·</span>
+                    <span>${timeAgo(n.date)}</span>
+                </div>
+            </div>
+        </a>`).join('');
+}
+
+document.querySelectorAll('.news-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.news-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTag = btn.dataset.tag;
+        renderNews();
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  AUTO-SCROLL NEWS
+// ═══════════════════════════════════════════════════════════════
+function initAutoScroll() {
+    const el  = document.getElementById('news-scroller');
+    let dir    = 1;
+    let paused = false;
+    el.addEventListener('mouseenter', () => paused = true);
+    el.addEventListener('mouseleave', () => paused = false);
+    setInterval(() => {
+        if (paused) return;
+        el.scrollTop += dir;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) dir = -1;
+        else if (el.scrollTop <= 0) dir = 1;
+    }, 35);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLAUDE USAGE
+// ═══════════════════════════════════════════════════════════════
+const CLAUDE_KEY_STORE = 'dashboard_claude_key';
+
+function fmtNum(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+    return String(n);
+}
+
+async function fetchClaudeUsage(apiKey) {
+    const el = document.getElementById('claude-stats-content');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div>Loading…</div>';
+    try {
+        const res  = await fetch(`/.netlify/functions/claude-usage?key=${encodeURIComponent(apiKey)}`, {
+            signal: AbortSignal.timeout(12000),
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+            el.innerHTML = `<div class="error">⚠ ${escHtml(data.error?.message || data.error || 'Could not load usage')}</div>
+                <a class="claude-console-link" href="https://console.anthropic.com/settings/usage" target="_blank">→ View in Anthropic Console</a>`;
+            return;
+        }
+
+        // Aggregate across all entries
+        let inputTokens = 0, outputTokens = 0, cacheRead = 0, cacheWrite = 0, requests = 0;
+        const models = {};
+        const entries = data.data || data.usage || data.results || [];
+
+        entries.forEach(entry => {
+            inputTokens  += entry.input_tokens  || 0;
+            outputTokens += entry.output_tokens || 0;
+            cacheRead    += entry.cache_read_input_tokens  || 0;
+            cacheWrite   += entry.cache_creation_input_tokens || 0;
+            requests     += entry.request_count || 1;
+            if (entry.model) models[entry.model] = (models[entry.model] || 0) + (entry.request_count || 1);
+        });
+
+        // Rough cost estimate (claude-3-5 sonnet pricing as baseline)
+        const costIn  = (inputTokens  / 1e6) * 3.00;
+        const costOut = (outputTokens / 1e6) * 15.00;
+        const costTotal = (costIn + costOut).toFixed(2);
+
+        const topModel = Object.entries(models).sort((a,b) => b[1]-a[1])[0]?.[0] || '—';
+
+        el.innerHTML = `
+            <div class="claude-stats">
+                <div class="claude-stat">
+                    <div class="claude-stat-label">Input Tokens</div>
+                    <div class="claude-stat-value">${fmtNum(inputTokens)}</div>
+                    <div class="claude-stat-sub">this month</div>
+                </div>
+                <div class="claude-stat">
+                    <div class="claude-stat-label">Output Tokens</div>
+                    <div class="claude-stat-value">${fmtNum(outputTokens)}</div>
+                    <div class="claude-stat-sub">this month</div>
+                </div>
+                <div class="claude-stat">
+                    <div class="claude-stat-label">Cache Read</div>
+                    <div class="claude-stat-value">${fmtNum(cacheRead)}</div>
+                    <div class="claude-stat-sub">tokens saved</div>
+                </div>
+                <div class="claude-stat">
+                    <div class="claude-stat-label">Est. Cost</div>
+                    <div class="claude-stat-value">$${costTotal}</div>
+                    <div class="claude-stat-sub">approx. USD</div>
+                </div>
+                <div class="claude-stat">
+                    <div class="claude-stat-label">Top Model</div>
+                    <div class="claude-stat-value" style="font-size:.75rem">${escHtml(topModel.replace('claude-',''))}</div>
+                    <div class="claude-stat-sub">${fmtNum(requests)} requests</div>
+                </div>
+            </div>
+            <a class="claude-console-link" href="https://console.anthropic.com/settings/usage" target="_blank">→ View full usage in Anthropic Console</a>`;
+    } catch(e) {
+        el.innerHTML = `<div class="error">⚠ ${escHtml(e.message)}</div>
+            <a class="claude-console-link" href="https://console.anthropic.com/settings/usage" target="_blank">→ View in Anthropic Console</a>`;
+    }
+}
+
+function initClaudeWidget() {
+    const input  = document.getElementById('claude-key-input');
+    const btn    = document.getElementById('claude-save-btn');
+    const stored = localStorage.getItem(CLAUDE_KEY_STORE);
+
+    if (stored) {
+        input.value = stored;
+        fetchClaudeUsage(stored);
+    }
+
+    btn.addEventListener('click', () => {
+        const key = input.value.trim();
+        if (!key) return;
+        localStorage.setItem(CLAUDE_KEY_STORE, key);
+        fetchClaudeUsage(key);
+    });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPERS & REFRESH LOOP
+// ═══════════════════════════════════════════════════════════════
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateTimestamp() {
+    document.getElementById('last-updated').textContent =
+        'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function refresh() {
+    await Promise.allSettled([fetchWeather(), fetchStocks(), fetchAllNews()]);
+    updateTimestamp();
+}
+
+refresh();
+setInterval(refresh, REFRESH_MS);
+initAutoScroll();
+initClaudeWidget();
+</script>
+</body>
+</html>
