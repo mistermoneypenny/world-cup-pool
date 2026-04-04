@@ -224,6 +224,142 @@ app.post('/api/state', async (req, res) => {
   }
 });
 
+// ── ESPN / FIFA LIVE SCORES ───────────────────────────────────
+const ESPN_SOCCER = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
+
+// World Cup 2026: June 11 – July 26
+const WC_DATES = [
+  '20260611','20260612','20260613','20260614','20260615','20260616','20260617',
+  '20260618','20260619','20260620','20260621','20260622','20260623','20260624',
+  '20260625','20260626','20260627','20260628','20260629','20260630','20260701',
+  '20260702','20260704','20260705','20260706','20260707','20260709','20260710',
+  '20260711','20260712','20260714','20260715','20260718','20260719','20260722','20260726',
+];
+
+let cachedScores  = {};
+let lastScoresFetch = 0;
+const SCORES_CACHE_MS = 60000;
+
+const TEAM_ALIASES = {
+  'USA':         ['united states', 'united states of america'],
+  'Ivory Coast': ["côte d'ivoire", "cote d'ivoire", 'ivory coast'],
+  'South Korea': ['korea republic', 'republic of korea'],
+  'Iran':        ['ir iran'],
+};
+
+function matchWCTeam(espnName, poolName) {
+  const e = (espnName || '').toLowerCase().trim();
+  const p = poolName.toLowerCase().trim();
+  if (e === p || e.includes(p) || p.includes(e)) return true;
+  const aliases = TEAM_ALIASES[poolName];
+  if (aliases) return aliases.some(a => e === a || e.includes(a) || a.includes(e));
+  return false;
+}
+
+async function fetchESPNScores() {
+  const now = Date.now();
+  if (now - lastScoresFetch < SCORES_CACHE_MS) return cachedScores;
+
+  const tomorrow = new Date(now + 86400000);
+  const tomorrowStr = tomorrow.toISOString().slice(0, 10).replace(/-/g, '');
+  const datesToFetch = WC_DATES.filter(d => d <= tomorrowStr);
+  if (!datesToFetch.length) return cachedScores;
+
+  const scores = {};
+  const results = await Promise.allSettled(
+    datesToFetch.map(async date => {
+      const r = await fetch(`${ESPN_SOCCER}?dates=${date}`);
+      if (!r.ok) return [];
+      const d = await r.json();
+      return d.events || [];
+    })
+  );
+
+  for (const result of results) {
+    if (result.status !== 'fulfilled') continue;
+    for (const event of result.value) {
+      const comp = event.competitions?.[0];
+      if (!comp) continue;
+      const status = comp.status?.type?.state || 'pre';
+      if (status === 'pre') continue;
+      const teams = comp.competitors || [];
+      if (teams.length < 2) continue;
+      const home = teams.find(t => t.homeAway === 'home') || teams[0];
+      const away = teams.find(t => t.homeAway === 'away') || teams[1];
+      const key = `${home.team?.displayName} vs ${away.team?.displayName}`;
+      scores[key] = {
+        t1: { name: home.team?.displayName || '', score: parseInt(home.score) || 0 },
+        t2: { name: away.team?.displayName || '', score: parseInt(away.score) || 0 },
+        status,
+        statusDetail: comp.status?.type?.shortDetail || '',
+      };
+    }
+  }
+
+  cachedScores = scores;
+  lastScoresFetch = now;
+  return scores;
+}
+
+// Group stage teams + pairs (mirrors app.js) for server-side auto-results
+const SRV_GROUP_TEAMS = {
+  A:[{n:'Argentina'},{n:'Colombia'},{n:'Serbia'},{n:'Costa Rica'}],
+  B:[{n:'France'},{n:'Morocco'},{n:'Austria'},{n:'Honduras'}],
+  C:[{n:'England'},{n:'USA'},{n:'Turkey'},{n:'Panama'}],
+  D:[{n:'Spain'},{n:'Mexico'},{n:'Poland'},{n:'New Zealand'}],
+  E:[{n:'Brazil'},{n:'Denmark'},{n:'Canada'},{n:'South Africa'}],
+  F:[{n:'Portugal'},{n:'Switzerland'},{n:'Ivory Coast'},{n:'Ghana'}],
+  G:[{n:'Netherlands'},{n:'Japan'},{n:'Venezuela'},{n:'Tunisia'}],
+  H:[{n:'Belgium'},{n:'Senegal'},{n:'Nigeria'},{n:'Uzbekistan'}],
+  I:[{n:'Italy'},{n:'South Korea'},{n:'Egypt'},{n:'Iraq'}],
+  J:[{n:'Germany'},{n:'Ecuador'},{n:'Saudi Arabia'},{n:'Jordan'}],
+  K:[{n:'Croatia'},{n:'Iran'},{n:'Cameroon'},{n:'Bolivia'}],
+  L:[{n:'Uruguay'},{n:'Australia'},{n:'Algeria'},{n:'Jamaica'}],
+};
+const SRV_PAIRS = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
+
+async function autoUpdateWCResults(scores) {
+  if (!scores || !Object.keys(scores).length || !memoryState) return;
+  const results = { ...(memoryState.results || {}) };
+  let changed = 0;
+
+  for (const [grp, teams] of Object.entries(SRV_GROUP_TEAMS)) {
+    SRV_PAIRS.forEach(([i, j], gameIdx) => {
+      const gid = `groups-${grp.toLowerCase()}-${gameIdx}`;
+      if (results[gid] !== undefined) return;
+      const t1 = teams[i].n, t2 = teams[j].n;
+      for (const sc of Object.values(scores)) {
+        if (sc.status !== 'post') continue;
+        const fwd = matchWCTeam(sc.t1.name, t1) && matchWCTeam(sc.t2.name, t2);
+        const rev = matchWCTeam(sc.t1.name, t2) && matchWCTeam(sc.t2.name, t1);
+        if (!fwd && !rev) continue;
+        const s1 = fwd ? sc.t1.score : sc.t2.score;
+        const s2 = fwd ? sc.t2.score : sc.t1.score;
+        results[gid] = s1 > s2 ? t1 : s2 > s1 ? t2 : 'Draw';
+        console.log(`Auto-result: ${gid} → ${results[gid]}`);
+        changed++;
+        break;
+      }
+    });
+  }
+
+  if (changed > 0) {
+    memoryState.results = results;
+    try { await writeState(memoryState); } catch (e) { console.error('Auto-result save failed:', e.message); }
+  }
+}
+
+app.get('/api/scores', async (req, res) => {
+  try {
+    const scores = await fetchESPNScores();
+    await autoUpdateWCResults(scores);
+    res.json(scores);
+  } catch (e) {
+    console.error('GET /api/scores error:', e.message);
+    res.json({});
+  }
+});
+
 // ── HEALTH CHECK ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({

@@ -237,6 +237,7 @@ let state = {
   currentPlayer: null,
   results: {},
   scores: {},   // { [gameId]: { t1: number, t2: number } }
+  liveScores: {}, // ESPN live data — not persisted
   picks: {},
   pendingPicks: {},
   games: {},
@@ -913,6 +914,14 @@ function renderGroupStageBracket(wrapper) {
       gameRow.className = 'group-game-row';
 
       const sc = state.scores[game.id];
+      const liveSc = !sc ? findGameScore(t1?.name, t2?.name) : null;
+      const isLiveGroup = liveSc && liveSc.status === 'in';
+      if (isLiveGroup) {
+        const badge = document.createElement('span');
+        badge.className = 'live-badge-inline';
+        badge.textContent = liveSc.statusDetail || 'LIVE';
+        gameRow.appendChild(badge);
+      }
       [t1, t2].forEach((team, idx) => {
         const teamEl = document.createElement('span');
         teamEl.className = 'group-game-team';
@@ -923,8 +932,12 @@ function renderGroupStageBracket(wrapper) {
           else teamEl.classList.add('loser');
         }
         if (playerPick === team.name) teamEl.classList.add('picked');
-        const goalStr = sc !== undefined ? (idx === 0 ? sc.t1 : sc.t2) : (isDraw && idx === 0 ? 'D' : '');
-        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span><span class="group-game-name">${esc(team.name)}</span>${goalStr !== '' ? `<span class="group-game-goal">${goalStr}</span>` : ''}`;
+        const displaySc = sc !== undefined ? sc : liveSc;
+        const goalStr = displaySc !== undefined
+          ? (idx === 0 ? displaySc.t1 : displaySc.t2)
+          : (isDraw && idx === 0 ? 'D' : '');
+        const scoreClass = `group-game-goal${isLiveGroup ? ' live' : ''}`;
+        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span><span class="group-game-name">${esc(team.name)}</span>${goalStr !== '' ? `<span class="${scoreClass}">${goalStr}</span>` : ''}`;
         gameRow.appendChild(teamEl);
       });
       card.appendChild(gameRow);
@@ -1004,6 +1017,14 @@ function buildMatchup(game) {
   card.className = 'matchup';
 
   const sc = state.scores[game.id];
+  const liveSc = !sc ? findGameScore(t1?.name, t2?.name) : null;
+  const isLive = liveSc && liveSc.status === 'in';
+  if (isLive) {
+    const badge = document.createElement('div');
+    badge.className = 'live-badge';
+    badge.textContent = liveSc.statusDetail || 'LIVE';
+    card.appendChild(badge);
+  }
   [{ team: t1 }, { team: t2 }].forEach(({ team }, idx) => {
     const row = document.createElement('div');
     row.className = 'team-slot';
@@ -1018,7 +1039,8 @@ function buildMatchup(game) {
       const pickedThis = playerPick === team.name;
       if (pickedThis && isWinner) row.classList.add('pick-correct');
       if (pickedThis && isLoser)  row.classList.add('pick-wrong');
-      const goals = sc !== undefined ? `<span class="t-score">${idx === 0 ? sc.t1 : sc.t2}</span>` : '';
+      const displaySc = sc !== undefined ? sc : liveSc;
+      const goals = displaySc !== undefined ? `<span class="t-score${isLive ? ' live' : ''}">${idx === 0 ? displaySc.t1 : displaySc.t2}</span>` : '';
       row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${esc(team.name)}</span>${goals}`;
     }
     card.appendChild(row);
@@ -2713,6 +2735,7 @@ async function init() {
   }
 
   startPolling();
+  startScoresPolling();
 }
 
 function setupOfflineDetection() {
@@ -2778,6 +2801,84 @@ async function pollServer() {
     if (JSON.stringify(state.r32Teams) !== hadR32) rebuildGames();
     renderCurrentView();
   } catch (e) { /* silently ignore */ }
+}
+
+// ── LIVE SCORES (ESPN) ────────────────────────────────────────
+const LIVE_TEAM_ALIASES = {
+  'USA':         ['united states', 'united states of america'],
+  'Ivory Coast': ["côte d'ivoire", "cote d'ivoire", 'ivory coast'],
+  'South Korea': ['korea republic', 'republic of korea'],
+  'Iran':        ['ir iran'],
+};
+
+function matchLiveTeam(espnName, poolName) {
+  const e = espnName.toLowerCase().trim();
+  const p = poolName.toLowerCase().trim();
+  if (e === p || e.includes(p) || p.includes(e)) return true;
+  const aliases = LIVE_TEAM_ALIASES[poolName];
+  if (aliases) return aliases.some(a => e === a || e.includes(a) || a.includes(e));
+  return false;
+}
+
+function findGameScore(t1Name, t2Name) {
+  if (!t1Name || !t2Name || !state.liveScores) return null;
+  for (const sc of Object.values(state.liveScores)) {
+    const fwd = matchLiveTeam(sc.t1.name, t1Name) && matchLiveTeam(sc.t2.name, t2Name);
+    const rev = matchLiveTeam(sc.t1.name, t2Name) && matchLiveTeam(sc.t2.name, t1Name);
+    if (!fwd && !rev) continue;
+    // Normalise so t1 always corresponds to our t1
+    return fwd
+      ? { t1: sc.t1.score, t2: sc.t2.score, status: sc.status, statusDetail: sc.statusDetail }
+      : { t1: sc.t2.score, t2: sc.t1.score, status: sc.status, statusDetail: sc.statusDetail };
+  }
+  return null;
+}
+
+let scoresTimer = null;
+
+async function fetchLiveScores() {
+  try {
+    const resp = await fetch('/api/scores');
+    if (!resp.ok) return;
+    const scores = await resp.json();
+    if (!scores || !Object.keys(scores).length) return;
+    state.liveScores = scores;
+    autoSetResultsFromScores();
+    renderCurrentView();
+  } catch (e) { /* ignore */ }
+}
+
+function autoSetResultsFromScores() {
+  if (!state.liveScores || !Object.keys(state.liveScores).length) return;
+  let changed = 0;
+
+  for (const game of Object.values(state.games)) {
+    if (state.results[game.id] !== undefined) continue;
+    const { t1, t2 } = getTeams(game);
+    if (!t1 || !t2) continue;
+    const sc = findGameScore(t1.name, t2.name);
+    if (!sc || sc.status !== 'post') continue;
+
+    if (game.round === 'groups') {
+      state.results[game.id] = sc.t1 > sc.t2 ? t1.name : sc.t2 > sc.t1 ? t2.name : 'Draw';
+    } else {
+      if (sc.t1 === sc.t2) continue; // extra time / pens still in progress
+      state.results[game.id] = sc.t1 > sc.t2 ? t1.name : t2.name;
+    }
+    changed++;
+  }
+
+  if (changed > 0) {
+    fixInvalidPicks();
+    saveState();
+    showToast(`${changed} result${changed > 1 ? 's' : ''} updated from FIFA`, 'success');
+  }
+}
+
+function startScoresPolling() {
+  fetchLiveScores();
+  if (scoresTimer) clearInterval(scoresTimer);
+  scoresTimer = setInterval(fetchLiveScores, 60000);
 }
 
 document.addEventListener('DOMContentLoaded', init);

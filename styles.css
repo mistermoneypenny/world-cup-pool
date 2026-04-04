@@ -592,3 +592,11 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .team-slot.loser  .t-score { color: var(--text-3); }
 .pick-card-score { font-size: 0.72rem; font-weight: 700; color: var(--text-2); background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px; margin-right: 0.25rem; letter-spacing: 0.02em; }
 .result-score-badge { font-size: 0.72rem; font-weight: 700; color: var(--accent); background: rgba(0,166,81,0.12); padding: 1px 5px; border-radius: 3px; margin-left: 0.3rem; }
+
+/* FIFA Live Scores */
+a.nav-btn.fifa-link { text-decoration: none; color: #4fc3f7; }
+a.nav-btn.fifa-link:hover { background: rgba(79,195,247,0.1); color: #4fc3f7; }
+.live-badge { font-size: 0.65rem; font-weight: 700; color: #fff; background: #e53935; border-radius: 3px; padding: 1px 5px; letter-spacing: 0.05em; margin-bottom: 3px; display: inline-block; animation: livePulse 1.2s ease-in-out infinite; }
+.live-badge-inline { font-size: 0.6rem; font-weight: 700; color: #fff; background: #e53935; border-radius: 3px; padding: 1px 4px; margin-left: 4px; animation: livePulse 1.2s ease-in-out infinite; }
+.t-score.live, .group-game-goal.live { color: #ef9a9a; }
+@keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
