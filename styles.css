@@ -363,6 +363,9 @@ a { color: var(--accent); }
 .rank-num.top1 { color: #ffd700; }
 .rank-num.top2 { color: #94a3b8; }
 .rank-num.top3 { color: #b87333; }
+.lb-player-cell { display: flex; align-items: center; gap: 0.5rem; }
+.player-avatar { border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.player-avatar-placeholder { display: inline-block; flex-shrink: 0; }
 .lb-player-link { background: none; border: none; color: var(--text); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
 .lb-player-link:hover { color: var(--accent); text-decoration: underline; }
 .lb-player-link.picks-locked { cursor: default; opacity: 0.7; }

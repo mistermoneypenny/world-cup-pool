@@ -199,6 +199,17 @@ const ALL_TEAM_NAMES = Object.values(GROUP_TEAMS)
 // Resolve the __ALL_TEAMS__ placeholder in BONUS_CONFIG
 BONUS_CONFIG.sf[0].options = ALL_TEAM_NAMES;
 
+// ── PLAYER AVATARS ────────────────────────────────────────────
+const PLAYER_AVATARS = {
+  'Matthias': 'Matthias.png',
+};
+
+function playerAvatarHtml(playerName, size = 32) {
+  const file = PLAYER_AVATARS[playerName];
+  if (!file) return `<span class="player-avatar-placeholder" style="width:${size}px;height:${size}px"></span>`;
+  return `<img src="${file}" alt="${esc(playerName)}" class="player-avatar" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+}
+
 const DEFAULT_PLAYERS = [
   { id: 'player1', name: 'Commish'  },
   { id: 'player2', name: 'Lorenz'   },
@@ -1664,8 +1675,9 @@ function renderLbBody() {
     const btnTitle   = cantPeek ? ' title="You can only view your own picks"'
       : linkLocked ? ' title="Picks revealed when the round is closed"' : '';
 
+    const avatar = playerAvatarHtml(row.player.name, 32);
     let tdHTML = `<td class="rank-num ${rankCls}">${rankIcon}</td>
-      <td><button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button></td>`;
+      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button></div></td>`;
 
     if (state.lbRound === 'all') {
       const maxPossible = row.total.total + row.total.possible;
