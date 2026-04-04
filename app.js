@@ -200,12 +200,11 @@ const ALL_TEAM_NAMES = Object.values(GROUP_TEAMS)
 BONUS_CONFIG.sf[0].options = ALL_TEAM_NAMES;
 
 const DEFAULT_PLAYERS = [
-  { id: 'player1', name: 'Commish' },
-  { id: 'player2', name: 'Etty'    },
-  { id: 'player3', name: 'Colm'    },
-  { id: 'player4', name: 'Bergman' },
-  { id: 'player5', name: 'Josh'    },
-  { id: 'player6', name: 'Michael' },
+  { id: 'player1', name: 'Commish'  },
+  { id: 'player2', name: 'Lorenz'   },
+  { id: 'player3', name: 'Diego'    },
+  { id: 'player4', name: 'Cole'     },
+  { id: 'player5', name: 'Matthias' },
 ];
 
 const STORAGE_KEY = 'wcPool2026';
