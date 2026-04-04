@@ -1663,6 +1663,14 @@ function renderLbBody() {
   });
   rows.sort((a, b) => b.total.total - a.total.total);
 
+  // Best score per round (for green highlight)
+  const roundBest = {};
+  ROUND_CONFIG.forEach(cfg => {
+    let best = 0;
+    rows.forEach(r => { if (r.byRound[cfg.id].score > best) best = r.byRound[cfg.id].score; });
+    if (best > 0) roundBest[cfg.id] = best;
+  });
+
   const table = document.createElement('table');
   table.className = 'lb-table';
 
@@ -1715,15 +1723,17 @@ function renderLbBody() {
         <td class="lb-possible">${fmtScore(maxPossible)}</td>`;
       ROUND_CONFIG.forEach(cfg => {
         const s = row.byRound[cfg.id];
+        const isBest = roundBest[cfg.id] && s.score === roundBest[cfg.id];
         const wlTip = s.correct || s.wrong ? ` title="${s.correct}✔ ${s.wrong}✘"` : '';
-        tdHTML += `<td class="lb-round-score num ${s.score === 0 && !s.correct && !s.wrong ? 'zero' : ''}"${wlTip}>${fmtScore(s.score)}</td>`;
+        tdHTML += `<td class="lb-round-score num ${s.score === 0 && !s.correct && !s.wrong ? 'zero' : ''}${isBest ? ' round-best' : ''}"${wlTip}>${fmtScore(s.score)}</td>`;
       });
     } else {
       const s = row.byRound[state.lbRound];
+      const isBest = roundBest[state.lbRound] && s.score === roundBest[state.lbRound];
       const wl = s.correct || s.wrong
         ? `<div class="lb-wl-row"><span class="lb-w">${s.correct} correct</span> <span class="lb-l">${s.wrong} wrong</span></div>`
         : '';
-      tdHTML += `<td class="num"><span class="lb-total">${fmtScore(s.score)}</span>${wl}</td>
+      tdHTML += `<td class="num${isBest ? ' round-best' : ''}"><span class="lb-total">${fmtScore(s.score)}</span>${wl}</td>
         <td class="lb-possible num">${fmtScore(s.score + s.possible)}</td>`;
     }
 
