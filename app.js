@@ -911,20 +911,9 @@ function renderGroupStageBracket(wrapper) {
           else teamEl.classList.add('loser');
         }
         if (playerPick === team.name) teamEl.classList.add('picked');
-        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span>${esc(team.name)}`;
+        const goalStr = sc !== undefined ? (idx === 0 ? sc.t1 : sc.t2) : (isDraw && idx === 0 ? 'D' : '');
+        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span><span class="group-game-name">${esc(team.name)}</span>${goalStr !== '' ? `<span class="group-game-goal">${goalStr}</span>` : ''}`;
         gameRow.appendChild(teamEl);
-        if (idx === 0) {
-          // Show score if available, otherwise show v/D
-          const vs = document.createElement('span');
-          vs.className = 'group-game-vs' + (isDraw ? ' draw-result' : '');
-          if (sc !== undefined) {
-            vs.textContent = `${sc.t1}–${sc.t2}`;
-            vs.classList.add('has-score');
-          } else {
-            vs.textContent = isDraw ? 'D' : 'v';
-          }
-          gameRow.appendChild(vs);
-        }
       });
       card.appendChild(gameRow);
     });
