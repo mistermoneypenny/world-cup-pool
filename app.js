@@ -1677,7 +1677,7 @@ function renderLbBody() {
     const btnTitle   = cantPeek ? ' title="You can only view your own picks"'
       : linkLocked ? ' title="Picks revealed when the round is closed"' : '';
 
-    const avatar = playerAvatarHtml(row.player.name, 32);
+    const avatar = playerAvatarHtml(row.player.name, 64);
     let tdHTML = `<td class="rank-num ${rankCls}">${rankIcon}</td>
       <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button></div></td>`;
 
