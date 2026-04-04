@@ -57,7 +57,7 @@ a { color: var(--accent); }
 
 .header-brand { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
 .brand-icon { font-size: 1.8rem; line-height: 1; }
-.brand-icon-img { width: 42px; height: 42px; object-fit: contain; mix-blend-mode: screen; }
+.brand-icon-img { width: 42px; height: 42px; object-fit: contain; }
 .brand-title { font-size: 1.1rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
 .brand-sub { font-size: 0.7rem; color: var(--text-2); display: block; margin-top: -2px; }
 
@@ -420,7 +420,7 @@ a { color: var(--accent); }
 .login-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: 12px; padding: 2rem 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
 .login-brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; justify-content: center; }
 .login-brand-icon  { font-size: 2.2rem; line-height: 1; }
-.login-brand-icon-img { width: 64px; height: 64px; object-fit: contain; mix-blend-mode: screen; }
+.login-brand-icon-img { width: 64px; height: 64px; object-fit: contain; }
 .login-brand-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
 .login-brand-sub   { font-size: 0.75rem; color: var(--text-2); }
 .login-heading { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; text-align: center; }
