@@ -552,6 +552,14 @@ function showToast(msg, type = 'info') {
 // ── VIEW SWITCHING ────────────────────────────────────────────
 
 function switchView(view) {
+  // Warn if leaving picks view with unsaved changes
+  if (state.currentView === 'picks' && view !== 'picks') {
+    const savedPicks = (state.picks[state.currentPlayer] || {})[state.activePicksRound] || {};
+    const hasUnsaved = Object.keys(state.pendingPicks).some(
+      gid => state.pendingPicks[gid] !== (savedPicks[gid] || null)
+    );
+    if (hasUnsaved && !confirm('You have unsaved picks. Leave without saving?')) return;
+  }
   state.currentView = view;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -649,6 +657,7 @@ function loginAs(pid) {
   state.sessionPlayer   = pid;
   state.currentPlayer   = pid;
   state.adminViewPlayer = null;
+  try { sessionStorage.setItem('wcSession', pid); } catch(e) {}
   document.getElementById('login-overlay').style.display = 'none';
   updateSessionHeader();
   updatePlayerSelect();
@@ -658,6 +667,7 @@ function loginAs(pid) {
 function logoutSession() {
   state.sessionPlayer   = null;
   state.adminViewPlayer = null;
+  try { sessionStorage.removeItem('wcSession'); } catch(e) {}
   renderLoginOverlay();
 }
 
@@ -2206,11 +2216,63 @@ function loadDemoData() {
 
 function renderAdmin() {
   populateRoundSelects();
+  renderPickStatusGrid();
   renderResultsGrid();
   renderPlayersList();
   renderPinsAdmin();
   renderBonusAdmin();
   renderR32Admin();
+}
+
+function renderPickStatusGrid() {
+  const container = document.getElementById('pick-status-grid');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const table = document.createElement('table');
+  table.className = 'pick-status-table';
+
+  // Header row
+  const thead = document.createElement('thead');
+  const hRow = document.createElement('tr');
+  const th0 = document.createElement('th');
+  th0.textContent = 'Player';
+  hRow.appendChild(th0);
+  ROUND_CONFIG.forEach(cfg => {
+    const th = document.createElement('th');
+    th.textContent = cfg.short;
+    hRow.appendChild(th);
+  });
+  thead.appendChild(hRow);
+  table.appendChild(thead);
+
+  // Player rows
+  const tbody = document.createElement('tbody');
+  state.players.forEach(p => {
+    const tr = document.createElement('tr');
+    const td0 = document.createElement('td');
+    td0.textContent = p.name;
+    td0.className = 'psg-name';
+    tr.appendChild(td0);
+    ROUND_CONFIG.forEach(cfg => {
+      const td = document.createElement('td');
+      const picks = (state.picks[p.id] || {})[cfg.id] || {};
+      const games = getGamesForRound(cfg.id).filter(g => getTeams(g).t1 && getTeams(g).t2);
+      const count = Object.keys(picks).length;
+      if (count > 0) {
+        td.textContent = '✓';
+        td.className = 'psg-yes';
+        td.title = `${count}/${games.length} picks`;
+      } else {
+        td.textContent = '✗';
+        td.className = 'psg-no';
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
 }
 
 function renderPinsAdmin() {
@@ -2571,9 +2633,46 @@ async function init() {
   }
 
   setupEvents();
-  renderLoginOverlay();
+  setupOfflineDetection();
+
+  // Resume session from sessionStorage if player still exists
+  try {
+    const savedPid = sessionStorage.getItem('wcSession');
+    if (savedPid && state.players.find(p => p.id === savedPid)) {
+      state.sessionPlayer = savedPid;
+      state.currentPlayer = savedPid;
+      document.getElementById('login-overlay').style.display = 'none';
+      updateSessionHeader();
+      updatePlayerSelect();
+      switchView('bracket');
+    } else {
+      renderLoginOverlay();
+    }
+  } catch(e) {
+    renderLoginOverlay();
+  }
+
   startPolling();
 }
+
+function setupOfflineDetection() {
+  const banner = document.getElementById('offline-banner');
+  if (!banner) return;
+  const update = () => { banner.style.display = navigator.onLine ? 'none' : 'block'; };
+  window.addEventListener('online',  update);
+  window.addEventListener('offline', update);
+  update();
+}
+
+// Warn before closing/refreshing tab with unsaved picks
+window.addEventListener('beforeunload', (e) => {
+  if (state.currentView !== 'picks') return;
+  const savedPicks = (state.picks[state.currentPlayer] || {})[state.activePicksRound] || {};
+  const hasUnsaved = Object.keys(state.pendingPicks).some(
+    gid => state.pendingPicks[gid] !== (savedPicks[gid] || null)
+  );
+  if (hasUnsaved) { e.preventDefault(); e.returnValue = ''; }
+});
 
 // ── POLLING ──────────────────────────────────────────────────
 

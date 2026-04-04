@@ -9,6 +9,11 @@
 <body>
 <div id="app">
 
+  <!-- ── OFFLINE BANNER ── -->
+  <div id="offline-banner" style="display:none;background:#c0392b;color:#fff;text-align:center;padding:0.4rem 1rem;font-size:0.85rem;font-weight:600;">
+    ⚠️ You're offline — picks will save when you reconnect
+  </div>
+
   <!-- ── HEADER ── -->
   <header class="header">
     <div class="header-brand">
@@ -94,6 +99,12 @@
     <section id="view-admin" class="view">
       <div class="admin-wrapper">
         <h2 class="view-title" style="color:var(--gold)">&#9881; Admin Panel</h2>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Pick Status</h3>
+          <p style="color:var(--text-3);font-size:0.8rem;margin-bottom:0.5rem">Shows which players have submitted picks for each round.</p>
+          <div id="pick-status-grid"><!-- Populated by JS --></div>
+        </div>
 
         <div class="admin-card">
           <h3 class="admin-card-title">Tournament Control</h3>

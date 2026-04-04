@@ -462,6 +462,15 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .bonus-admin-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
 .bonus-admin-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-weight: 600; color: var(--text); font-size: 0.9rem; }
 
+/* ── PICK STATUS GRID ───────────────────────────────────────── */
+.pick-status-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.pick-status-table th { background: var(--surface2); color: var(--text-3); font-weight: 600; padding: 0.35rem 0.5rem; text-align: center; border-bottom: 1px solid var(--border); }
+.pick-status-table th:first-child { text-align: left; }
+.pick-status-table td { padding: 0.3rem 0.5rem; text-align: center; border-bottom: 1px solid var(--border); }
+.psg-name { text-align: left !important; font-weight: 500; color: var(--text); }
+.psg-yes { color: #2ecc71; font-weight: 700; }
+.psg-no  { color: var(--text-3); }
+
 /* ── PIN ADMIN ─────────────────────────────────────────────── */
 .pin-admin-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
 .pin-admin-name { font-weight: 600; color: var(--text); font-size: 0.9rem; min-width: 100px; }
