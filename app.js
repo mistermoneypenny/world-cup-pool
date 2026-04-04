@@ -1098,7 +1098,61 @@ function buildBracketCenter() {
 
 // ── RULES RENDERING ───────────────────────────────────────────
 
-const DEFAULT_RULES_PLACEHOLDER = `Welcome to the World Cup 2026 Pool! Rules will be posted here by the Commissioner.`;
+const DEFAULT_RULES_PLACEHOLDER = `WORLD CUP 2026 POOL — OFFICIAL RULES
+
+HOW IT WORKS
+Before each round begins, every player submits their picks for that round. Once the round is locked, picks can no longer be changed. Points are awarded based on correct picks, with bigger rewards for later rounds and for picking upsets.
+
+PICK DEADLINES
+Picks must be submitted before the round is locked by the Commissioner. Late picks will not be accepted. Make sure you're logged in and have saved your picks before the deadline.
+
+SCORING — BASE POINTS
+Group Stage: 1 point per correct pick
+Round of 32: 2 points per correct pick
+Round of 16: 3 points per correct pick
+Quarterfinals: 5 points per correct pick
+Semifinals: 8 points per correct pick
+Final: 15 points per correct pick
+
+In the Group Stage you may also pick a Draw. A correct Draw pick earns 1 point.
+
+UPSET BONUS
+In knockout rounds, picking an underdog (higher FIFA seed number) earns bonus points on top of the base. The formula is:
+  ((Underdog seed − Favourite seed) + Base points) × Round multiplier
+
+Round multipliers: R32 ×1.2 · R16 ×1.4 · QF ×1.6 · SF ×1.8 · Final ×2.0
+
+Example: Picking seed #34 to beat seed #1 in the Round of 32:
+  ((34 − 1) + 2) × 1.2 = 42 points
+
+BONUS QUESTIONS
+Each round includes bonus questions for extra points. Answers must be submitted before the round locks.
+
+Group Stage
+  · Total number of draws in the group stage — 8 pts
+  · Confederation with the most group stage wins — 6 pts
+
+Round of 32
+  · Most successful confederation from R32 onward — 4 pts
+
+Round of 16
+  · Number of penalty shootouts in the Round of 32 — 6 pts
+
+Quarterfinals
+  · Golden Boot leader (player name) — 10 pts
+  · Name all four semi-finalists — 20 pts
+
+Semifinals
+  · Nation with the most total goals in the tournament — 6 pts
+  · Total goals scored in both semi-finals — 6 pts
+
+STANDINGS
+The leaderboard shows total points earned plus remaining possible points. Players are ranked by total score, with possible points used as a tiebreaker.
+
+GENERAL RULES
+· The Commissioner's decisions are final.
+· All picks are private until the round is locked.
+· Have fun and may the best picker win!`;
 
 function renderRules() {
   const body        = document.getElementById('rules-body');
@@ -2614,6 +2668,10 @@ async function init() {
     saveState();
   } else if (!Object.keys(state.scores).length) {
     loadDemoData();
+    saveState();
+  }
+  if (!state.rulesText) {
+    state.rulesText = DEFAULT_RULES_PLACEHOLDER;
     saveState();
   }
   if (!state.currentPlayer && state.players.length) {
