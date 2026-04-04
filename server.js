@@ -252,4 +252,15 @@ process.on('SIGINT',  () => shutdown('SIGINT'));
 
 app.listen(PORT, () => {
   console.log(`World Cup 2026 Pool running at http://localhost:${PORT}`);
+
+  // ── KEEP-ALIVE PING (Render free tier) ──────────────────────
+  // Pings self every 14 minutes to prevent the server sleeping
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  if (process.env.RENDER_EXTERNAL_URL) {
+    setInterval(() => {
+      fetch(`${SELF_URL}/api/health`)
+        .then(() => console.log('Keep-alive ping sent'))
+        .catch(e => console.warn('Keep-alive ping failed:', e.message));
+    }, 14 * 60 * 1000);
+  }
 });
