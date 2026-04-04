@@ -202,6 +202,8 @@ BONUS_CONFIG.sf[0].options = ALL_TEAM_NAMES;
 // ── PLAYER AVATARS ────────────────────────────────────────────
 const PLAYER_AVATARS = {
   'Matthias': 'Matthias.png',
+  'Diego':    'Diego.png',
+  'Lorenz':   'Lorenz.png',
 };
 
 function playerAvatarHtml(playerName, size = 32) {
