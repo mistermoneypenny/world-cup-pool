@@ -1151,13 +1151,18 @@ Final: 15 points per correct pick
 In the Group Stage you may also pick a Draw. A correct Draw pick earns 1 point.
 
 UPSET BONUS
-In knockout rounds, picking an underdog (higher FIFA seed number) earns bonus points on top of the base. The formula is:
+Picking an underdog (higher FIFA seed number) to win earns bonus points in every round — including the Group Stage. The formula is:
   ((Underdog seed − Favourite seed) + Base points) × Round multiplier
 
-Round multipliers: R32 ×1.2 · R16 ×1.4 · QF ×1.6 · SF ×1.8 · Final ×2.0
+Round multipliers: GRP ×1.0 · R32 ×1.2 · R16 ×1.4 · QF ×1.6 · SF ×1.8 · Final ×2.0
 
-Example: Picking seed #34 to beat seed #1 in the Round of 32:
-  ((34 − 1) + 2) × 1.2 = 42 points
+Example: Picking seed #59 (South Africa) to beat seed #15 (Mexico) in the Group Stage:
+  ((59 − 15) + 1) × 1.0 = 45 points
+
+Example: Picking seed #34 (Ivory Coast) to beat seed #10 (Germany) in the Round of 32:
+  ((34 − 10) + 2) × 1.2 = 31.2 points
+
+Note: A correct Draw pick always earns a flat 1 point — no upset bonus applies to draws.
 
 BONUS QUESTIONS
 Each round includes bonus questions for extra points. Answers must be submitted before the round locks.
