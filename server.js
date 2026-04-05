@@ -241,10 +241,16 @@ let lastScoresFetch = 0;
 const SCORES_CACHE_MS = 60000;
 
 const TEAM_ALIASES = {
-  'USA':         ['united states', 'united states of america'],
-  'Ivory Coast': ["côte d'ivoire", "cote d'ivoire", 'ivory coast'],
-  'South Korea': ['korea republic', 'republic of korea'],
-  'Iran':        ['ir iran'],
+  'USA':          ['united states', 'united states of america'],
+  'Ivory Coast':  ["côte d'ivoire", "cote d'ivoire", 'ivory coast'],
+  'South Korea':  ['korea republic', 'republic of korea'],
+  'Iran':         ['ir iran'],
+  'Turkey':       ['türkiye', 'turkiye'],
+  'Czech Republic': ['czechia', 'czech republic'],
+  'Curacao':      ['curaçao'],
+  'Cape Verde':   ['cabo verde'],
+  'DR Congo':     ['congo dr', 'democratic republic of congo', 'dr congo'],
+  'Bosnia':       ['bosnia and herzegovina', 'bosnia & herzegovina'],
 };
 
 function matchWCTeam(espnName, poolName) {
@@ -303,18 +309,18 @@ async function fetchESPNScores() {
 
 // Group stage teams + pairs (mirrors app.js) for server-side auto-results
 const SRV_GROUP_TEAMS = {
-  A:[{n:'Argentina'},{n:'Colombia'},{n:'Serbia'},{n:'Costa Rica'}],
-  B:[{n:'France'},{n:'Morocco'},{n:'Austria'},{n:'Honduras'}],
-  C:[{n:'England'},{n:'USA'},{n:'Turkey'},{n:'Panama'}],
-  D:[{n:'Spain'},{n:'Mexico'},{n:'Poland'},{n:'New Zealand'}],
-  E:[{n:'Brazil'},{n:'Denmark'},{n:'Canada'},{n:'South Africa'}],
-  F:[{n:'Portugal'},{n:'Switzerland'},{n:'Ivory Coast'},{n:'Ghana'}],
-  G:[{n:'Netherlands'},{n:'Japan'},{n:'Venezuela'},{n:'Tunisia'}],
-  H:[{n:'Belgium'},{n:'Senegal'},{n:'Nigeria'},{n:'Uzbekistan'}],
-  I:[{n:'Italy'},{n:'South Korea'},{n:'Egypt'},{n:'Iraq'}],
-  J:[{n:'Germany'},{n:'Ecuador'},{n:'Saudi Arabia'},{n:'Jordan'}],
-  K:[{n:'Croatia'},{n:'Iran'},{n:'Cameroon'},{n:'Bolivia'}],
-  L:[{n:'Uruguay'},{n:'Australia'},{n:'Algeria'},{n:'Jamaica'}],
+  A:[{n:'Mexico'},{n:'South Korea'},{n:'South Africa'},{n:'Czech Republic'}],
+  B:[{n:'Switzerland'},{n:'Canada'},{n:'Qatar'},{n:'Bosnia'}],
+  C:[{n:'Brazil'},{n:'Morocco'},{n:'Scotland'},{n:'Haiti'}],
+  D:[{n:'USA'},{n:'Australia'},{n:'Paraguay'},{n:'Turkey'}],
+  E:[{n:'Germany'},{n:'Ecuador'},{n:'Ivory Coast'},{n:'Curacao'}],
+  F:[{n:'Netherlands'},{n:'Japan'},{n:'Tunisia'},{n:'Sweden'}],
+  G:[{n:'Belgium'},{n:'Iran'},{n:'Egypt'},{n:'New Zealand'}],
+  H:[{n:'Spain'},{n:'Uruguay'},{n:'Saudi Arabia'},{n:'Cape Verde'}],
+  I:[{n:'France'},{n:'Senegal'},{n:'Norway'},{n:'Iraq'}],
+  J:[{n:'Argentina'},{n:'Austria'},{n:'Algeria'},{n:'Jordan'}],
+  K:[{n:'Portugal'},{n:'Colombia'},{n:'Uzbekistan'},{n:'DR Congo'}],
+  L:[{n:'England'},{n:'Croatia'},{n:'Panama'},{n:'Ghana'}],
 };
 const SRV_PAIRS = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
 
