@@ -626,6 +626,7 @@ function renderLoginOverlay() {
     btn.className = 'player-btn' + (adminPlayer ? ' admin' : '');
     btn.innerHTML = `
       ${adminPlayer ? '<span class="lp-badge">&#128081; Admin</span>' : ''}
+      <span class="lp-avatar">${playerAvatarHtml(p.name, 56)}</span>
       <span class="lp-name">${esc(p.name)}</span>
       <span class="lp-score">${total > 0 ? fmtScore(total) + ' pts' : 'No picks yet'}</span>
       ${hasPin ? '<span class="lp-lock">&#128274;</span>' : ''}`;
