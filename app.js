@@ -203,6 +203,8 @@ const PLAYER_AVATARS = {
   'Matthias': 'Matthias.png',
   'Diego':    'Diego.png',
   'Lorenz':   'Lorenz.png',
+  'Cole':     'Cole.png',
+  'David':    'David.png',
 };
 
 function playerAvatarHtml(playerName, size = 32) {
