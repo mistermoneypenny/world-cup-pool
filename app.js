@@ -1509,7 +1509,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const hdr = document.createElement('div');
   hdr.className = 'pick-card-hdr';
   hdr.innerHTML = `<span class="pick-card-hdr-label">${esc(regionLabel)}</span>
-    ${scoreTag}<span class="pick-pts">${cfg.pts} pt${cfg.pts > 1 ? 's' : ''}</span>`;
+    <span class="pick-pts">${cfg.pts} pt${cfg.pts > 1 ? 's' : ''}</span>`;
   card.appendChild(hdr);
 
   if (!t1 && !t2) {
