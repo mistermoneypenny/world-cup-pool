@@ -362,11 +362,19 @@ function getTeams(game) {
 function getWinner(gid) {
   const name = state.results[gid];
   if (!name) return null;
+  if (name === 'Draw') return null;
   const game = state.games[gid];
   if (!game) return null;
   const { t1, t2 } = getTeams(game);
   if (t1 && t1.name === name) return t1;
   if (t2 && t2.name === name) return t2;
+  // Stored result name doesn't match either team (e.g. stale demo data).
+  // Fall back to score to determine the actual winner.
+  const sc = state.scores[gid];
+  if (sc !== undefined) {
+    if (sc.t1 > sc.t2) return t1;
+    if (sc.t2 > sc.t1) return t2;
+  }
   return null;
 }
 
@@ -835,8 +843,17 @@ function getGroupStandings(group) {
       table[t1.name].d++; table[t1.name].pts++; table[t1.name].played++;
       table[t2.name].d++; table[t2.name].pts++; table[t2.name].played++;
     } else {
-      const winner = result === t1.name ? t1 : t2;
-      const loser  = winner === t1 ? t2 : t1;
+      let winner, loser;
+      if (result === t1.name)      { winner = t1; loser = t2; }
+      else if (result === t2.name) { winner = t2; loser = t1; }
+      else {
+        // Result name doesn't match either team — derive winner from score
+        const sc = state.scores[game.id];
+        if (!sc) return;
+        if      (sc.t1 > sc.t2) { winner = t1; loser = t2; }
+        else if (sc.t2 > sc.t1) { winner = t2; loser = t1; }
+        else return; // tied score but not stored as Draw — skip
+      }
       table[winner.name].w++; table[winner.name].pts += 3; table[winner.name].played++;
       table[loser.name].l++;  table[loser.name].played++;
     }
