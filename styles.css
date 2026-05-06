@@ -57,6 +57,7 @@ a { color: var(--accent); }
 
 .header-brand { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
 .brand-icon { font-size: 1.8rem; line-height: 1; }
+.brand-icon-img { width: 42px; height: 42px; object-fit: contain; }
 .brand-title { font-size: 1.1rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
 .brand-sub { font-size: 0.7rem; color: var(--text-2); display: block; margin-top: -2px; }
 
@@ -362,6 +363,9 @@ a { color: var(--accent); }
 .rank-num.top1 { color: #ffd700; }
 .rank-num.top2 { color: #94a3b8; }
 .rank-num.top3 { color: #b87333; }
+.lb-player-cell { display: flex; align-items: center; gap: 0.5rem; }
+.player-avatar { border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.player-avatar-placeholder { display: inline-block; flex-shrink: 0; }
 .lb-player-link { background: none; border: none; color: var(--text); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
 .lb-player-link:hover { color: var(--accent); text-decoration: underline; }
 .lb-player-link.picks-locked { cursor: default; opacity: 0.7; }
@@ -415,10 +419,11 @@ a { color: var(--accent); }
 .reset-hint { font-size: 0.75rem; color: var(--text-3); margin-left: 0.6rem; }
 
 /* LOGIN OVERLAY */
-.login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 200; }
-.login-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: 12px; padding: 2rem 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
+.login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: flex-start; justify-content: center; z-index: 200; overflow-y: auto; padding: 2rem 1rem; }
+.login-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: 12px; padding: 2rem 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); margin: auto; }
 .login-brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; justify-content: center; }
 .login-brand-icon  { font-size: 2.2rem; line-height: 1; }
+.login-brand-icon-img { width: 64px; height: 64px; object-fit: contain; }
 .login-brand-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
 .login-brand-sub   { font-size: 0.75rem; color: var(--text-2); }
 .login-heading { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; text-align: center; }
@@ -491,6 +496,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .lp-badge { font-size: 0.65rem; font-weight: 700; background: rgba(255,215,0,0.15); color: var(--gold); padding: 1px 5px; border-radius: 4px; }
 .lp-name { font-weight: 600; flex: 1; }
 .lp-score { font-size: 0.72rem; color: var(--text-2); margin-left: auto; }
+.lp-avatar { display: flex; align-items: center; flex-shrink: 0; }
 
 /* ── BRACKET SUB-VIEW TOGGLE ───────────────────────────────── */
 .bracket-toggle-bar { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
@@ -514,13 +520,17 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .group-md-date { font-weight: 500; letter-spacing: 0; color: var(--text-3); opacity: 0.85; text-transform: none; font-size: 0.63rem; }
 
 .group-game-row { display: flex; align-items: center; padding: 0.2rem 0.6rem; gap: 0.25rem; font-size: 0.75rem; }
-.group-game-team { flex: 1; display: flex; align-items: center; gap: 0.25rem; color: var(--text-2); padding: 0.15rem 0.3rem; border-radius: 3px; transition: background 0.1s; }
+.group-game-team { flex: 1; display: flex; align-items: center; gap: 0.25rem; color: var(--text); padding: 0.15rem 0.3rem; border-radius: 3px; transition: background 0.1s; }
 .group-game-team.winner { color: var(--green); font-weight: 600; }
 .group-game-team.loser  { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
 .group-game-team.picked { background: rgba(0,166,81,0.1); }
 .group-game-team:last-child { justify-content: flex-end; flex-direction: row-reverse; }
 .group-game-vs  { font-size: 0.65rem; color: var(--text-3); flex-shrink: 0; }
 .group-game-seed { font-size: 0.65rem; font-weight: 700; color: var(--text-3); }
+.group-game-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-game-goal { font-size: 0.72rem; font-weight: 700; color: var(--text-2); margin-left: auto; padding-left: 0.3rem; flex-shrink: 0; }
+.group-game-team.winner .group-game-goal { color: var(--green); }
+.group-game-team.loser  .group-game-goal { color: var(--text-3); }
 
 /* ── GROUP STAGE PICKS VIEW ────────────────────────────────── */
 .picks-groups-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 0.5rem 0; }
@@ -583,3 +593,15 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .team-slot.loser  .t-score { color: var(--text-3); }
 .pick-card-score { font-size: 0.72rem; font-weight: 700; color: var(--text-2); background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px; margin-right: 0.25rem; letter-spacing: 0.02em; }
 .result-score-badge { font-size: 0.72rem; font-weight: 700; color: var(--accent); background: rgba(0,166,81,0.12); padding: 1px 5px; border-radius: 3px; margin-left: 0.3rem; }
+
+.lb-round-score.round-best { color: var(--green); font-weight: 700; background: rgba(46,204,113,0.1); border-radius: 3px; }
+td.round-best .lb-total { color: var(--green); font-weight: 700; }
+td.round-best { background: rgba(46,204,113,0.07); border-radius: 3px; }
+
+/* FIFA Live Scores */
+a.nav-btn.fifa-link { text-decoration: none; color: #4fc3f7; }
+a.nav-btn.fifa-link:hover { background: rgba(79,195,247,0.1); color: #4fc3f7; }
+.live-badge { font-size: 0.65rem; font-weight: 700; color: #fff; background: #e53935; border-radius: 3px; padding: 1px 5px; letter-spacing: 0.05em; margin-bottom: 3px; display: inline-block; animation: livePulse 1.2s ease-in-out infinite; }
+.live-badge-inline { font-size: 0.6rem; font-weight: 700; color: #fff; background: #e53935; border-radius: 3px; padding: 1px 4px; margin-left: 4px; animation: livePulse 1.2s ease-in-out infinite; }
+.t-score.live, .group-game-goal.live { color: #ef9a9a; }
+@keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
