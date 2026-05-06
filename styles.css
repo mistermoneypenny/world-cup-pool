@@ -513,7 +513,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 
 .group-teams-list { padding: 0.4rem 0.6rem 0.2rem; border-bottom: 1px solid var(--border); }
 .group-team-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.15rem 0; font-size: 0.78rem; color: var(--text-2); }
-.group-team-rank { font-size: 0.68rem; font-weight: 700; color: var(--accent); background: rgba(0,166,81,0.12); padding: 1px 4px; border-radius: 3px; min-width: 22px; text-align: center; }
+.group-team-rank { font-size: 0.68rem; font-weight: 700; color: var(--accent); background: rgba(0,166,81,0.12); padding: 1px 4px; border-radius: 3px; width: 22px; min-width: 22px; flex-shrink: 0; text-align: center; }
 .group-team-name { font-weight: 500; color: var(--text); flex: 1; min-width: 0; }
 
 .group-md-label { display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-3); text-transform: uppercase; padding: 0.35rem 0.6rem 0.1rem; }
@@ -524,7 +524,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .group-game-team.winner { color: var(--green); font-weight: 600; }
 .group-game-team.loser  { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
 .group-game-team.picked { background: rgba(0,166,81,0.1); }
-.group-game-team:last-child { justify-content: flex-end; flex-direction: row-reverse; }
+.group-game-team:last-child { justify-content: flex-start; }
 .group-game-vs  { font-size: 0.65rem; color: var(--text-3); flex-shrink: 0; }
 .group-game-seed { font-size: 0.65rem; font-weight: 700; color: var(--text-3); }
 .group-game-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
