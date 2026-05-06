@@ -16,6 +16,17 @@ const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 app.use(express.json({ limit: '1mb' }));
+
+// Prevent browsers from caching JS/CSS so code changes always take effect
+app.use((req, res, next) => {
+  if (/\.(js|css)$/.test(req.path)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 app.use(express.static(__dirname));
 
 // ── IN-MEMORY STATE CACHE ────────────────────────────────────
