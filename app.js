@@ -68,125 +68,124 @@ const SF_PAIRINGS = [
 
 // ── TEAM DATA ─────────────────────────────────────────────────
 // GROUP_TEAMS: 48 teams in 12 groups (A–L), 4 teams per group.
-// Seed = FIFA Coca-Cola World Ranking (lower = stronger).
-// Groups reflect expected WC 2026 draw with seeded pots.
+// Seed = FIFA Coca-Cola World Ranking (April 2026). Official draw Dec 5, 2025.
 const GROUP_TEAMS = {
   A: [
-    { seed:  2, name: 'Argentina'    },
-    { seed: 14, name: 'Colombia'     },
-    { seed: 39, name: 'Serbia'       },
-    { seed: 51, name: 'Costa Rica'   },
+    { seed: 15, name: 'Mexico'         },
+    { seed: 25, name: 'South Korea'    },
+    { seed: 59, name: 'South Africa'   },
+    { seed: 38, name: 'Czech Republic' },
   ],
   B: [
-    { seed:  3, name: 'France'       },
-    { seed:  8, name: 'Morocco'      },
-    { seed: 24, name: 'Austria'      },
-    { seed: 65, name: 'Honduras'     },
+    { seed: 19, name: 'Switzerland'    },
+    { seed: 30, name: 'Canada'         },
+    { seed: 55, name: 'Qatar'          },
+    { seed: 63, name: 'Bosnia'         },
   ],
   C: [
-    { seed:  4, name: 'England'      },
-    { seed: 15, name: 'USA'          },
-    { seed: 25, name: 'Turkey'       },
-    { seed: 33, name: 'Panama'       },
+    { seed:  6, name: 'Brazil'         },
+    { seed:  8, name: 'Morocco'        },
+    { seed: 43, name: 'Scotland'       },
+    { seed: 83, name: 'Haiti'          },
   ],
   D: [
-    { seed:  1, name: 'Spain'        },
-    { seed: 16, name: 'Mexico'       },
-    { seed: 34, name: 'Poland'       },
-    { seed: 85, name: 'New Zealand'  },
+    { seed: 16, name: 'USA'            },
+    { seed: 27, name: 'Australia'      },
+    { seed: 41, name: 'Paraguay'       },
+    { seed: 22, name: 'Turkey'         },
   ],
   E: [
-    { seed:  5, name: 'Brazil'       },
-    { seed: 21, name: 'Denmark'      },
-    { seed: 29, name: 'Canada'       },
-    { seed: 60, name: 'South Africa' },
+    { seed: 10, name: 'Germany'        },
+    { seed: 23, name: 'Ecuador'        },
+    { seed: 34, name: 'Ivory Coast'    },
+    { seed: 82, name: 'Curacao'        },
   ],
   F: [
-    { seed:  6, name: 'Portugal'     },
-    { seed: 18, name: 'Switzerland'  },
-    { seed: 37, name: 'Ivory Coast'  },
-    { seed: 72, name: 'Ghana'        },
+    { seed:  7, name: 'Netherlands'    },
+    { seed: 18, name: 'Japan'          },
+    { seed: 44, name: 'Tunisia'        },
+    { seed: 37, name: 'Sweden'         },
   ],
   G: [
-    { seed:  7, name: 'Netherlands'  },
-    { seed: 19, name: 'Japan'        },
-    { seed: 50, name: 'Venezuela'    },
-    { seed: 47, name: 'Tunisia'      },
+    { seed:  9, name: 'Belgium'        },
+    { seed: 20, name: 'Iran'           },
+    { seed: 29, name: 'Egypt'          },
+    { seed: 85, name: 'New Zealand'    },
   ],
   H: [
-    { seed:  9, name: 'Belgium'      },
-    { seed: 12, name: 'Senegal'      },
-    { seed: 26, name: 'Nigeria'      },
-    { seed: 52, name: 'Uzbekistan'   },
+    { seed:  2, name: 'Spain'          },
+    { seed: 17, name: 'Uruguay'        },
+    { seed: 61, name: 'Saudi Arabia'   },
+    { seed: 68, name: 'Cape Verde'     },
   ],
   I: [
-    { seed: 13, name: 'Italy'        },
-    { seed: 22, name: 'South Korea'  },
-    { seed: 31, name: 'Egypt'        },
-    { seed: 58, name: 'Iraq'         },
+    { seed:  1, name: 'France'         },
+    { seed: 13, name: 'Senegal'        },
+    { seed: 31, name: 'Norway'         },
+    { seed: 57, name: 'Iraq'           },
   ],
   J: [
-    { seed: 10, name: 'Germany'      },
-    { seed: 23, name: 'Ecuador'      },
-    { seed: 61, name: 'Saudi Arabia' },
-    { seed: 64, name: 'Jordan'       },
+    { seed:  3, name: 'Argentina'      },
+    { seed: 24, name: 'Austria'        },
+    { seed: 28, name: 'Algeria'        },
+    { seed: 64, name: 'Jordan'         },
   ],
   K: [
-    { seed: 11, name: 'Croatia'      },
-    { seed: 20, name: 'Iran'         },
-    { seed: 45, name: 'Cameroon'     },
-    { seed: 76, name: 'Bolivia'      },
+    { seed:  5, name: 'Portugal'       },
+    { seed: 12, name: 'Colombia'       },
+    { seed: 49, name: 'Uzbekistan'     },
+    { seed: 46, name: 'DR Congo'       },
   ],
   L: [
-    { seed: 17, name: 'Uruguay'      },
-    { seed: 27, name: 'Australia'    },
-    { seed: 28, name: 'Algeria'      },
-    { seed: 70, name: 'Jamaica'      },
+    { seed:  4, name: 'England'        },
+    { seed: 11, name: 'Croatia'        },
+    { seed: 33, name: 'Panama'         },
+    { seed: 73, name: 'Ghana'          },
   ],
 };
 
-// INITIAL_TEAMS: 32 knockout-round teams, 8 per quadrant, listed in R32 matchup pairs.
-// Seeds = FIFA Coca-Cola Rankings. Admin updates these after the group stage.
+// INITIAL_TEAMS: 32 projected knockout-round teams, 8 per quadrant, in R32 matchup pairs.
+// Seeds = FIFA Coca-Cola Rankings (Apr 2026). Admin updates after group stage.
 const INITIAL_TEAMS = {
   A: [
-    { seed:  2, name: 'France'       },
-    { seed: 37, name: 'Costa Rica'   },
-    { seed:  7, name: 'Netherlands'  },
-    { seed: 13, name: 'Colombia'     },
-    { seed: 14, name: 'Morocco'      },
-    { seed: 21, name: 'South Korea'  },
-    { seed:  1, name: 'Argentina'    },
-    { seed: 22, name: 'Ecuador'      },
+    { seed:  1, name: 'France'         },
+    { seed: 38, name: 'Czech Republic' },
+    { seed:  5, name: 'Portugal'       },
+    { seed: 12, name: 'Colombia'       },
+    { seed:  9, name: 'Belgium'        },
+    { seed: 29, name: 'Egypt'          },
+    { seed:  3, name: 'Argentina'      },
+    { seed: 28, name: 'Algeria'        },
   ],
   B: [
-    { seed:  3, name: 'England'      },
-    { seed: 23, name: 'Iran'         },
-    { seed: 10, name: 'Germany'      },
-    { seed: 15, name: 'USA'          },
-    { seed:  8, name: 'Belgium'      },
-    { seed: 20, name: 'Senegal'      },
-    { seed:  5, name: 'Brazil'       },
-    { seed: 29, name: 'Canada'       },
+    { seed:  4, name: 'England'        },
+    { seed: 11, name: 'Croatia'        },
+    { seed:  7, name: 'Netherlands'    },
+    { seed: 18, name: 'Japan'          },
+    { seed:  2, name: 'Spain'          },
+    { seed: 17, name: 'Uruguay'        },
+    { seed:  6, name: 'Brazil'         },
+    { seed:  8, name: 'Morocco'        },
   ],
   C: [
-    { seed:  4, name: 'Spain'        },
-    { seed: 28, name: 'Poland'       },
-    { seed:  6, name: 'Portugal'     },
-    { seed: 16, name: 'Mexico'       },
-    { seed: 19, name: 'Japan'        },
-    { seed: 36, name: 'Algeria'      },
-    { seed:  9, name: 'Italy'        },
-    { seed: 35, name: 'Cameroon'     },
+    { seed: 10, name: 'Germany'        },
+    { seed: 34, name: 'Ivory Coast'    },
+    { seed: 15, name: 'Mexico'         },
+    { seed: 25, name: 'South Korea'    },
+    { seed: 19, name: 'Switzerland'    },
+    { seed: 30, name: 'Canada'         },
+    { seed: 16, name: 'USA'            },
+    { seed: 22, name: 'Turkey'         },
   ],
   D: [
-    { seed: 12, name: 'Uruguay'      },
-    { seed: 32, name: 'Nigeria'      },
-    { seed: 11, name: 'Croatia'      },
-    { seed: 24, name: 'Australia'    },
-    { seed: 17, name: 'Denmark'      },
-    { seed: 34, name: 'Saudi Arabia' },
-    { seed: 18, name: 'Switzerland'  },
-    { seed: 25, name: 'Serbia'       },
+    { seed: 13, name: 'Senegal'        },
+    { seed: 27, name: 'Australia'      },
+    { seed: 20, name: 'Iran'           },
+    { seed: 31, name: 'Norway'         },
+    { seed: 23, name: 'Ecuador'        },
+    { seed: 37, name: 'Sweden'         },
+    { seed: 24, name: 'Austria'        },
+    { seed: 33, name: 'Panama'         },
   ],
 };
 
@@ -199,13 +198,27 @@ const ALL_TEAM_NAMES = Object.values(GROUP_TEAMS)
 // Resolve the __ALL_TEAMS__ placeholder in BONUS_CONFIG
 BONUS_CONFIG.sf[0].options = ALL_TEAM_NAMES;
 
+// ── PLAYER AVATARS ────────────────────────────────────────────
+const PLAYER_AVATARS = {
+  'Matthias': 'Matthias.png',
+  'Diego':    'Diego.png',
+  'Lorenz':   'Lorenz.png',
+  'Cole':     'Cole.png',
+  'Commish':  'David.png',
+};
+
+function playerAvatarHtml(playerName, size = 32) {
+  const file = PLAYER_AVATARS[playerName];
+  if (!file) return `<span class="player-avatar-placeholder" style="width:${size}px;height:${size}px"></span>`;
+  return `<img src="${file}" alt="${esc(playerName)}" class="player-avatar" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+}
+
 const DEFAULT_PLAYERS = [
-  { id: 'player1', name: 'Commish' },
-  { id: 'player2', name: 'Etty'    },
-  { id: 'player3', name: 'Colm'    },
-  { id: 'player4', name: 'Bergman' },
-  { id: 'player5', name: 'Josh'    },
-  { id: 'player6', name: 'Michael' },
+  { id: 'player1', name: 'Commish'  },
+  { id: 'player2', name: 'Lorenz'   },
+  { id: 'player3', name: 'Diego'    },
+  { id: 'player4', name: 'Cole'     },
+  { id: 'player5', name: 'Matthias' },
 ];
 
 const STORAGE_KEY = 'wcPool2026';
@@ -225,6 +238,7 @@ let state = {
   currentPlayer: null,
   results: {},
   scores: {},   // { [gameId]: { t1: number, t2: number } }
+  liveScores: {}, // ESPN live data — not persisted
   picks: {},
   pendingPicks: {},
   games: {},
@@ -612,6 +626,7 @@ function renderLoginOverlay() {
     btn.className = 'player-btn' + (adminPlayer ? ' admin' : '');
     btn.innerHTML = `
       ${adminPlayer ? '<span class="lp-badge">&#128081; Admin</span>' : ''}
+      <span class="lp-avatar">${playerAvatarHtml(p.name, 56)}</span>
       <span class="lp-name">${esc(p.name)}</span>
       <span class="lp-score">${total > 0 ? fmtScore(total) + ' pts' : 'No picks yet'}</span>
       ${hasPin ? '<span class="lp-lock">&#128274;</span>' : ''}`;
@@ -901,6 +916,14 @@ function renderGroupStageBracket(wrapper) {
       gameRow.className = 'group-game-row';
 
       const sc = state.scores[game.id];
+      const liveSc = !sc ? findGameScore(t1?.name, t2?.name) : null;
+      const isLiveGroup = liveSc && liveSc.status === 'in';
+      if (isLiveGroup) {
+        const badge = document.createElement('span');
+        badge.className = 'live-badge-inline';
+        badge.textContent = liveSc.statusDetail || 'LIVE';
+        gameRow.appendChild(badge);
+      }
       [t1, t2].forEach((team, idx) => {
         const teamEl = document.createElement('span');
         teamEl.className = 'group-game-team';
@@ -911,20 +934,13 @@ function renderGroupStageBracket(wrapper) {
           else teamEl.classList.add('loser');
         }
         if (playerPick === team.name) teamEl.classList.add('picked');
-        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span>${esc(team.name)}`;
+        const displaySc = sc !== undefined ? sc : liveSc;
+        const goalStr = displaySc !== undefined
+          ? (idx === 0 ? displaySc.t1 : displaySc.t2)
+          : (isDraw && idx === 0 ? 'D' : '');
+        const scoreClass = `group-game-goal${isLiveGroup ? ' live' : ''}`;
+        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span><span class="group-game-name">${esc(team.name)}</span>${goalStr !== '' ? `<span class="${scoreClass}">${goalStr}</span>` : ''}`;
         gameRow.appendChild(teamEl);
-        if (idx === 0) {
-          // Show score if available, otherwise show v/D
-          const vs = document.createElement('span');
-          vs.className = 'group-game-vs' + (isDraw ? ' draw-result' : '');
-          if (sc !== undefined) {
-            vs.textContent = `${sc.t1}–${sc.t2}`;
-            vs.classList.add('has-score');
-          } else {
-            vs.textContent = isDraw ? 'D' : 'v';
-          }
-          gameRow.appendChild(vs);
-        }
       });
       card.appendChild(gameRow);
     });
@@ -1003,6 +1019,14 @@ function buildMatchup(game) {
   card.className = 'matchup';
 
   const sc = state.scores[game.id];
+  const liveSc = !sc ? findGameScore(t1?.name, t2?.name) : null;
+  const isLive = liveSc && liveSc.status === 'in';
+  if (isLive) {
+    const badge = document.createElement('div');
+    badge.className = 'live-badge';
+    badge.textContent = liveSc.statusDetail || 'LIVE';
+    card.appendChild(badge);
+  }
   [{ team: t1 }, { team: t2 }].forEach(({ team }, idx) => {
     const row = document.createElement('div');
     row.className = 'team-slot';
@@ -1017,7 +1041,8 @@ function buildMatchup(game) {
       const pickedThis = playerPick === team.name;
       if (pickedThis && isWinner) row.classList.add('pick-correct');
       if (pickedThis && isLoser)  row.classList.add('pick-wrong');
-      const goals = sc !== undefined ? `<span class="t-score">${idx === 0 ? sc.t1 : sc.t2}</span>` : '';
+      const displaySc = sc !== undefined ? sc : liveSc;
+      const goals = displaySc !== undefined ? `<span class="t-score${isLive ? ' live' : ''}">${idx === 0 ? displaySc.t1 : displaySc.t2}</span>` : '';
       row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${esc(team.name)}</span>${goals}`;
     }
     card.appendChild(row);
@@ -1110,7 +1135,66 @@ function buildBracketCenter() {
 
 // ── RULES RENDERING ───────────────────────────────────────────
 
-const DEFAULT_RULES_PLACEHOLDER = `Welcome to the World Cup 2026 Pool! Rules will be posted here by the Commissioner.`;
+const DEFAULT_RULES_PLACEHOLDER = `WORLD CUP 2026 POOL — OFFICIAL RULES
+
+HOW IT WORKS
+Before each round begins, every player submits their picks for that round. Once the round is locked, picks can no longer be changed. Points are awarded based on correct picks, with bigger rewards for later rounds and for picking upsets.
+
+PICK DEADLINES
+Picks must be submitted before the round is locked by the Commissioner. Late picks will not be accepted. Make sure you're logged in and have saved your picks before the deadline.
+
+SCORING — BASE POINTS
+Group Stage: 1 point per correct pick
+Round of 32: 2 points per correct pick
+Round of 16: 3 points per correct pick
+Quarterfinals: 5 points per correct pick
+Semifinals: 8 points per correct pick
+Final: 15 points per correct pick
+
+In the Group Stage you may also pick a Draw. A correct Draw pick earns 1 point.
+
+UPSET BONUS
+Picking an underdog (higher FIFA seed number) to win earns bonus points in every round — including the Group Stage. The formula is:
+  ((Underdog seed − Favourite seed) + Base points) × Round multiplier
+
+Round multipliers: GRP ×1.0 · R32 ×1.2 · R16 ×1.4 · QF ×1.6 · SF ×1.8 · Final ×2.0
+
+Example: Picking seed #59 (South Africa) to beat seed #15 (Mexico) in the Group Stage:
+  ((59 − 15) + 1) × 1.0 = 45 points
+
+Example: Picking seed #34 (Ivory Coast) to beat seed #10 (Germany) in the Round of 32:
+  ((34 − 10) + 2) × 1.2 = 31.2 points
+
+Note: A correct Draw pick always earns a flat 1 point — no upset bonus applies to draws.
+
+BONUS QUESTIONS
+Each round includes bonus questions for extra points. Answers must be submitted before the round locks.
+
+Group Stage
+  · Total number of draws in the group stage — 8 pts
+  · Confederation with the most group stage wins — 6 pts
+
+Round of 32
+  · Most successful confederation from R32 onward — 4 pts
+
+Round of 16
+  · Number of penalty shootouts in the Round of 32 — 6 pts
+
+Quarterfinals
+  · Golden Boot leader (player name) — 10 pts
+  · Name all four semi-finalists — 20 pts
+
+Semifinals
+  · Nation with the most total goals in the tournament — 6 pts
+  · Total goals scored in both semi-finals — 6 pts
+
+STANDINGS
+The leaderboard shows total points earned plus remaining possible points. Players are ranked by total score, with possible points used as a tiebreaker.
+
+GENERAL RULES
+· The Commissioner's decisions are final.
+· All picks are private until the round is locked.
+· Have fun and may the best picker win!`;
 
 function renderRules() {
   const body        = document.getElementById('rules-body');
@@ -1586,6 +1670,14 @@ function renderLbBody() {
   });
   rows.sort((a, b) => b.total.total - a.total.total);
 
+  // Best score per round (for green highlight)
+  const roundBest = {};
+  ROUND_CONFIG.forEach(cfg => {
+    let best = 0;
+    rows.forEach(r => { if (r.byRound[cfg.id].score > best) best = r.byRound[cfg.id].score; });
+    if (best > 0) roundBest[cfg.id] = best;
+  });
+
   const table = document.createElement('table');
   table.className = 'lb-table';
 
@@ -1622,8 +1714,9 @@ function renderLbBody() {
     const btnTitle   = cantPeek ? ' title="You can only view your own picks"'
       : linkLocked ? ' title="Picks revealed when the round is closed"' : '';
 
+    const avatar = playerAvatarHtml(row.player.name, 64);
     let tdHTML = `<td class="rank-num ${rankCls}">${rankIcon}</td>
-      <td><button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button></td>`;
+      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button></div></td>`;
 
     if (state.lbRound === 'all') {
       const maxPossible = row.total.total + row.total.possible;
@@ -1637,15 +1730,17 @@ function renderLbBody() {
         <td class="lb-possible">${fmtScore(maxPossible)}</td>`;
       ROUND_CONFIG.forEach(cfg => {
         const s = row.byRound[cfg.id];
+        const isBest = roundBest[cfg.id] && s.score === roundBest[cfg.id];
         const wlTip = s.correct || s.wrong ? ` title="${s.correct}✔ ${s.wrong}✘"` : '';
-        tdHTML += `<td class="lb-round-score num ${s.score === 0 && !s.correct && !s.wrong ? 'zero' : ''}"${wlTip}>${fmtScore(s.score)}</td>`;
+        tdHTML += `<td class="lb-round-score num ${s.score === 0 && !s.correct && !s.wrong ? 'zero' : ''}${isBest ? ' round-best' : ''}"${wlTip}>${fmtScore(s.score)}</td>`;
       });
     } else {
       const s = row.byRound[state.lbRound];
+      const isBest = roundBest[state.lbRound] && s.score === roundBest[state.lbRound];
       const wl = s.correct || s.wrong
         ? `<div class="lb-wl-row"><span class="lb-w">${s.correct} correct</span> <span class="lb-l">${s.wrong} wrong</span></div>`
         : '';
-      tdHTML += `<td class="num"><span class="lb-total">${fmtScore(s.score)}</span>${wl}</td>
+      tdHTML += `<td class="num${isBest ? ' round-best' : ''}"><span class="lb-total">${fmtScore(s.score)}</span>${wl}</td>
         <td class="lb-possible num">${fmtScore(s.score + s.possible)}</td>`;
     }
 
@@ -2628,6 +2723,10 @@ async function init() {
     loadDemoData();
     saveState();
   }
+  if (!state.rulesText) {
+    state.rulesText = DEFAULT_RULES_PLACEHOLDER;
+    saveState();
+  }
   if (!state.currentPlayer && state.players.length) {
     state.currentPlayer = state.players[0].id;
   }
@@ -2653,6 +2752,7 @@ async function init() {
   }
 
   startPolling();
+  startScoresPolling();
 }
 
 function setupOfflineDetection() {
@@ -2718,6 +2818,90 @@ async function pollServer() {
     if (JSON.stringify(state.r32Teams) !== hadR32) rebuildGames();
     renderCurrentView();
   } catch (e) { /* silently ignore */ }
+}
+
+// ── LIVE SCORES (ESPN) ────────────────────────────────────────
+const LIVE_TEAM_ALIASES = {
+  'USA':          ['united states', 'united states of america'],
+  'Ivory Coast':  ["côte d'ivoire", "cote d'ivoire", 'ivory coast'],
+  'South Korea':  ['korea republic', 'republic of korea'],
+  'Iran':         ['ir iran'],
+  'Turkey':       ['türkiye', 'turkiye'],
+  'Czech Republic': ['czechia', 'czech republic'],
+  'Curacao':      ['curaçao'],
+  'Cape Verde':   ['cabo verde'],
+  'DR Congo':     ['congo dr', 'democratic republic of congo', 'dr congo'],
+  'Bosnia':       ['bosnia and herzegovina', 'bosnia & herzegovina'],
+};
+
+function matchLiveTeam(espnName, poolName) {
+  const e = espnName.toLowerCase().trim();
+  const p = poolName.toLowerCase().trim();
+  if (e === p || e.includes(p) || p.includes(e)) return true;
+  const aliases = LIVE_TEAM_ALIASES[poolName];
+  if (aliases) return aliases.some(a => e === a || e.includes(a) || a.includes(e));
+  return false;
+}
+
+function findGameScore(t1Name, t2Name) {
+  if (!t1Name || !t2Name || !state.liveScores) return null;
+  for (const sc of Object.values(state.liveScores)) {
+    const fwd = matchLiveTeam(sc.t1.name, t1Name) && matchLiveTeam(sc.t2.name, t2Name);
+    const rev = matchLiveTeam(sc.t1.name, t2Name) && matchLiveTeam(sc.t2.name, t1Name);
+    if (!fwd && !rev) continue;
+    // Normalise so t1 always corresponds to our t1
+    return fwd
+      ? { t1: sc.t1.score, t2: sc.t2.score, status: sc.status, statusDetail: sc.statusDetail }
+      : { t1: sc.t2.score, t2: sc.t1.score, status: sc.status, statusDetail: sc.statusDetail };
+  }
+  return null;
+}
+
+let scoresTimer = null;
+
+async function fetchLiveScores() {
+  try {
+    const resp = await fetch('/api/scores');
+    if (!resp.ok) return;
+    const scores = await resp.json();
+    if (!scores || !Object.keys(scores).length) return;
+    state.liveScores = scores;
+    autoSetResultsFromScores();
+    renderCurrentView();
+  } catch (e) { /* ignore */ }
+}
+
+function autoSetResultsFromScores() {
+  if (!state.liveScores || !Object.keys(state.liveScores).length) return;
+  let changed = 0;
+
+  for (const game of Object.values(state.games)) {
+    if (state.results[game.id] !== undefined) continue;
+    const { t1, t2 } = getTeams(game);
+    if (!t1 || !t2) continue;
+    const sc = findGameScore(t1.name, t2.name);
+    if (!sc || sc.status !== 'post') continue;
+
+    if (game.round === 'groups') {
+      state.results[game.id] = sc.t1 > sc.t2 ? t1.name : sc.t2 > sc.t1 ? t2.name : 'Draw';
+    } else {
+      if (sc.t1 === sc.t2) continue; // extra time / pens still in progress
+      state.results[game.id] = sc.t1 > sc.t2 ? t1.name : t2.name;
+    }
+    changed++;
+  }
+
+  if (changed > 0) {
+    fixInvalidPicks();
+    saveState();
+    showToast(`${changed} result${changed > 1 ? 's' : ''} updated from FIFA`, 'success');
+  }
+}
+
+function startScoresPolling() {
+  fetchLiveScores();
+  if (scoresTimer) clearInterval(scoresTimer);
+  scoresTimer = setInterval(fetchLiveScores, 60000);
 }
 
 document.addEventListener('DOMContentLoaded', init);
