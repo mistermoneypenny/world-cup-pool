@@ -557,7 +557,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 /* ── GROUP STANDINGS TABLE ─────────────────────────────────── */
 .group-standing-hdr { opacity: 0.5; font-size: 0.65rem !important; border-bottom: 1px solid var(--border); padding-bottom: 0.2rem; margin-bottom: 0.1rem; }
 .group-standing-row { font-size: 0.78rem; }
-.group-standing-row.advancing { border-left: 2px solid var(--accent); padding-left: 4px; }
+.group-standing-row.advancing { box-shadow: inset 2px 0 0 var(--accent); }
 .group-standing-stat { min-width: 18px; text-align: center; font-size: 0.72rem; color: var(--text-2); flex-shrink: 0; }
 .gsp-pts { font-weight: 700; color: var(--text) !important; }
 
