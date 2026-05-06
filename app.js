@@ -1569,10 +1569,18 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     const ptsTxt = Number.isInteger(optPts)
       ? `${optPts} pt${optPts !== 1 ? 's' : ''}` : `${optPts} pts`;
 
+    // Individual team score (goals) for this option
+    const teamGoal = (!isDraw && sc !== undefined)
+      ? String(team === t1 ? sc.t1 : sc.t2)
+      : '';
+
+    // Always emit result span (even empty) so columns stay aligned
+    const resultSpan = resultMark || '<span class="pick-o-result"></span>';
+
     if (isDraw) {
-      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw</span><span class="pick-o-pts">${ptsTxt}</span>${resultMark}`;
+      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw</span><span class="pick-o-score"></span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}`;
     } else {
-      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span><span class="pick-o-name">${esc(team.name)}</span><span class="pick-o-pts">${ptsTxt}</span>${resultMark}`;
+      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span><span class="pick-o-name">${esc(team.name)}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}`;
     }
     row.insertBefore(radio, row.firstChild);
 

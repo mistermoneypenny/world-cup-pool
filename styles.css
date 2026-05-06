@@ -325,7 +325,7 @@ a { color: var(--accent); }
 .admin-view-banner { display: flex; align-items: center; justify-content: space-between; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.25); border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.8rem; color: var(--gold); margin-bottom: 0.75rem; }
 .admin-view-close { background: none; border: none; color: var(--text-2); font-size: 0.8rem; cursor: pointer; padding: 0; }
 .admin-view-close:hover { color: var(--text); }
-.picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.6rem; }
+.picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
 .pick-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .pick-card-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0.3rem 0.6rem; background: var(--surface-2); border-bottom: 1px solid var(--border); }
 .pick-card-hdr-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); }
@@ -338,10 +338,11 @@ a { color: var(--accent); }
 .pick-option:hover:not(.disabled) { background: var(--surface-2); }
 .pick-option.result-correct { background: rgba(46,204,113,0.1); }
 .pick-option.result-wrong   { background: rgba(231,76,60,0.07); }
-.pick-o-seed { font-size: 0.65rem; font-weight: 700; color: var(--text-3); min-width: 14px; }
-.pick-o-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pick-o-pts  { font-size: 0.7rem; color: var(--text-2); white-space: nowrap; }
-.pick-o-result { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; }
+.pick-o-seed  { font-size: 0.65rem; font-weight: 700; color: var(--text-3); width: 14px; flex-shrink: 0; }
+.pick-o-name  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-o-score { font-size: 0.78rem; font-weight: 700; color: var(--text-2); width: 18px; text-align: center; flex-shrink: 0; }
+.pick-o-pts   { font-size: 0.7rem; color: var(--text-2); white-space: nowrap; flex-shrink: 0; text-align: right; }
+.pick-o-result { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; flex-shrink: 0; }
 .pick-o-result.correct { background: rgba(46,204,113,0.2); color: var(--green); }
 .pick-o-result.wrong   { background: rgba(231,76,60,0.2);  color: var(--red); }
 .pick-o-result.won     { background: rgba(46,204,113,0.1); color: var(--green); font-size: 0.6rem; }
