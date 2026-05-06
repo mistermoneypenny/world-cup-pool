@@ -1545,10 +1545,10 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
       const isCorrectResult = isDraw ? isDrawResult : (winner && winner.name === team.name);
       if (isPlayerPick) {
         if (isCorrectResult) {
-          resultMark = '<span class="pick-o-result correct">✔ Correct</span>';
+          resultMark = '<span class="pick-o-result correct">✓ Won</span>';
           row.classList.add('result-correct');
         } else {
-          resultMark = '<span class="pick-o-result wrong">✘ Wrong</span>';
+          resultMark = '<span class="pick-o-result wrong">✗ Out</span>';
           row.classList.add('result-wrong');
         }
       } else if (isCorrectResult) {
