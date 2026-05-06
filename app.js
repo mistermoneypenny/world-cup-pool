@@ -4,7 +4,7 @@
    Structure: 48-team tournament — Group Stage + Knockout.
    GROUP_TEAMS: 12 groups (A–L), 4 teams each, 6 round-robin
      games per group = 72 total group stage games.
-     Seeds = FIFA Coca-Cola World Rankings (lower = stronger).
+     Seeds = FIFA Draw Pots (1 = strongest, 4 = weakest).
    INITIAL_TEAMS: 32 knockout teams, 4 quadrants (A/B/C/D),
      8 per quadrant in R32 matchup pairs. Admin updates these
      after the group stage concludes.
@@ -68,124 +68,126 @@ const SF_PAIRINGS = [
 
 // ── TEAM DATA ─────────────────────────────────────────────────
 // GROUP_TEAMS: 48 teams in 12 groups (A–L), 4 teams per group.
-// Seed = FIFA Coca-Cola World Ranking (April 2026). Official draw Dec 5, 2025.
+// Seed = FIFA Draw Pot (1–4). Official draw Dec 5, 2025.
+// Pot 1: hosts (USA/Mexico/Canada) + top 9 ranked nations.
+// Pot 2–4: remaining 36 teams ranked by FIFA Coca-Cola Rankings.
 const GROUP_TEAMS = {
   A: [
-    { seed: 15, name: 'Mexico'         },
-    { seed: 25, name: 'South Korea'    },
-    { seed: 59, name: 'South Africa'   },
-    { seed: 38, name: 'Czech Republic' },
+    { seed: 1, name: 'Mexico'         },
+    { seed: 2, name: 'South Korea'    },
+    { seed: 3, name: 'Czech Republic' },
+    { seed: 4, name: 'South Africa'   },
   ],
   B: [
-    { seed: 19, name: 'Switzerland'    },
-    { seed: 30, name: 'Canada'         },
-    { seed: 55, name: 'Qatar'          },
-    { seed: 63, name: 'Bosnia'         },
+    { seed: 1, name: 'Canada'         },
+    { seed: 2, name: 'Switzerland'    },
+    { seed: 3, name: 'Qatar'          },
+    { seed: 4, name: 'Bosnia'         },
   ],
   C: [
-    { seed:  6, name: 'Brazil'         },
-    { seed:  8, name: 'Morocco'        },
-    { seed: 43, name: 'Scotland'       },
-    { seed: 83, name: 'Haiti'          },
+    { seed: 1, name: 'Brazil'         },
+    { seed: 2, name: 'Morocco'        },
+    { seed: 3, name: 'Scotland'       },
+    { seed: 4, name: 'Haiti'          },
   ],
   D: [
-    { seed: 16, name: 'USA'            },
-    { seed: 27, name: 'Australia'      },
-    { seed: 41, name: 'Paraguay'       },
-    { seed: 22, name: 'Turkey'         },
+    { seed: 1, name: 'USA'            },
+    { seed: 2, name: 'Turkey'         },
+    { seed: 3, name: 'Australia'      },
+    { seed: 4, name: 'Paraguay'       },
   ],
   E: [
-    { seed: 10, name: 'Germany'        },
-    { seed: 23, name: 'Ecuador'        },
-    { seed: 34, name: 'Ivory Coast'    },
-    { seed: 82, name: 'Curacao'        },
+    { seed: 1, name: 'Germany'        },
+    { seed: 2, name: 'Ecuador'        },
+    { seed: 3, name: 'Ivory Coast'    },
+    { seed: 4, name: 'Curacao'        },
   ],
   F: [
-    { seed:  7, name: 'Netherlands'    },
-    { seed: 18, name: 'Japan'          },
-    { seed: 44, name: 'Tunisia'        },
-    { seed: 37, name: 'Sweden'         },
+    { seed: 1, name: 'Netherlands'    },
+    { seed: 2, name: 'Japan'          },
+    { seed: 3, name: 'Sweden'         },
+    { seed: 4, name: 'Tunisia'        },
   ],
   G: [
-    { seed:  9, name: 'Belgium'        },
-    { seed: 20, name: 'Iran'           },
-    { seed: 29, name: 'Egypt'          },
-    { seed: 85, name: 'New Zealand'    },
+    { seed: 1, name: 'Belgium'        },
+    { seed: 2, name: 'Iran'           },
+    { seed: 3, name: 'Egypt'          },
+    { seed: 4, name: 'New Zealand'    },
   ],
   H: [
-    { seed:  2, name: 'Spain'          },
-    { seed: 17, name: 'Uruguay'        },
-    { seed: 61, name: 'Saudi Arabia'   },
-    { seed: 68, name: 'Cape Verde'     },
+    { seed: 1, name: 'Spain'          },
+    { seed: 2, name: 'Uruguay'        },
+    { seed: 3, name: 'Saudi Arabia'   },
+    { seed: 4, name: 'Cape Verde'     },
   ],
   I: [
-    { seed:  1, name: 'France'         },
-    { seed: 13, name: 'Senegal'        },
-    { seed: 31, name: 'Norway'         },
-    { seed: 57, name: 'Iraq'           },
+    { seed: 1, name: 'France'         },
+    { seed: 2, name: 'Senegal'        },
+    { seed: 3, name: 'Norway'         },
+    { seed: 4, name: 'Iraq'           },
   ],
   J: [
-    { seed:  3, name: 'Argentina'      },
-    { seed: 24, name: 'Austria'        },
-    { seed: 28, name: 'Algeria'        },
-    { seed: 64, name: 'Jordan'         },
+    { seed: 1, name: 'Argentina'      },
+    { seed: 2, name: 'Austria'        },
+    { seed: 3, name: 'Algeria'        },
+    { seed: 4, name: 'Jordan'         },
   ],
   K: [
-    { seed:  5, name: 'Portugal'       },
-    { seed: 12, name: 'Colombia'       },
-    { seed: 49, name: 'Uzbekistan'     },
-    { seed: 46, name: 'DR Congo'       },
+    { seed: 1, name: 'Portugal'       },
+    { seed: 2, name: 'Colombia'       },
+    { seed: 3, name: 'DR Congo'       },
+    { seed: 4, name: 'Uzbekistan'     },
   ],
   L: [
-    { seed:  4, name: 'England'        },
-    { seed: 11, name: 'Croatia'        },
-    { seed: 33, name: 'Panama'         },
-    { seed: 73, name: 'Ghana'          },
+    { seed: 1, name: 'England'        },
+    { seed: 2, name: 'Croatia'        },
+    { seed: 3, name: 'Panama'         },
+    { seed: 4, name: 'Ghana'          },
   ],
 };
 
 // INITIAL_TEAMS: 32 projected knockout-round teams, 8 per quadrant, in R32 matchup pairs.
-// Seeds = FIFA Coca-Cola Rankings (Apr 2026). Admin updates after group stage.
+// Seeds = FIFA Draw Pot (1–4). Admin updates after group stage.
 const INITIAL_TEAMS = {
   A: [
-    { seed:  1, name: 'France'         },
-    { seed: 38, name: 'Czech Republic' },
-    { seed:  5, name: 'Portugal'       },
-    { seed: 12, name: 'Colombia'       },
-    { seed:  9, name: 'Belgium'        },
-    { seed: 29, name: 'Egypt'          },
-    { seed:  3, name: 'Argentina'      },
-    { seed: 28, name: 'Algeria'        },
+    { seed: 1, name: 'France'         },
+    { seed: 3, name: 'Czech Republic' },
+    { seed: 1, name: 'Portugal'       },
+    { seed: 2, name: 'Colombia'       },
+    { seed: 1, name: 'Belgium'        },
+    { seed: 3, name: 'Egypt'          },
+    { seed: 1, name: 'Argentina'      },
+    { seed: 3, name: 'Algeria'        },
   ],
   B: [
-    { seed:  4, name: 'England'        },
-    { seed: 11, name: 'Croatia'        },
-    { seed:  7, name: 'Netherlands'    },
-    { seed: 18, name: 'Japan'          },
-    { seed:  2, name: 'Spain'          },
-    { seed: 17, name: 'Uruguay'        },
-    { seed:  6, name: 'Brazil'         },
-    { seed:  8, name: 'Morocco'        },
+    { seed: 1, name: 'England'        },
+    { seed: 2, name: 'Croatia'        },
+    { seed: 1, name: 'Netherlands'    },
+    { seed: 2, name: 'Japan'          },
+    { seed: 1, name: 'Spain'          },
+    { seed: 2, name: 'Uruguay'        },
+    { seed: 1, name: 'Brazil'         },
+    { seed: 2, name: 'Morocco'        },
   ],
   C: [
-    { seed: 10, name: 'Germany'        },
-    { seed: 34, name: 'Ivory Coast'    },
-    { seed: 15, name: 'Mexico'         },
-    { seed: 25, name: 'South Korea'    },
-    { seed: 19, name: 'Switzerland'    },
-    { seed: 30, name: 'Canada'         },
-    { seed: 16, name: 'USA'            },
-    { seed: 22, name: 'Turkey'         },
+    { seed: 1, name: 'Germany'        },
+    { seed: 3, name: 'Ivory Coast'    },
+    { seed: 1, name: 'Mexico'         },
+    { seed: 2, name: 'South Korea'    },
+    { seed: 2, name: 'Switzerland'    },
+    { seed: 1, name: 'Canada'         },
+    { seed: 1, name: 'USA'            },
+    { seed: 2, name: 'Turkey'         },
   ],
   D: [
-    { seed: 13, name: 'Senegal'        },
-    { seed: 27, name: 'Australia'      },
-    { seed: 20, name: 'Iran'           },
-    { seed: 31, name: 'Norway'         },
-    { seed: 23, name: 'Ecuador'        },
-    { seed: 37, name: 'Sweden'         },
-    { seed: 24, name: 'Austria'        },
-    { seed: 33, name: 'Panama'         },
+    { seed: 2, name: 'Senegal'        },
+    { seed: 3, name: 'Australia'      },
+    { seed: 2, name: 'Iran'           },
+    { seed: 3, name: 'Norway'         },
+    { seed: 2, name: 'Ecuador'        },
+    { seed: 3, name: 'Sweden'         },
+    { seed: 2, name: 'Austria'        },
+    { seed: 3, name: 'Panama'         },
   ],
 };
 
@@ -1154,16 +1156,16 @@ Final: 15 points per correct pick
 In the Group Stage you may also pick a Draw. A correct Draw pick earns 1 point.
 
 UPSET BONUS
-Picking an underdog (higher FIFA seed number) to win earns bonus points in every round — including the Group Stage. The formula is:
-  ((Underdog seed − Favourite seed) + Base points) × Round multiplier
+Picking an underdog (higher pot number) to win earns bonus points in every round — including the Group Stage. Teams are seeded by their FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). The formula is:
+  ((Underdog pot − Favourite pot) + Base points) × Round multiplier
 
 Round multipliers: GRP ×1.0 · R32 ×1.2 · R16 ×1.4 · QF ×1.6 · SF ×1.8 · Final ×2.0
 
-Example: Picking seed #59 (South Africa) to beat seed #15 (Mexico) in the Group Stage:
-  ((59 − 15) + 1) × 1.0 = 45 points
+Example: Picking Pot 4 (South Africa) to beat Pot 1 (Mexico) in the Group Stage:
+  ((4 − 1) + 1) × 1.0 = 4 points
 
-Example: Picking seed #34 (Ivory Coast) to beat seed #10 (Germany) in the Round of 32:
-  ((34 − 10) + 2) × 1.2 = 31.2 points
+Example: Picking Pot 3 (Ivory Coast) to beat Pot 1 (Germany) in the Round of 32:
+  ((3 − 1) + 2) × 1.2 = 4.8 points
 
 Note: A correct Draw pick always earns a flat 1 point — no upset bonus applies to draws.
 
