@@ -346,7 +346,25 @@ a { color: var(--accent); }
 .pick-o-result.wrong   { background: rgba(231,76,60,0.2);  color: var(--red); }
 .pick-o-result.won     { background: rgba(46,204,113,0.1); color: var(--green); font-size: 0.6rem; }
 
-.pick-option input[type="radio"] { accent-color: var(--accent); flex-shrink: 0; }
+/* Hide native radio — replaced by custom ::before dot */
+.pick-option input[type="radio"] { display: none; }
+
+/* Custom pick-indicator dot (mirrors .team-slot::before) */
+.pick-option::before {
+  content: '';
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-3);
+  flex-shrink: 0;
+  align-self: center;
+}
+/* Pending / player's pick with no result yet */
+.pick-option.selected::before        { border-color: var(--text-2); background: var(--text-2); }
+/* Player's correct pick (must come after .selected to override) */
+.pick-option.result-correct::before  { border-color: var(--green);  background: var(--green); }
+/* Player's wrong pick */
+.pick-option.result-wrong::before    { border-color: var(--red);    background: var(--red); }
 
 /* SAVE BAR */
 .save-bar { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.6rem 1.25rem; display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; z-index: 50; }
