@@ -294,8 +294,12 @@ a { color: var(--accent); }
 .team-slot.tbd { color: var(--text-3); font-style: italic; }
 .team-slot.winner { background: rgba(46,204,113,0.18); color: var(--green); font-weight: 700; }
 .team-slot.loser  { color: var(--text-3); }
+.team-slot::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--text-3); flex-shrink: 0; margin-right: 3px; }
+.team-slot.picked::before       { border-color: var(--text-2); background: var(--text-2); }
 .team-slot.pick-correct { border-left: 3px solid var(--green); }
-.team-slot.pick-wrong   { border-left: 3px solid var(--red);   }
+.team-slot.pick-correct::before { border-color: var(--green);  background: var(--green); }
+.team-slot.pick-wrong   { border-left: 3px solid var(--red); }
+.team-slot.pick-wrong::before   { border-color: var(--red);    background: var(--red); }
 
 /* SF / FINAL */
 .f4-col { display: flex; flex-direction: column; width: 130px; }

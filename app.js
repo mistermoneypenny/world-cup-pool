@@ -1044,6 +1044,7 @@ function buildMatchup(game) {
       if (isWinner) row.classList.add('winner');
       if (isLoser)  row.classList.add('loser');
       const pickedThis = playerPick === team.name;
+      if (pickedThis)             row.classList.add('picked');
       if (pickedThis && isWinner) row.classList.add('pick-correct');
       if (pickedThis && isLoser)  row.classList.add('pick-wrong');
       const displaySc = sc !== undefined ? sc : liveSc;
