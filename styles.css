@@ -522,7 +522,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .group-game-row { display: flex; align-items: center; padding: 0.2rem 0.6rem; gap: 0.25rem; font-size: 0.75rem; }
 .group-game-row.alt { background: rgba(255,255,255,0.04); border-radius: 3px; }
 .group-game-team { flex: 1; display: flex; align-items: center; gap: 0.25rem; color: #fff; padding: 0.15rem 0.3rem; border-radius: 3px; transition: background 0.1s; }
-.group-game-team.winner { color: #fff; font-weight: 600; }
+.group-game-team.winner { color: #fff; }
 .group-game-team.loser  { color: #fff; }
 .group-game-team.picked { background: rgba(0,166,81,0.1); }
 .group-game-team:last-child { justify-content: flex-start; }
@@ -542,7 +542,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .picks-group-section .pick-card:last-child { border-bottom: none; }
 
 /* ── DRAW SUPPORT ──────────────────────────────────────────── */
-.group-game-team.draw  { color: var(--text-2); font-style: italic; }
+.group-game-team.draw  { color: #fff; }
 .group-game-vs.draw-result { color: var(--gold); font-weight: 700; font-size: 0.7rem; }
 .pick-draw-option { border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); background: rgba(255,255,255,0.02); }
 .pick-draw-label { color: var(--text-3); font-style: italic; font-size: 0.8rem; }
