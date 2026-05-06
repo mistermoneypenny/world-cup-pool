@@ -900,6 +900,7 @@ function renderGroupStageBracket(wrapper) {
     // Games by matchday
     const games = getGamesForRound('groups').filter(g => g.region === group).sort((a,b) => a.idx - b.idx);
     let lastMDIdx = -1;
+    let gameRowCount = 0;
     games.forEach((game, i) => {
       const mdIdx = MATCHDAY_IDX[i];
       if (mdIdx !== lastMDIdx) {
@@ -909,13 +910,15 @@ function renderGroupStageBracket(wrapper) {
         mdHdr.innerHTML = `Matchday ${mdIdx + 1}<span class="group-md-date">${date}</span>`;
         card.appendChild(mdHdr);
         lastMDIdx = mdIdx;
+        gameRowCount = 0;
       }
       const { t1, t2 } = getTeams(game);
       const winner = getWinner(game.id);
       const isDraw = state.results[game.id] === 'Draw';
       const playerPick = (state.picks[state.currentPlayer] || {})['groups']?.[game.id];
       const gameRow = document.createElement('div');
-      gameRow.className = 'group-game-row';
+      gameRow.className = 'group-game-row' + (gameRowCount % 2 === 1 ? ' alt' : '');
+      gameRowCount++;
 
       const sc = state.scores[game.id];
       const liveSc = !sc ? findGameScore(t1?.name, t2?.name) : null;

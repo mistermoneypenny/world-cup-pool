@@ -520,6 +520,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .group-md-date { font-weight: 500; letter-spacing: 0; color: var(--text-3); opacity: 0.85; text-transform: none; font-size: 0.63rem; }
 
 .group-game-row { display: flex; align-items: center; padding: 0.2rem 0.6rem; gap: 0.25rem; font-size: 0.75rem; }
+.group-game-row.alt { background: rgba(255,255,255,0.04); border-radius: 3px; }
 .group-game-team { flex: 1; display: flex; align-items: center; gap: 0.25rem; color: #fff; padding: 0.15rem 0.3rem; border-radius: 3px; transition: background 0.1s; }
 .group-game-team.winner { color: #fff; font-weight: 600; }
 .group-game-team.loser  { color: #fff; }
