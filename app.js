@@ -2142,7 +2142,9 @@ function generateRandomPicks() {
           else if (r < drawProb + upsetProb * (1 - drawProb)) pick = dog.name;
           else                                                 pick = fav.name;
         } else {
-          pick = rng() < upsetProb ? dog.name : fav.name;
+          // Knockout rounds: ~50/50 split so picks are a realistic mix of
+          // right and wrong. Each player gets a different coin flip per game.
+          pick = rng() < 0.5 ? t1.name : t2.name;
         }
         state.picks[player.id][cfg.id][game.id] = pick;
         filled++;
