@@ -211,11 +211,13 @@ app.post('/api/state', async (req, res) => {
         }
       }
 
-      if (incoming.picks && sender) {
+      if (incoming.picks && (admin || !sender)) {
+        // Admin or senderless save: replace all picks wholesale
+        existing.picks = incoming.picks;
+      } else if (incoming.picks && sender) {
+        // Regular player: only save their own picks
         if (!existing.picks) existing.picks = {};
         existing.picks[sender] = incoming.picks[sender] || {};
-      } else if (incoming.picks && !sender) {
-        existing.picks = incoming.picks;
       }
 
       if (incoming.bonusPicks && sender) {
