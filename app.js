@@ -415,7 +415,10 @@ function getPlayerRoundScore(playerId, roundId) {
     const resultName = state.results[game.id];
     if (pickedName) {
       if (resultName !== undefined) {
-        if (resultName === pickedName) { score += calcPickPoints(game, pickedName, cfg); correct++; }
+        // Resolve the true winner via getWinner() so score-based fallback applies
+        // when state.results has a stale/wrong team name (e.g. leftover demo data).
+        const trueWinner = resultName === 'Draw' ? 'Draw' : (getWinner(game.id)?.name ?? resultName);
+        if (trueWinner === pickedName) { score += calcPickPoints(game, pickedName, cfg); correct++; }
         else wrong++;
       } else {
         if (isPickStillAlive(pickedName, roundId, game)) possible += calcPickPoints(game, pickedName, cfg);
