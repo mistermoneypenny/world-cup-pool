@@ -783,7 +783,9 @@ function renderBracket() {
   const wrapper = document.getElementById('bracket-wrapper');
   wrapper.innerHTML = '';
 
-  // Sub-view toggle bar
+  // Sub-view toggle bar — rendered into sticky nav above the scroll container
+  const nav = document.getElementById('bracket-nav');
+  nav.innerHTML = '';
   const toggleBar = document.createElement('div');
   toggleBar.className = 'bracket-toggle-bar';
   [['groups', '&#127942; Group Stage'], ['knockout', '&#9883; Knockout Bracket']].forEach(([id, label]) => {
@@ -793,7 +795,7 @@ function renderBracket() {
     btn.addEventListener('click', () => { state.bracketSubView = id; renderBracket(); });
     toggleBar.appendChild(btn);
   });
-  wrapper.appendChild(toggleBar);
+  nav.appendChild(toggleBar);
 
   if (state.bracketSubView === 'groups') {
     renderGroupStageBracket(wrapper);
