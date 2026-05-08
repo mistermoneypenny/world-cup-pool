@@ -592,6 +592,8 @@ function switchView(view) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`view-${view}`).classList.add('active');
   document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  // Show/hide the bracket sticky nav (lives outside .main to allow position:sticky)
+  document.getElementById('bracket-nav').style.display = view === 'bracket' ? '' : 'none';
   renderCurrentView();
 }
 

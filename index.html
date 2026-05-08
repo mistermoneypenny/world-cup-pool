@@ -46,6 +46,9 @@
     </div>
   </header>
 
+  <!-- ── BRACKET STICKY NAV (sibling of .main so sticky works despite overflow-x:auto on .main) ── -->
+  <div id="bracket-nav" style="display:none"></div>
+
   <!-- ── MAIN ── -->
   <main class="main">
 
@@ -64,7 +67,6 @@
 
     <!-- BRACKET VIEW -->
     <section id="view-bracket" class="view active">
-      <div id="bracket-nav"><!-- Sticky toggle bar, populated by JS --></div>
       <div class="bracket-legend" id="bracket-legend">
         <span class="legend-item"><span class="dot win"></span>Winner</span>
       </div>
