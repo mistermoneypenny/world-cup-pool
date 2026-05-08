@@ -1788,7 +1788,10 @@ function renderLbBody() {
 
   table.appendChild(tbody);
   body.innerHTML = '';
-  body.appendChild(table);
+  const scrollWrap = document.createElement('div');
+  scrollWrap.className = 'lb-scroll-wrap';
+  scrollWrap.appendChild(table);
+  body.appendChild(scrollWrap);
 
   tbody.addEventListener('click', e => {
     const btn = e.target.closest('.lb-player-link');
