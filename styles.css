@@ -189,7 +189,7 @@ a { color: var(--accent); }
 /* ── BRACKET VIEW ───────────────────────────────────────────── */
 #bracket-nav {
   position: sticky;
-  top: 52px;   /* stacks just below the sticky header (~52px tall) */
+  top: 60px;   /* stacks just below the sticky header (60px tall) */
   z-index: 90;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
