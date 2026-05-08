@@ -137,7 +137,7 @@ a { color: var(--accent); }
 .session-switch-btn:hover { color: var(--accent-2); text-decoration: underline; }
 
 /* ── MAIN & VIEWS ───────────────────────────────────────────── */
-.main { flex: 1; padding: 1.25rem; overflow-x: auto; }
+.main { flex: 1; padding: 1.25rem; }
 
 .view { display: none; }
 .view.active { display: block; }
