@@ -908,7 +908,7 @@ function renderGroupStageBracket(wrapper) {
         const row = document.createElement('div');
         const advancing = pos < 2; // top 2 guaranteed; 3rd handled separately
         row.className = 'group-team-row group-standing-row' + (advancing ? ' advancing' : '');
-        row.innerHTML = `<span class="group-team-rank">${s.team.seed}</span><span class="group-team-name">${esc(s.team.name)}</span><span class="group-standing-stat">${s.played}</span><span class="group-standing-stat">${s.w}</span><span class="group-standing-stat">${s.d}</span><span class="group-standing-stat">${s.l}</span><span class="group-standing-stat gsp-pts">${s.pts}</span>`;
+        row.innerHTML = `<span class="group-team-rank">${pos + 1}</span><span class="group-team-name">${esc(s.team.name)}</span><span class="group-standing-stat">${s.played}</span><span class="group-standing-stat">${s.w}</span><span class="group-standing-stat">${s.d}</span><span class="group-standing-stat">${s.l}</span><span class="group-standing-stat gsp-pts">${s.pts}</span>`;
         teamsDiv.appendChild(row);
       });
     } else {
