@@ -147,21 +147,25 @@ const GROUP_TEAMS = {
 };
 
 // ── COUNTRY FLAGS ─────────────────────────────────────────────
-const FLAGS = {
-  'Mexico': '🇲🇽', 'South Korea': '🇰🇷', 'Czech Republic': '🇨🇿', 'South Africa': '🇿🇦',
-  'Canada': '🇨🇦', 'Switzerland': '🇨🇭', 'Qatar': '🇶🇦', 'Bosnia': '🇧🇦',
-  'Brazil': '🇧🇷', 'Morocco': '🇲🇦', 'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Haiti': '🇭🇹',
-  'USA': '🇺🇸', 'Turkey': '🇹🇷', 'Australia': '🇦🇺', 'Paraguay': '🇵🇾',
-  'Germany': '🇩🇪', 'Ecuador': '🇪🇨', 'Ivory Coast': '🇨🇮', 'Curacao': '🇨🇼',
-  'Netherlands': '🇳🇱', 'Japan': '🇯🇵', 'Sweden': '🇸🇪', 'Tunisia': '🇹🇳',
-  'Belgium': '🇧🇪', 'Iran': '🇮🇷', 'Egypt': '🇪🇬', 'New Zealand': '🇳🇿',
-  'Spain': '🇪🇸', 'Uruguay': '🇺🇾', 'Saudi Arabia': '🇸🇦', 'Cape Verde': '🇨🇻',
-  'France': '🇫🇷', 'Senegal': '🇸🇳', 'Norway': '🇳🇴', 'Iraq': '🇮🇶',
-  'Argentina': '🇦🇷', 'Austria': '🇦🇹', 'Algeria': '🇩🇿', 'Jordan': '🇯🇴',
-  'Portugal': '🇵🇹', 'Colombia': '🇨🇴', 'DR Congo': '🇨🇩', 'Uzbekistan': '🇺🇿',
-  'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Croatia': '🇭🇷', 'Panama': '🇵🇦', 'Ghana': '🇬🇭',
+// Uses flagcdn.com image CDN — works on all platforms (no emoji rendering issues)
+const FLAG_CODES = {
+  'Mexico': 'mx', 'South Korea': 'kr', 'Czech Republic': 'cz', 'South Africa': 'za',
+  'Canada': 'ca', 'Switzerland': 'ch', 'Qatar': 'qa', 'Bosnia': 'ba',
+  'Brazil': 'br', 'Morocco': 'ma', 'Scotland': 'gb-sct', 'Haiti': 'ht',
+  'USA': 'us', 'Turkey': 'tr', 'Australia': 'au', 'Paraguay': 'py',
+  'Germany': 'de', 'Ecuador': 'ec', 'Ivory Coast': 'ci', 'Curacao': 'cw',
+  'Netherlands': 'nl', 'Japan': 'jp', 'Sweden': 'se', 'Tunisia': 'tn',
+  'Belgium': 'be', 'Iran': 'ir', 'Egypt': 'eg', 'New Zealand': 'nz',
+  'Spain': 'es', 'Uruguay': 'uy', 'Saudi Arabia': 'sa', 'Cape Verde': 'cv',
+  'France': 'fr', 'Senegal': 'sn', 'Norway': 'no', 'Iraq': 'iq',
+  'Argentina': 'ar', 'Austria': 'at', 'Algeria': 'dz', 'Jordan': 'jo',
+  'Portugal': 'pt', 'Colombia': 'co', 'DR Congo': 'cd', 'Uzbekistan': 'uz',
+  'England': 'gb-eng', 'Croatia': 'hr', 'Panama': 'pa', 'Ghana': 'gh',
 };
-function flag(name) { return FLAGS[name] ? FLAGS[name] + ' ' : ''; }
+function flag(name) {
+  const c = FLAG_CODES[name];
+  return c ? `<img src="https://flagcdn.com/16x12/${c}.png" width="16" height="12" alt="${c}" class="team-flag">` : '';
+}
 
 // INITIAL_TEAMS: 32 projected knockout-round teams, 8 per quadrant, in R32 matchup pairs.
 // Seeds = FIFA Draw Pot (1–4). Admin updates after group stage.
