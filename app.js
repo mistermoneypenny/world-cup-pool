@@ -1717,71 +1717,6 @@ function buildRoundRecap(roundId) {
   return el;
 }
 
-// ── SCORE HISTORY GRAPH ───────────────────────────────────────
-function buildScoreGraph(rows) {
-  const activeRounds = ROUND_CONFIG.filter(cfg =>
-    rows.some(r => r.byRound[cfg.id].correct > 0 || r.byRound[cfg.id].wrong > 0)
-  );
-  if (activeRounds.length < 2) return null;
-
-  const COLORS = ['#00a651','#3b9de8','#ffd700','#e74c3c','#9b59b6','#f39c12','#1abc9c','#2980b9','#e91e63','#ff5722','#00bcd4','#607d8b'];
-  const playerLines = rows.map((row, i) => {
-    let cum = 0;
-    const points = activeRounds.map(cfg => { cum += row.byRound[cfg.id].score; return cum; });
-    return { name: row.player.name, points, color: COLORS[i % COLORS.length] };
-  });
-
-  const W = 680, H = 190, PL = 38, PR = 8, PT = 14, PB = 26;
-  const plotW = W - PL - PR, plotH = H - PT - PB;
-  const maxScore = Math.max(1, ...playerLines.flatMap(l => l.points));
-  const N = activeRounds.length;
-  const xPos = i => PL + (N > 1 ? (i / (N - 1)) * plotW : plotW / 2);
-  const yPos = v => PT + plotH - (v / maxScore) * plotH;
-
-  const parts = [];
-  // Grid lines + Y labels
-  [0, 0.25, 0.5, 0.75, 1].forEach(f => {
-    const y = PT + plotH * (1 - f);
-    const v = Math.round(maxScore * f);
-    parts.push(`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W - PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`);
-    parts.push(`<text x="${PL - 5}" y="${(y + 3.5).toFixed(1)}" font-size="9" fill="#4e6278" text-anchor="end">${v}</text>`);
-  });
-  // Player lines + dots
-  playerLines.forEach(pl => {
-    const pts = pl.points.map((v, i) => `${xPos(i).toFixed(1)},${yPos(v).toFixed(1)}`).join(' ');
-    parts.push(`<polyline points="${pts}" fill="none" stroke="${pl.color}" stroke-width="2" stroke-linejoin="round" opacity="0.9"/>`);
-    pl.points.forEach((v, i) => {
-      parts.push(`<circle cx="${xPos(i).toFixed(1)}" cy="${yPos(v).toFixed(1)}" r="3" fill="${pl.color}"/>`);
-    });
-  });
-  // X labels
-  activeRounds.forEach((cfg, i) => {
-    parts.push(`<text x="${xPos(i).toFixed(1)}" y="${H - 4}" font-size="10" fill="#8a9bb4" text-anchor="middle">${esc(cfg.short)}</text>`);
-  });
-
-  const wrap = document.createElement('div');
-  wrap.className = 'score-graph-wrap';
-
-  const title = document.createElement('div');
-  title.className = 'score-graph-title';
-  title.textContent = '📈 Score Progression';
-  wrap.appendChild(title);
-
-  const svgWrap = document.createElement('div');
-  svgWrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" class="score-graph-svg">${parts.join('')}</svg>`;
-  wrap.appendChild(svgWrap);
-
-  const legend = document.createElement('div');
-  legend.className = 'score-graph-legend';
-  playerLines.forEach(pl => {
-    const item = document.createElement('span');
-    item.className = 'sgl-item';
-    item.innerHTML = `<span class="sgl-dot" style="background:${pl.color}"></span>${esc(pl.name)}`;
-    legend.appendChild(item);
-  });
-  wrap.appendChild(legend);
-  return wrap;
-}
 
 function updateSaveStatus() {
   const statusEl = document.getElementById('save-status');
@@ -1949,12 +1884,6 @@ function renderLbBody() {
   if (recapRoundId) {
     const recap = buildRoundRecap(recapRoundId);
     if (recap) body.appendChild(recap);
-  }
-
-  // Score history graph (Total tab only, when ≥2 rounds have data)
-  if (state.lbRound === 'all') {
-    const graph = buildScoreGraph(rows);
-    if (graph) body.appendChild(graph);
   }
 
   const scrollWrap = document.createElement('div');
