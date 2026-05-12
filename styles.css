@@ -633,7 +633,7 @@ td.round-best .lb-total { color: var(--green); font-weight: 700; }
 td.round-best { background: rgba(46,204,113,0.07); border-radius: 3px; }
 
 /* ── TEAM FLAGS ──────────────────────────────────────────────── */
-.team-flag { vertical-align: -1px; margin-right: 3px; border-radius: 1px; flex-shrink: 0; display: inline-block; }
+.team-flag { vertical-align: -1px; margin-right: 3px; flex-shrink: 0; display: inline-block; }
 
 /* ── PICK POPULARITY ─────────────────────────────────────────── */
 .pick-o-pop { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; margin-left: 0.15rem; }
