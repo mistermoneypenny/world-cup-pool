@@ -632,6 +632,42 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 td.round-best .lb-total { color: var(--green); font-weight: 700; }
 td.round-best { background: rgba(46,204,113,0.07); border-radius: 3px; }
 
+/* ── PICK POPULARITY ─────────────────────────────────────────── */
+.pick-o-pop { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; margin-left: 0.15rem; }
+.pick-pop-track { width: 34px; height: 4px; background: rgba(255,255,255,0.09); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.pick-pop-fill { display: block; height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+.pick-pop-txt { font-size: 0.62rem; color: var(--text-3); white-space: nowrap; min-width: 24px; }
+.pick-option.result-correct .pick-pop-fill { background: var(--green); }
+.pick-option.result-wrong   .pick-pop-fill { background: var(--text-3); }
+
+/* ── ROUND RECAP ─────────────────────────────────────────────── */
+.round-recap {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  border-left: 3px solid var(--gold); border-radius: 8px;
+  padding: 0.55rem 1rem; margin-bottom: 0.75rem; font-size: 0.82rem;
+}
+.recap-winner { font-weight: 700; color: var(--gold); }
+.recap-pts { font-size: 0.75rem; color: var(--text-3); }
+.recap-sep { color: var(--text-3); }
+.recap-stat { color: var(--text-2); }
+
+/* ── SCORE GRAPH ─────────────────────────────────────────────── */
+.score-graph-wrap {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.75rem 0.75rem 0.5rem; margin-bottom: 0.75rem;
+}
+.score-graph-title {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 0.4rem;
+}
+.score-graph-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.score-graph-legend {
+  display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; padding: 0.4rem 0 0;
+}
+.sgl-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: var(--text-2); }
+.sgl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
 /* FIFA Live Scores */
 a.nav-btn.fifa-link { text-decoration: none; color: #4fc3f7; }
 a.nav-btn.fifa-link:hover { background: rgba(79,195,247,0.1); color: #4fc3f7; }

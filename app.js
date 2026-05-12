@@ -146,6 +146,23 @@ const GROUP_TEAMS = {
   ],
 };
 
+// ── COUNTRY FLAGS ─────────────────────────────────────────────
+const FLAGS = {
+  'Mexico': '🇲🇽', 'South Korea': '🇰🇷', 'Czech Republic': '🇨🇿', 'South Africa': '🇿🇦',
+  'Canada': '🇨🇦', 'Switzerland': '🇨🇭', 'Qatar': '🇶🇦', 'Bosnia': '🇧🇦',
+  'Brazil': '🇧🇷', 'Morocco': '🇲🇦', 'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Haiti': '🇭🇹',
+  'USA': '🇺🇸', 'Turkey': '🇹🇷', 'Australia': '🇦🇺', 'Paraguay': '🇵🇾',
+  'Germany': '🇩🇪', 'Ecuador': '🇪🇨', 'Ivory Coast': '🇨🇮', 'Curacao': '🇨🇼',
+  'Netherlands': '🇳🇱', 'Japan': '🇯🇵', 'Sweden': '🇸🇪', 'Tunisia': '🇹🇳',
+  'Belgium': '🇧🇪', 'Iran': '🇮🇷', 'Egypt': '🇪🇬', 'New Zealand': '🇳🇿',
+  'Spain': '🇪🇸', 'Uruguay': '🇺🇾', 'Saudi Arabia': '🇸🇦', 'Cape Verde': '🇨🇻',
+  'France': '🇫🇷', 'Senegal': '🇸🇳', 'Norway': '🇳🇴', 'Iraq': '🇮🇶',
+  'Argentina': '🇦🇷', 'Austria': '🇦🇹', 'Algeria': '🇩🇿', 'Jordan': '🇯🇴',
+  'Portugal': '🇵🇹', 'Colombia': '🇨🇴', 'DR Congo': '🇨🇩', 'Uzbekistan': '🇺🇿',
+  'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Croatia': '🇭🇷', 'Panama': '🇵🇦', 'Ghana': '🇬🇭',
+};
+function flag(name) { return FLAGS[name] ? FLAGS[name] + ' ' : ''; }
+
 // INITIAL_TEAMS: 32 projected knockout-round teams, 8 per quadrant, in R32 matchup pairs.
 // Seeds = FIFA Draw Pot (1–4). Admin updates after group stage.
 const INITIAL_TEAMS = {
@@ -908,14 +925,14 @@ function renderGroupStageBracket(wrapper) {
         const row = document.createElement('div');
         const advancing = pos < 2; // top 2 guaranteed; 3rd handled separately
         row.className = 'group-team-row group-standing-row' + (advancing ? ' advancing' : '');
-        row.innerHTML = `<span class="group-team-rank">${pos + 1}</span><span class="group-team-name">${esc(s.team.name)}</span><span class="group-standing-stat">${s.played}</span><span class="group-standing-stat">${s.w}</span><span class="group-standing-stat">${s.d}</span><span class="group-standing-stat">${s.l}</span><span class="group-standing-stat gsp-pts">${s.pts}</span>`;
+        row.innerHTML = `<span class="group-team-rank">${pos + 1}</span><span class="group-team-name">${flag(s.team.name)}${esc(s.team.name)}</span><span class="group-standing-stat">${s.played}</span><span class="group-standing-stat">${s.w}</span><span class="group-standing-stat">${s.d}</span><span class="group-standing-stat">${s.l}</span><span class="group-standing-stat gsp-pts">${s.pts}</span>`;
         teamsDiv.appendChild(row);
       });
     } else {
       teams.forEach(t => {
         const row = document.createElement('div');
         row.className = 'group-team-row';
-        row.innerHTML = `<span class="group-team-rank">${t.seed}</span><span class="group-team-name">${esc(t.name)}</span>`;
+        row.innerHTML = `<span class="group-team-rank">${t.seed}</span><span class="group-team-name">${flag(t.name)}${esc(t.name)}</span>`;
         teamsDiv.appendChild(row);
       });
     }
@@ -968,7 +985,7 @@ function renderGroupStageBracket(wrapper) {
           ? (idx === 0 ? displaySc.t1 : displaySc.t2)
           : (isDraw && idx === 0 ? 'D' : '');
         const scoreClass = `group-game-goal${isLiveGroup ? ' live' : ''}`;
-        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span><span class="group-game-name">${esc(team.name)}</span>${goalStr !== '' ? `<span class="${scoreClass}">${goalStr}</span>` : ''}`;
+        teamEl.innerHTML = `<span class="group-game-seed">${team.seed}</span><span class="group-game-name">${flag(team.name)}${esc(team.name)}</span>${goalStr !== '' ? `<span class="${scoreClass}">${goalStr}</span>` : ''}`;
         gameRow.appendChild(teamEl);
       });
       card.appendChild(gameRow);
@@ -1073,7 +1090,7 @@ function buildMatchup(game) {
       if (pickedThis && isLoser)  row.classList.add('pick-wrong');
       const displaySc = sc !== undefined ? sc : liveSc;
       const goals = displaySc !== undefined ? `<span class="t-score${isLive ? ' live' : ''}">${idx === 0 ? displaySc.t1 : displaySc.t2}</span>` : '';
-      row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${esc(team.name)}</span>${goals}`;
+      row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${flag(team.name)}${esc(team.name)}</span>${goals}`;
     }
     card.appendChild(row);
   });
@@ -1552,6 +1569,9 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     ? [{ team: t1 }, { team: null, isDraw: true }, { team: t2 }]
     : [{ team: t1 }, { team: t2 }];
 
+  // Pre-compute pick popularity for locked/closed rounds
+  const popData = (!isOpen && state.players.length > 1) ? getPickPopularity(game.id, game.round) : null;
+
   options.forEach(({ team, isDraw }) => {
     const optionName = isDraw ? 'Draw' : team?.name;
     if (!team && !isDraw) return;
@@ -1601,10 +1621,18 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     // Always emit result span (even empty) so columns stay aligned
     const resultSpan = resultMark || '<span class="pick-o-result"></span>';
 
+    // Popularity bar (shown when round is locked/closed)
+    let popHtml = '';
+    if (popData && popData.total > 0) {
+      const cnt = popData.counts[optionName] || 0;
+      const pct = Math.round((cnt / popData.total) * 100);
+      popHtml = `<span class="pick-o-pop"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${popData.total}</span></span>`;
+    }
+
     if (isDraw) {
-      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw</span><span class="pick-o-score"></span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}`;
+      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw</span><span class="pick-o-score"></span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     } else {
-      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span><span class="pick-o-name">${esc(team.name)}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}`;
+      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span><span class="pick-o-name">${flag(team.name)}${esc(team.name)}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     }
     row.insertBefore(radio, row.firstChild);
 
@@ -1626,6 +1654,133 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   });
 
   return card;
+}
+
+// ── PICK POPULARITY ───────────────────────────────────────────
+function getPickPopularity(gameId, roundId) {
+  const counts = {};
+  let total = 0;
+  state.players.forEach(p => {
+    const pick = (state.picks[p.id] || {})[roundId]?.[gameId];
+    if (pick) { counts[pick] = (counts[pick] || 0) + 1; total++; }
+  });
+  return { counts, total };
+}
+
+// ── ROUND RECAP ───────────────────────────────────────────────
+function getRecapRound() {
+  if (state.lbRound === 'all') {
+    if (state.roundStatus === 'closed') return state.currentRound;
+    const ci = ROUND_CONFIG.findIndex(r => r.id === state.currentRound);
+    if (ci > 0) {
+      const prev = ROUND_CONFIG[ci - 1];
+      if (getGamesForRound(prev.id).some(g => state.results[g.id] !== undefined)) return prev.id;
+    }
+    return null;
+  }
+  return getGamesForRound(state.lbRound).some(g => state.results[g.id] !== undefined) ? state.lbRound : null;
+}
+
+function buildRoundRecap(roundId) {
+  const cfg = ROUND_CONFIG.find(r => r.id === roundId);
+  const games = getGamesForRound(roundId).filter(g => state.results[g.id] !== undefined);
+  if (!cfg || games.length === 0) return null;
+
+  let topScore = 0, topPlayer = null;
+  let totalPicks = 0, totalCorrect = 0;
+  state.players.forEach(p => {
+    const s = getPlayerRoundScore(p.id, roundId);
+    if (s.score > topScore) { topScore = s.score; topPlayer = p; }
+    totalPicks  += s.correct + s.wrong;
+    totalCorrect += s.correct;
+  });
+
+  let upsets = 0;
+  games.forEach(game => {
+    const winner = getWinner(game.id);
+    if (!winner || winner.name === 'Draw') return;
+    const { t1, t2 } = getTeams(game);
+    if (!t1 || !t2) return;
+    const fav = t1.seed <= t2.seed ? t1 : t2;
+    if (winner.name !== fav.name) upsets++;
+  });
+
+  const accuracy = totalPicks > 0 ? Math.round((totalCorrect / totalPicks) * 100) : 0;
+  const el = document.createElement('div');
+  el.className = 'round-recap';
+  let html = topPlayer
+    ? `<span class="recap-winner">🏆 ${esc(topPlayer.name)} won the ${esc(cfg.label)}</span><span class="recap-pts">${fmtScore(topScore)} pts</span>`
+    : '';
+  html += `<span class="recap-sep">·</span><span class="recap-stat">${totalCorrect}/${totalPicks} correct (${accuracy}%)</span>`;
+  if (upsets > 0) html += `<span class="recap-sep">·</span><span class="recap-stat">⚡ ${upsets} upset${upsets !== 1 ? 's' : ''}</span>`;
+  el.innerHTML = html;
+  return el;
+}
+
+// ── SCORE HISTORY GRAPH ───────────────────────────────────────
+function buildScoreGraph(rows) {
+  const activeRounds = ROUND_CONFIG.filter(cfg =>
+    rows.some(r => r.byRound[cfg.id].correct > 0 || r.byRound[cfg.id].wrong > 0)
+  );
+  if (activeRounds.length < 2) return null;
+
+  const COLORS = ['#00a651','#3b9de8','#ffd700','#e74c3c','#9b59b6','#f39c12','#1abc9c','#2980b9','#e91e63','#ff5722','#00bcd4','#607d8b'];
+  const playerLines = rows.map((row, i) => {
+    let cum = 0;
+    const points = activeRounds.map(cfg => { cum += row.byRound[cfg.id].score; return cum; });
+    return { name: row.player.name, points, color: COLORS[i % COLORS.length] };
+  });
+
+  const W = 680, H = 190, PL = 38, PR = 8, PT = 14, PB = 26;
+  const plotW = W - PL - PR, plotH = H - PT - PB;
+  const maxScore = Math.max(1, ...playerLines.flatMap(l => l.points));
+  const N = activeRounds.length;
+  const xPos = i => PL + (N > 1 ? (i / (N - 1)) * plotW : plotW / 2);
+  const yPos = v => PT + plotH - (v / maxScore) * plotH;
+
+  const parts = [];
+  // Grid lines + Y labels
+  [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+    const y = PT + plotH * (1 - f);
+    const v = Math.round(maxScore * f);
+    parts.push(`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W - PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`);
+    parts.push(`<text x="${PL - 5}" y="${(y + 3.5).toFixed(1)}" font-size="9" fill="#4e6278" text-anchor="end">${v}</text>`);
+  });
+  // Player lines + dots
+  playerLines.forEach(pl => {
+    const pts = pl.points.map((v, i) => `${xPos(i).toFixed(1)},${yPos(v).toFixed(1)}`).join(' ');
+    parts.push(`<polyline points="${pts}" fill="none" stroke="${pl.color}" stroke-width="2" stroke-linejoin="round" opacity="0.9"/>`);
+    pl.points.forEach((v, i) => {
+      parts.push(`<circle cx="${xPos(i).toFixed(1)}" cy="${yPos(v).toFixed(1)}" r="3" fill="${pl.color}"/>`);
+    });
+  });
+  // X labels
+  activeRounds.forEach((cfg, i) => {
+    parts.push(`<text x="${xPos(i).toFixed(1)}" y="${H - 4}" font-size="10" fill="#8a9bb4" text-anchor="middle">${esc(cfg.short)}</text>`);
+  });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'score-graph-wrap';
+
+  const title = document.createElement('div');
+  title.className = 'score-graph-title';
+  title.textContent = '📈 Score Progression';
+  wrap.appendChild(title);
+
+  const svgWrap = document.createElement('div');
+  svgWrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" class="score-graph-svg">${parts.join('')}</svg>`;
+  wrap.appendChild(svgWrap);
+
+  const legend = document.createElement('div');
+  legend.className = 'score-graph-legend';
+  playerLines.forEach(pl => {
+    const item = document.createElement('span');
+    item.className = 'sgl-item';
+    item.innerHTML = `<span class="sgl-dot" style="background:${pl.color}"></span>${esc(pl.name)}`;
+    legend.appendChild(item);
+  });
+  wrap.appendChild(legend);
+  return wrap;
 }
 
 function updateSaveStatus() {
@@ -1788,6 +1943,20 @@ function renderLbBody() {
 
   table.appendChild(tbody);
   body.innerHTML = '';
+
+  // Round recap banner
+  const recapRoundId = getRecapRound();
+  if (recapRoundId) {
+    const recap = buildRoundRecap(recapRoundId);
+    if (recap) body.appendChild(recap);
+  }
+
+  // Score history graph (Total tab only, when ≥2 rounds have data)
+  if (state.lbRound === 'all') {
+    const graph = buildScoreGraph(rows);
+    if (graph) body.appendChild(graph);
+  }
+
   const scrollWrap = document.createElement('div');
   scrollWrap.className = 'lb-scroll-wrap';
   scrollWrap.appendChild(table);
