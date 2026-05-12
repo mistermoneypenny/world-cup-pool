@@ -164,7 +164,7 @@ const FLAG_CODES = {
 };
 function flag(name) {
   const c = FLAG_CODES[name];
-  return c ? `<img src="https://flagcdn.com/16x12/${c}.png" width="16" height="12" alt="${c}" class="team-flag">` : '';
+  return c ? `<img src="https://flagcdn.com/w40/${c}.png" width="20" height="15" alt="" class="team-flag">` : '';
 }
 
 // INITIAL_TEAMS: 32 projected knockout-round teams, 8 per quadrant, in R32 matchup pairs.
