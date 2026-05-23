@@ -1163,8 +1163,8 @@ function buildMatchup(game) {
       if (pickedThis)             row.classList.add('picked');
       if (pickedThis && isWinner) row.classList.add('pick-correct');
       if (pickedThis && isLoser)  row.classList.add('pick-wrong');
-      const displaySc = sc !== undefined ? sc : liveSc;
-      const goals = displaySc !== undefined ? `<span class="t-score${isLive ? ' live' : ''}">${idx === 0 ? displaySc.t1 : displaySc.t2}</span>` : '';
+      const displaySc = sc ?? liveSc;
+      const goals = displaySc != null ? `<span class="t-score${isLive ? ' live' : ''}">${idx === 0 ? displaySc.t1 : displaySc.t2}</span>` : '';
       row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${flag(team.name)}${esc(team.name)}</span>${goals}`;
     }
     card.appendChild(row);
@@ -1309,31 +1309,55 @@ Example: Picking Pot 3 (Ivory Coast) to beat Pot 1 (Germany) in the Round of 32:
 Note: A correct Draw pick always earns a flat 1 point — no upset bonus applies to draws.
 
 BONUS QUESTIONS
-Each round includes bonus questions for extra points. Answers must be submitted before the round locks.
+Bonus questions are open for the duration of the relevant round. Answers must be submitted before the round locks.
 
-Group Stage
-  · Total number of draws in the group stage — 8 pts
-  · Confederation with the most group stage wins — 6 pts
+Tournament-Wide Predictions (submit before the Group Stage)
+  · Golden Boot Winner (player name) — 6 pts
+  · Team with Best Time of Possession % — 6 pts
+  · First Pot 1 Team to be Eliminated — 6 pts
+
+Group Stage Bonuses
+  · Team with Most Goals in the Group Stage — 5 pts
+  · Confederation with Highest Win Rate — 5 pts
+  · Highest Winning Margin in Any Single Game (goals) — 4 pts
 
 Round of 32
-  · Most successful confederation from R32 onward — 6 pts
+  · Total Red Cards in R32 — 6 pts
 
 Round of 16
-  · Number of penalty shootouts in the Round of 32 — 5 pts
+  · Total Goals in R16 — 5 pts
 
 Quarterfinals
-  · Golden Boot leader (player name) — 10 pts
-  · Name all four semi-finalists — 20 pts
+  · Team with Most Assists — 2 pts
+  · All Four Correct Picks (Semi-Finalists) — 10 pts
 
 Semifinals
-  · Nation with the most total goals in the tournament — 2 pts
-  · Total goals scored in both semi-finals — 1 pt
+  · High Individual Scorer (Semi-Finals) — 3 pts
 
 Final
-  · Will the Final be decided by penalties? — 3 pts
+  · Man of the Match — 3 pts
 
 STANDINGS
 The leaderboard shows total points earned plus remaining possible points. Players are ranked by total score, with possible points used as a tiebreaker.
+
+PARTICIPATING TEAMS BY POT
+Teams are seeded by their FIFA Draw Pot. Pot 1 contains the strongest/highest-ranked nations; Pot 4 the lowest-ranked. Higher-pot upsets earn more bonus points.
+
+Pot 1 (Top Seeds)
+  Argentina · Belgium · Brazil · Canada · England · France
+  Germany · Mexico · Netherlands · Portugal · Spain · USA
+
+Pot 2
+  Austria · Colombia · Croatia · Ecuador · Iran · Japan
+  Morocco · Senegal · South Korea · Switzerland · Turkey · Uruguay
+
+Pot 3
+  Algeria · Australia · Czech Republic · DR Congo · Egypt · Ivory Coast
+  Norway · Panama · Qatar · Saudi Arabia · Scotland · Sweden
+
+Pot 4
+  Bosnia · Cape Verde · Curacao · Ghana · Haiti · Iraq
+  Jordan · New Zealand · Paraguay · South Africa · Tunisia · Uzbekistan
 
 GENERAL RULES
 · The Commissioner's decisions are final.
@@ -3028,7 +3052,8 @@ async function init() {
     loadDemoData();
     saveState();
   }
-  if (!state.rulesText) {
+  if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage')) {
+    // First run or old default text — replace with updated rules
     state.rulesText = DEFAULT_RULES_PLACEHOLDER;
     saveState();
   }
