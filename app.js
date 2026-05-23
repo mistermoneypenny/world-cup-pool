@@ -39,18 +39,21 @@ const BONUS_CONFIG = {
     { id: 'grp_conf',  label: 'Confederation with Most Group Stage Wins', points: 6, type: 'select', options: CONFEDERATIONS },
   ],
   r32: [
-    { id: 'r32_conf', label: 'Most Successful Confederation (R32+)', points: 4, type: 'select', options: CONFEDERATIONS },
+    { id: 'r32_conf', label: 'Most Successful Confederation (R32+)', points: 6, type: 'select', options: CONFEDERATIONS },
   ],
   r16: [
-    { id: 'r16_shootouts', label: 'Number of Penalty Shootouts in R32', points: 6, type: 'select', options: Array.from({length: 17}, (_, i) => String(i)) },
+    { id: 'r16_shootouts', label: 'Number of Penalty Shootouts in R32', points: 5, type: 'select', options: Array.from({length: 17}, (_, i) => String(i)) },
   ],
   qf: [
     { id: 'qf_scorer', label: 'Golden Boot Leader (Player Name)', points: 10, type: 'text' },
     { id: 'qf_teams',  label: 'Name the Four Semi-Finalists', points: 20, type: 'multi', count: 4, sourceRound: 'qf' },
   ],
   sf: [
-    { id: 'sf_goals', label: 'Nation with Most Total Goals', points: 6, type: 'select', options: '__ALL_TEAMS__' },
-    { id: 'sf_num',   label: 'Total Goals in Both Semifinals', points: 6, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)) },
+    { id: 'sf_goals', label: 'Nation with Most Total Goals', points: 2, type: 'select', options: '__ALL_TEAMS__' },
+    { id: 'sf_num',   label: 'Total Goals in Both Semifinals', points: 1, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)) },
+  ],
+  final: [
+    { id: 'final_penalties', label: 'Will the Final Be Decided by Penalties?', points: 3, type: 'select', options: ['Yes', 'No'] },
   ],
 };
 
@@ -1226,18 +1229,21 @@ Group Stage
   · Confederation with the most group stage wins — 6 pts
 
 Round of 32
-  · Most successful confederation from R32 onward — 4 pts
+  · Most successful confederation from R32 onward — 6 pts
 
 Round of 16
-  · Number of penalty shootouts in the Round of 32 — 6 pts
+  · Number of penalty shootouts in the Round of 32 — 5 pts
 
 Quarterfinals
   · Golden Boot leader (player name) — 10 pts
   · Name all four semi-finalists — 20 pts
 
 Semifinals
-  · Nation with the most total goals in the tournament — 6 pts
-  · Total goals scored in both semi-finals — 6 pts
+  · Nation with the most total goals in the tournament — 2 pts
+  · Total goals scored in both semi-finals — 1 pt
+
+Final
+  · Will the Final be decided by penalties? — 3 pts
 
 STANDINGS
 The leaderboard shows total points earned plus remaining possible points. Players are ranked by total score, with possible points used as a tiebreaker.
