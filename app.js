@@ -969,13 +969,22 @@ function renderGroupStageBracket(wrapper) {
       gameRowCount++;
 
       const sc = state.scores[game.id];
-      const liveSc = !sc ? findGameScore(t1?.name, t2?.name) : null;
-      const isLiveGroup = liveSc && liveSc.status === 'in';
+      const liveSc = findGameScore(t1?.name, t2?.name);
+      const isLiveGroup = !sc && liveSc && liveSc.status === 'in';
       if (isLiveGroup) {
-        const badge = document.createElement('span');
+        const badge = liveSc.link ? document.createElement('a') : document.createElement('span');
+        if (liveSc.link) { badge.href = liveSc.link; badge.target = '_blank'; badge.rel = 'noopener noreferrer'; }
         badge.className = 'live-badge-inline';
         badge.textContent = liveSc.statusDetail || 'LIVE';
         gameRow.appendChild(badge);
+      } else if (liveSc?.link) {
+        const espn = document.createElement('a');
+        espn.href = liveSc.link;
+        espn.target = '_blank';
+        espn.rel = 'noopener noreferrer';
+        espn.className = 'espn-link-inline';
+        espn.textContent = 'ESPN';
+        gameRow.appendChild(espn);
       }
       [t1, t2].forEach((team, idx) => {
         const teamEl = document.createElement('span');
@@ -1072,13 +1081,22 @@ function buildMatchup(game) {
   card.className = 'matchup';
 
   const sc = state.scores[game.id];
-  const liveSc = !sc ? findGameScore(t1?.name, t2?.name) : null;
-  const isLive = liveSc && liveSc.status === 'in';
+  const liveSc = findGameScore(t1?.name, t2?.name);
+  const isLive = !sc && liveSc && liveSc.status === 'in';
   if (isLive) {
-    const badge = document.createElement('div');
+    const badge = liveSc.link ? document.createElement('a') : document.createElement('div');
+    if (liveSc.link) { badge.href = liveSc.link; badge.target = '_blank'; badge.rel = 'noopener noreferrer'; }
     badge.className = 'live-badge';
     badge.textContent = liveSc.statusDetail || 'LIVE';
     card.appendChild(badge);
+  } else if (liveSc?.link) {
+    const espn = document.createElement('a');
+    espn.href = liveSc.link;
+    espn.target = '_blank';
+    espn.rel = 'noopener noreferrer';
+    espn.className = 'espn-link-badge';
+    espn.textContent = 'ESPN ↗';
+    card.appendChild(espn);
   }
   [{ team: t1 }, { team: t2 }].forEach(({ team }, idx) => {
     const row = document.createElement('div');
@@ -3060,8 +3078,8 @@ function findGameScore(t1Name, t2Name) {
     if (!fwd && !rev) continue;
     // Normalise so t1 always corresponds to our t1
     return fwd
-      ? { t1: sc.t1.score, t2: sc.t2.score, status: sc.status, statusDetail: sc.statusDetail }
-      : { t1: sc.t2.score, t2: sc.t1.score, status: sc.status, statusDetail: sc.statusDetail };
+      ? { t1: sc.t1.score, t2: sc.t2.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link }
+      : { t1: sc.t2.score, t2: sc.t1.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link };
   }
   return null;
 }

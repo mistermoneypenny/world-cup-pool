@@ -306,11 +306,14 @@ async function fetchESPNScores() {
       const home = teams.find(t => t.homeAway === 'home') || teams[0];
       const away = teams.find(t => t.homeAway === 'away') || teams[1];
       const key = `${home.team?.displayName} vs ${away.team?.displayName}`;
+      const link = event.links?.find(l => l.rel?.includes('clubhouse'))?.href
+        || `https://www.espn.com/soccer/match/_/gameId/${event.id}`;
       scores[key] = {
         t1: { name: home.team?.displayName || '', score: parseInt(home.score) || 0 },
         t2: { name: away.team?.displayName || '', score: parseInt(away.score) || 0 },
         status,
         statusDetail: comp.status?.type?.shortDetail || '',
+        link,
       };
     }
   }
