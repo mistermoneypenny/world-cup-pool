@@ -14,12 +14,13 @@
 // ── CONSTANTS ─────────────────────────────────────────────────
 
 const ROUND_CONFIG = [
-  { id: 'groups', label: 'Group Stage',    short: 'GRP',   pts: 1,  multiplier: 1.0  },
-  { id: 'r32',    label: 'Round of 32',    short: 'R32',   pts: 2,  multiplier: 1.1  },
-  { id: 'r16',    label: 'Round of 16',    short: 'R16',   pts: 3,  multiplier: 1.15 },
-  { id: 'qf',     label: 'Quarterfinals',  short: 'QF',    pts: 5,  multiplier: 1.3  },
-  { id: 'sf',     label: 'Semifinals',     short: 'SF',    pts: 8,  multiplier: 1.5  },
-  { id: 'final',  label: 'Final',          short: 'FINAL', pts: 15, multiplier: 2.0  },
+  { id: 'groups', label: 'Group Stage',       short: 'GRP',   pts: 1,  multiplier: 1.0  },
+  { id: 'r32',    label: 'Round of 32',       short: 'R32',   pts: 2,  multiplier: 1.1  },
+  { id: 'r16',    label: 'Round of 16',       short: 'R16',   pts: 3,  multiplier: 1.15 },
+  { id: 'qf',     label: 'Quarterfinals',     short: 'QF',    pts: 5,  multiplier: 1.3  },
+  { id: 'sf',     label: 'Semifinals',        short: 'SF',    pts: 8,  multiplier: 1.5  },
+  { id: 'third',  label: '3rd Place Play-off', short: '3RD',  pts: 8,  multiplier: 1.5  },
+  { id: 'final',  label: 'Final',             short: 'FINAL', pts: 15, multiplier: 2.0  },
 ];
 
 // -- CONFEDERATION LIST (for bonus dropdown) -----------------------
@@ -354,6 +355,13 @@ function buildGames() {
       label: `${r1} vs ${r2}` };
   });
 
+  // 3rd Place Play-off: losers of both SFs
+  const tpid = gameId('third', null, 0);
+  games[tpid] = { id: tpid, round: 'third', region: null, idx: 0,
+    t1: null, t2: null,
+    p1: gameId('sf', null, 0), p2: gameId('sf', null, 1),
+    label: '3rd Place Play-off' };
+
   // Final
   const fid = gameId('final', null, 0);
   games[fid] = { id: fid, round: 'final', region: null, idx: 0,
@@ -372,8 +380,23 @@ function gameId(round, region, idx) {
   return region ? `${round}-${region.toLowerCase()}-${idx}` : `${round}-${idx}`;
 }
 
+function getLoser(gid) {
+  const winner = getWinner(gid);
+  if (!winner) return null;
+  const game = state.games[gid];
+  if (!game) return null;
+  const { t1, t2 } = getTeams(game);
+  if (!t1 || !t2) return null;
+  return winner.name === t1.name ? t2 : t1;
+}
+
 function resolveTeam(game, slot) {
   if (game.round === 'r32' || game.round === 'groups') return slot === 1 ? game.t1 : game.t2;
+  if (game.round === 'third') {
+    const parentId = slot === 1 ? game.p1 : game.p2;
+    if (!parentId) return null;
+    return getLoser(parentId);
+  }
   const parentId = slot === 1 ? game.p1 : game.p2;
   if (!parentId) return null;
   return getWinner(parentId);
@@ -791,6 +814,7 @@ const ROUND_LABELS = {
   r16:    'ROUND OF 16',
   qf:     'QUARTERFINALS',
   sf:     'SEMIFINALS',
+  third:  '3RD PLACE',
   final:  'FINAL',
 };
 
@@ -800,6 +824,7 @@ const ROUND_DATES = {
   r16:    'Jul 5–8',
   qf:     'Jul 11–12',
   sf:     'Jul 15–16',
+  third:  'Jul 18',
   final:  'Jul 19',
 };
 
@@ -1196,6 +1221,24 @@ function buildBracketCenter() {
     : `<div class="wb-label">&#9917; World Champion</div><div class="wb-team wb-tbd">TBD</div>`;
   finalContent.appendChild(winnerBox);
 
+  // 3rd Place Play-off
+  const thirdGame = state.games[gameId('third', null, 0)];
+  if (thirdGame) {
+    const thirdSep = document.createElement('div');
+    thirdSep.className = 'third-place-sep';
+    finalContent.appendChild(thirdSep);
+
+    const thirdInfo = document.createElement('div');
+    thirdInfo.className = 'champ-info';
+    thirdInfo.innerHTML = `<div class="third-place-label">&#129350; 3rd Place Play-off</div><div class="champ-date">Saturday, July 18, 2026</div>`;
+    finalContent.appendChild(thirdInfo);
+
+    const thirdWrap = document.createElement('div');
+    thirdWrap.className = 'matchup-wrap';
+    thirdWrap.appendChild(buildMatchup(thirdGame));
+    finalContent.appendChild(thirdWrap);
+  }
+
   finalCol.appendChild(finalContent);
   center.appendChild(finalCol);
 
@@ -1221,6 +1264,7 @@ Round of 32: 2 points per correct pick
 Round of 16: 3 points per correct pick
 Quarterfinals: 5 points per correct pick
 Semifinals: 8 points per correct pick
+3rd Place Play-off: 8 points per correct pick
 Final: 15 points per correct pick
 
 In the Group Stage you may also pick a Draw. A correct Draw pick earns 1 point.
@@ -1229,7 +1273,7 @@ UPSET BONUS
 Picking an underdog (higher pot number) to win earns bonus points in every round — including the Group Stage. Teams are seeded by their FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). The formula is:
   ((Underdog pot − Favourite pot) + Base points) × Round multiplier
 
-Round multipliers: GRP ×1.0 · R32 ×1.1 · R16 ×1.15 · QF ×1.3 · SF ×1.5 · Final ×2.0
+Round multipliers: GRP ×1.0 · R32 ×1.1 · R16 ×1.15 · QF ×1.3 · SF ×1.5 · 3rd ×1.5 · Final ×2.0
 
 Example: Picking Pot 4 (South Africa) to beat Pot 1 (Mexico) in the Group Stage:
   ((4 − 1) + 1) × 1.0 = 4 points

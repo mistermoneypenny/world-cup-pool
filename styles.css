@@ -322,6 +322,8 @@ a { color: var(--accent); }
 .wb-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); margin-bottom: 0.2rem; }
 .wb-team { font-size: 0.85rem; font-weight: 700; color: var(--text); }
 .wb-tbd  { color: var(--text-3); font-style: italic; }
+.third-place-sep { width: 80%; border-top: 1px solid var(--border); margin: 0.25rem auto 0; }
+.third-place-label { font-size: 0.72rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.15rem; }
 .t-seed { font-size: 0.65rem; font-weight: 700; color: var(--text-3); min-width: 14px; flex-shrink: 0; }
 .t-name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 .team-slot.winner .t-seed { color: var(--green); }
