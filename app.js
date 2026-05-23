@@ -14,12 +14,12 @@
 // ── CONSTANTS ─────────────────────────────────────────────────
 
 const ROUND_CONFIG = [
-  { id: 'groups', label: 'Group Stage',    short: 'GRP',   pts: 1,  multiplier: 1.0 },
-  { id: 'r32',    label: 'Round of 32',    short: 'R32',   pts: 2,  multiplier: 1.2 },
-  { id: 'r16',    label: 'Round of 16',    short: 'R16',   pts: 3,  multiplier: 1.4 },
-  { id: 'qf',     label: 'Quarterfinals',  short: 'QF',    pts: 5,  multiplier: 1.6 },
-  { id: 'sf',     label: 'Semifinals',     short: 'SF',    pts: 8,  multiplier: 1.8 },
-  { id: 'final',  label: 'Final',          short: 'FINAL', pts: 15, multiplier: 2.0 },
+  { id: 'groups', label: 'Group Stage',    short: 'GRP',   pts: 1,  multiplier: 1.0  },
+  { id: 'r32',    label: 'Round of 32',    short: 'R32',   pts: 2,  multiplier: 1.1  },
+  { id: 'r16',    label: 'Round of 16',    short: 'R16',   pts: 3,  multiplier: 1.15 },
+  { id: 'qf',     label: 'Quarterfinals',  short: 'QF',    pts: 5,  multiplier: 1.3  },
+  { id: 'sf',     label: 'Semifinals',     short: 'SF',    pts: 8,  multiplier: 1.5  },
+  { id: 'final',  label: 'Final',          short: 'FINAL', pts: 15, multiplier: 2.0  },
 ];
 
 // -- CONFEDERATION LIST (for bonus dropdown) -----------------------
@@ -1208,13 +1208,13 @@ UPSET BONUS
 Picking an underdog (higher pot number) to win earns bonus points in every round — including the Group Stage. Teams are seeded by their FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). The formula is:
   ((Underdog pot − Favourite pot) + Base points) × Round multiplier
 
-Round multipliers: GRP ×1.0 · R32 ×1.2 · R16 ×1.4 · QF ×1.6 · SF ×1.8 · Final ×2.0
+Round multipliers: GRP ×1.0 · R32 ×1.1 · R16 ×1.15 · QF ×1.3 · SF ×1.5 · Final ×2.0
 
 Example: Picking Pot 4 (South Africa) to beat Pot 1 (Mexico) in the Group Stage:
   ((4 − 1) + 1) × 1.0 = 4 points
 
 Example: Picking Pot 3 (Ivory Coast) to beat Pot 1 (Germany) in the Round of 32:
-  ((3 − 1) + 2) × 1.2 = 4.8 points
+  ((3 − 1) + 2) × 1.1 = 4.4 points
 
 Note: A correct Draw pick always earns a flat 1 point — no upset bonus applies to draws.
 
