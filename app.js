@@ -251,7 +251,7 @@ const PLAYER_AVATARS = {
   'Lorenz':     'Lorenz.png',
   'Cole':       'Cole.png',
   'Commish':    'David.png',
-  'Lang':       'Lang.jpg',
+  'Late Night Lang': 'Lang.jpg',
   'Jose':       'Jose.jpg',
   'Rafa':       'Rafa.jpg',
   'Mike Jones': 'MikeJones.jpg',
