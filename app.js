@@ -34,27 +34,35 @@ const CONFEDERATIONS = [
 ];
 
 // -- BONUS QUESTIONS PER ROUND ------------------------------------
+// 'tournament' bonuses are submitted during the Group Stage window
+// and scored at tournament end. They appear as a separate section
+// in the Group Stage picks view.
 const BONUS_CONFIG = {
+  tournament: [
+    { id: 'tw_golden_boot', label: 'Golden Boot Winner',                       points: 6,  type: 'text' },
+    { id: 'tw_possession',  label: 'Team with Best Time of Possession %',      points: 6,  type: 'select', options: '__ALL_TEAMS__' },
+    { id: 'tw_pot1_exit',   label: 'First Pot 1 Team to be Eliminated',        points: 6,  type: 'select', options: '__POT1_TEAMS__' },
+  ],
   groups: [
-    { id: 'grp_draws', label: 'Total Draws in the Group Stage', points: 8, type: 'select', options: Array.from({length: 37}, (_, i) => String(i)) },
-    { id: 'grp_conf',  label: 'Confederation with Most Group Stage Wins', points: 6, type: 'select', options: CONFEDERATIONS },
+    { id: 'grp_most_goals',   label: 'Team with Most Goals in the Group Stage',           points: 5, type: 'select', options: '__ALL_TEAMS__' },
+    { id: 'grp_conf_winrate', label: 'Confederation with Highest Win Rate',               points: 5, type: 'select', options: CONFEDERATIONS },
+    { id: 'grp_margin',       label: 'Highest Winning Margin in Any Single Game (goals)', points: 4, type: 'select', options: ['1','2','3','4','5','6+'] },
   ],
   r32: [
-    { id: 'r32_conf', label: 'Most Successful Confederation (R32+)', points: 6, type: 'select', options: CONFEDERATIONS },
+    { id: 'r32_red_cards', label: 'Total Red Cards in R32', points: 6, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)) },
   ],
   r16: [
-    { id: 'r16_shootouts', label: 'Number of Penalty Shootouts in R32', points: 5, type: 'select', options: Array.from({length: 17}, (_, i) => String(i)) },
+    { id: 'r16_goals', label: 'Total Goals in R16', points: 5, type: 'select', options: Array.from({length: 41}, (_, i) => String(i)) },
   ],
   qf: [
-    { id: 'qf_scorer', label: 'Golden Boot Leader (Player Name)', points: 10, type: 'text' },
-    { id: 'qf_teams',  label: 'Name the Four Semi-Finalists', points: 20, type: 'multi', count: 4, sourceRound: 'qf' },
+    { id: 'qf_assists', label: 'Team with Most Assists',                 points: 2,  type: 'select', options: '__ALL_TEAMS__' },
+    { id: 'qf_teams',   label: 'All Four Correct Picks (Semi-Finalists)', points: 10, type: 'multi', count: 4, sourceRound: 'qf' },
   ],
   sf: [
-    { id: 'sf_goals', label: 'Nation with Most Total Goals', points: 2, type: 'select', options: '__ALL_TEAMS__' },
-    { id: 'sf_num',   label: 'Total Goals in Both Semifinals', points: 1, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)) },
+    { id: 'sf_top_scorer', label: 'High Individual Scorer (Semi-Finals)', points: 3, type: 'text' },
   ],
   final: [
-    { id: 'final_penalties', label: 'Will the Final Be Decided by Penalties?', points: 3, type: 'select', options: ['Yes', 'No'] },
+    { id: 'final_motm', label: 'Man of the Match', points: 3, type: 'text' },
   ],
 };
 
@@ -222,8 +230,19 @@ const ALL_TEAM_NAMES = Object.values(GROUP_TEAMS)
   .map(t => t.name)
   .sort((a, b) => a.localeCompare(b));
 
-// Resolve the __ALL_TEAMS__ placeholder in BONUS_CONFIG
-BONUS_CONFIG.sf[0].options = ALL_TEAM_NAMES;
+// Build sorted list of Pot 1 (seed === 1) teams for bonus dropdown
+const POT1_TEAMS = Object.values(GROUP_TEAMS)
+  .map(g => g.find(t => t.seed === 1)?.name)
+  .filter(Boolean)
+  .sort((a, b) => a.localeCompare(b));
+
+// Resolve __ALL_TEAMS__ and __POT1_TEAMS__ placeholders in BONUS_CONFIG
+Object.values(BONUS_CONFIG).forEach(bonuses => {
+  bonuses.forEach(b => {
+    if (b.options === '__ALL_TEAMS__') b.options = ALL_TEAM_NAMES;
+    if (b.options === '__POT1_TEAMS__') b.options = POT1_TEAMS;
+  });
+});
 
 // ── PLAYER AVATARS ────────────────────────────────────────────
 const PLAYER_AVATARS = {
@@ -505,8 +524,14 @@ function getPlayerTotalScore(playerId) {
 
 // ── BONUS SCORING ─────────────────────────────────────────────
 
+// Returns the bonus list for a round. For 'groups', bundles tournament-wide bonuses first.
+function getBonusList(roundId) {
+  if (roundId === 'groups') return [...(BONUS_CONFIG.tournament || []), ...(BONUS_CONFIG.groups || [])];
+  return BONUS_CONFIG[roundId] || [];
+}
+
 function getBonusScore(playerId, roundId) {
-  const bonuses = BONUS_CONFIG[roundId] || [];
+  const bonuses = getBonusList(roundId);
   let score = 0;
   bonuses.forEach(b => {
     const playerAns  = (state.bonusPicks[playerId] || {})[b.id];
@@ -525,7 +550,7 @@ function getBonusScore(playerId, roundId) {
 }
 
 function getPlayerBonusDetails(playerId, roundId) {
-  const bonuses = BONUS_CONFIG[roundId] || [];
+  const bonuses = getBonusList(roundId);
   return bonuses.map(b => {
     const playerAns  = (state.bonusPicks[playerId] || {})[b.id];
     const correctAns = state.bonusAnswers[b.id];
@@ -1491,16 +1516,18 @@ function renderPicksBody() {
   }
 
   // ── BONUS SECTION ──────────────────────────────────────────
-  const bonuses = BONUS_CONFIG[roundId] || [];
-  if (bonuses.length > 0) {
+  // For the group stage, show two titled sections:
+  // 1) Tournament-Wide Predictions, 2) Group Stage Bonuses
+  function renderBonusQuestions(bonusList, sectionTitle) {
+    if (!bonusList.length) return;
     const bonusSection = document.createElement('div');
     bonusSection.className = 'bonus-section';
     const bonusTitle = document.createElement('h3');
     bonusTitle.className = 'bonus-title';
-    bonusTitle.innerHTML = '&#127775; Bonus Opportunity';
+    bonusTitle.innerHTML = sectionTitle;
     bonusSection.appendChild(bonusTitle);
 
-    bonuses.forEach(b => {
+    bonusList.forEach(b => {
       const bonusCard = document.createElement('div');
       bonusCard.className = 'bonus-card';
 
@@ -1598,6 +1625,13 @@ function renderPicksBody() {
     });
 
     body.appendChild(bonusSection);
+  } // end renderBonusQuestions
+
+  if (roundId === 'groups') {
+    renderBonusQuestions(BONUS_CONFIG.tournament || [], '&#127760; Tournament-Wide Predictions');
+    renderBonusQuestions(BONUS_CONFIG.groups    || [], '&#11088; Group Stage Bonuses');
+  } else {
+    renderBonusQuestions(getBonusList(roundId), '&#127775; Bonus Opportunity');
   }
 
   if (isOpen) {
@@ -2026,7 +2060,7 @@ function renderBonusAdmin() {
 
   const roundSel = document.getElementById('results-round-sel');
   const roundId  = roundSel ? roundSel.value : state.currentRound;
-  const bonuses  = BONUS_CONFIG[roundId] || [];
+  const bonuses  = getBonusList(roundId);
 
   if (!bonuses.length) {
     container.innerHTML = '<div class="result-tbd">No bonus questions for this round.</div>';
