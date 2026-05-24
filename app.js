@@ -15,12 +15,12 @@
 
 const ROUND_CONFIG = [
   { id: 'groups', label: 'Group Stage',       short: 'GRP',   pts: 1,  multiplier: 1.0  },
-  { id: 'r32',    label: 'Round of 32',       short: 'R32',   pts: 2,  multiplier: 1.1  },
-  { id: 'r16',    label: 'Round of 16',       short: 'R16',   pts: 3,  multiplier: 1.15 },
-  { id: 'qf',     label: 'Quarterfinals',     short: 'QF',    pts: 5,  multiplier: 1.3  },
-  { id: 'sf',     label: 'Semifinals',        short: 'SF',    pts: 8,  multiplier: 1.5  },
-  { id: 'third',  label: '3rd Place Play-off', short: '3RD',  pts: 8,  multiplier: 1.5  },
-  { id: 'final',  label: 'Final',             short: 'FINAL', pts: 15, multiplier: 2.0  },
+  { id: 'r32',    label: 'Round of 32',       short: 'R32',   pts: 2,  multiplier: 1.2  },
+  { id: 'r16',    label: 'Round of 16',       short: 'R16',   pts: 3,  multiplier: 1.3  },
+  { id: 'qf',     label: 'Quarterfinals',     short: 'QF',    pts: 5,  multiplier: 1.6  },
+  { id: 'sf',     label: 'Semifinals',        short: 'SF',    pts: 8,  multiplier: 2.0  },
+  { id: 'third',  label: '3rd Place Play-off', short: '3RD',  pts: 8,  multiplier: 2.0  },
+  { id: 'final',  label: 'Final',             short: 'FINAL', pts: 15, multiplier: 3.0  },
 ];
 
 // -- CONFEDERATION LIST (for bonus dropdown) -----------------------
@@ -1315,29 +1315,33 @@ Teams are seeded by FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). If you p
   Total = Base pts + (Underdog pot − Favourite pot) × Round multiplier
 
 Round multipliers:
-  Group Stage ×1.0  ·  R32 ×1.1  ·  R16 ×1.15
-  QF ×1.3  ·  SF ×1.5  ·  3rd Place ×1.5  ·  Final ×2.0
+  Group Stage ×1.0  ·  R32 ×1.2  ·  R16 ×1.3
+  QF ×1.6  ·  SF ×2.0  ·  3rd Place ×2.0  ·  Final ×3.0
 
 If there is no pot differential (equal-pot teams, or favourite wins), you earn base points only — no multiplier applied.
 
 Examples:
   Pot 4 beats Pot 1 in the Group Stage → 1 + (3 × 1.0) = 4 pts
-  Pot 3 beats Pot 1 in the Round of 32 → 2 + (2 × 1.1) = 4.2 pts
-  Pot 2 beats Pot 1 in the Quarterfinals → 5 + (1 × 1.3) = 6.3 pts
-  Pot 4 beats Pot 1 in the Final → 15 + (3 × 2.0) = 21 pts
+  Pot 3 beats Pot 1 in the Round of 32 → 2 + (2 × 1.2) = 4.4 pts
+  Pot 2 beats Pot 1 in the Quarterfinals → 5 + (1 × 1.6) = 6.6 pts
+  Pot 4 beats Pot 1 in the Final → 15 + (3 × 3.0) = 24 pts
 
 ——————————————————————————
 
-DRAWS (Group Stage only)
-You may also pick a Draw in any Group Stage game. A correct draw pick earns base points plus a pot-gap bonus:
+DRAWS
+You may pick a Draw in any game. In knockout rounds this represents predicting the game goes to extra time / penalties. A correct draw pick earns base points plus a pot-gap bonus:
 
   Total = Base pts + (Pot differential / 2) × Round multiplier
 
-Examples:
-  Same-pot draw (e.g. Pot 2 vs Pot 2) → 1 + 0 = 1 pt
-  Pot 1 vs Pot 2 draw → 1 + (0.5 × 1.0) = 1.5 pts
+Examples (Group Stage, ×1.0):
+  Same-pot draw → 1 + 0 = 1 pt
   Pot 1 vs Pot 3 draw → 1 + (1.0 × 1.0) = 2 pts
   Pot 1 vs Pot 4 draw → 1 + (1.5 × 1.0) = 2.5 pts
+
+Examples (Final, ×3.0):
+  Same-pot draw → 15 + 0 = 15 pts
+  Pot 1 vs Pot 3 draw → 15 + (1.0 × 3.0) = 18 pts
+  Pot 1 vs Pot 4 draw → 15 + (1.5 × 3.0) = 19.5 pts
 
 ——————————————————————————
 BONUS QUESTIONS
@@ -1735,10 +1739,8 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const savedPick = savedPicks[game.id];
   const isDrawResult = state.results[game.id] === 'Draw';
 
-  // Build the options list: for group stage add Draw in middle
-  const options = game.round === 'groups'
-    ? [{ team: t1 }, { team: null, isDraw: true }, { team: t2 }]
-    : [{ team: t1 }, { team: t2 }];
+  // All rounds include Draw as a pick option
+  const options = [{ team: t1 }, { team: null, isDraw: true }, { team: t2 }];
 
   // Pre-compute pick popularity for locked/closed rounds
   const popData = (!isOpen && state.players.length > 1) ? getPickPopularity(game.id, game.round) : null;
@@ -2846,7 +2848,7 @@ function buildResultGameCard(game) {
         vs.textContent = 'vs';
         teamsRow.appendChild(vs);
 
-        if (game.round === 'groups') {
+        {
           const drawBtn = document.createElement('button');
           drawBtn.className = 'result-team-btn result-draw-btn' + (isDraw ? ' chosen' : '');
           drawBtn.textContent = 'Draw';
