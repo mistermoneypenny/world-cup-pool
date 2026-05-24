@@ -454,9 +454,9 @@ function getGamesForRound(roundId) {
 
 // ── SCORING ───────────────────────────────────────────────────
 
-// Favorites (lower seed/ranking) earn flat cfg.pts.
-// Underdogs earn an upset bonus: ((dogSeed - favSeed) + cfg.pts) * cfg.multiplier.
-// Draws earn (pot differential / 2) * multiplier.
+// Favorites (or equal-pot) earn flat cfg.pts.
+// Underdogs earn: cfg.pts + (dogSeed - favSeed) * cfg.multiplier.
+// Draws earn:     cfg.pts + (pot differential / 2) * cfg.multiplier.
 function calcPickPoints(game, pickedName, cfg) {
   if (pickedName === 'Draw') {
     const { t1, t2 } = getTeams(game);
@@ -470,7 +470,7 @@ function calcPickPoints(game, pickedName, cfg) {
   const dog = fav === t1 ? t2 : t1;
   if (dog.seed === fav.seed) return cfg.pts;
   if (pickedName === dog.name) {
-    return Math.round(((dog.seed - fav.seed) + cfg.pts) * cfg.multiplier * 10) / 10;
+    return Math.round((cfg.pts + (dog.seed - fav.seed) * cfg.multiplier) * 10) / 10;
   }
   return cfg.pts;
 }
@@ -1306,18 +1306,19 @@ In the Group Stage you may also pick a Draw. A correct Draw pick earns base poin
 Example: Pot 1 vs Pot 3 draw → 1 + (2/2) × 1.0 = 2 pts. Same-pot draw → 1 pt (base only).
 
 UPSET BONUS
-Picking an underdog (higher pot number) to win earns bonus points in every round — including the Group Stage. Teams are seeded by their FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). The formula is:
-  ((Underdog pot − Favourite pot) + Base points) × Round multiplier
+Picking an underdog (higher pot number) to win earns bonus points in every round — including the Group Stage. Teams are seeded by their FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). Base points are always earned flat; only the upset bonus is multiplied:
+  Base pts + (Underdog pot − Favourite pot) × Round multiplier
 
 Round multipliers: GRP ×1.0 · R32 ×1.1 · R16 ×1.15 · QF ×1.3 · SF ×1.5 · 3rd ×1.5 · Final ×2.0
 
 Example: Picking Pot 4 (South Africa) to beat Pot 1 (Mexico) in the Group Stage:
-  ((4 − 1) + 1) × 1.0 = 4 points
+  1 + (4 − 1) × 1.0 = 4 points
 
 Example: Picking Pot 3 (Ivory Coast) to beat Pot 1 (Germany) in the Round of 32:
-  ((3 − 1) + 2) × 1.1 = 4.4 points
+  2 + (3 − 1) × 1.1 = 4.2 points
 
-Note: A correct Draw pick always earns a flat 1 point — no upset bonus applies to draws.
+Example: Picking Pot 4 to beat Pot 1 in the Final:
+  15 + (4 − 1) × 2.0 = 21 points
 
 BONUS QUESTIONS
 Bonus questions are open for the duration of the relevant round. Answers must be submitted before the round locks.
@@ -3063,7 +3064,7 @@ async function init() {
     loadDemoData();
     saveState();
   }
-  if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage') || state.rulesText.includes('A correct Draw pick earns 1 point') || state.rulesText.includes('(Pot differential / 2) × Round multiplier')) {
+  if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage') || state.rulesText.includes('A correct Draw pick earns 1 point') || state.rulesText.includes('(Pot differential / 2) × Round multiplier') || state.rulesText.includes('((Underdog pot')) {
     // First run or old default text — replace with updated rules
     state.rulesText = DEFAULT_RULES_PLACEHOLDER;
     saveState();
