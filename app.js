@@ -1328,20 +1328,16 @@ Examples:
 
 ——————————————————————————
 
-DRAWS
-You may pick a Draw in any game. In knockout rounds this represents predicting the game goes to extra time / penalties. A correct draw pick earns base points plus a pot-gap bonus:
+DRAWS (Group Stage only)
+You may pick a Draw in any Group Stage game. Knockout rounds are always decided by penalty kicks if level after 90 minutes, so Draw is not a pick option there. A correct draw pick earns base points plus a pot-gap bonus:
 
   Total = Base pts + (Pot differential / 2) × Round multiplier
 
-Examples (Group Stage, ×1.0):
-  Same-pot draw → 1 + 0 = 1 pt
+Examples:
+  Same-pot draw (e.g. Pot 2 vs Pot 2) → 1 + 0 = 1 pt
+  Pot 1 vs Pot 2 draw → 1 + (0.5 × 1.0) = 1.5 pts
   Pot 1 vs Pot 3 draw → 1 + (1.0 × 1.0) = 2 pts
   Pot 1 vs Pot 4 draw → 1 + (1.5 × 1.0) = 2.5 pts
-
-Examples (Final, ×3.0):
-  Same-pot draw → 15 + 0 = 15 pts
-  Pot 1 vs Pot 3 draw → 15 + (1.0 × 3.0) = 18 pts
-  Pot 1 vs Pot 4 draw → 15 + (1.5 × 3.0) = 19.5 pts
 
 ——————————————————————————
 BONUS QUESTIONS
@@ -1739,8 +1735,10 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const savedPick = savedPicks[game.id];
   const isDrawResult = state.results[game.id] === 'Draw';
 
-  // All rounds include Draw as a pick option
-  const options = [{ team: t1 }, { team: null, isDraw: true }, { team: t2 }];
+  // Draw only available in Group Stage (knockout rounds decided by penalties)
+  const options = game.round === 'groups'
+    ? [{ team: t1 }, { team: null, isDraw: true }, { team: t2 }]
+    : [{ team: t1 }, { team: t2 }];
 
   // Pre-compute pick popularity for locked/closed rounds
   const popData = (!isOpen && state.players.length > 1) ? getPickPopularity(game.id, game.round) : null;
@@ -2848,7 +2846,7 @@ function buildResultGameCard(game) {
         vs.textContent = 'vs';
         teamsRow.appendChild(vs);
 
-        {
+        if (game.round === 'groups') {
           const drawBtn = document.createElement('button');
           drawBtn.className = 'result-team-btn result-draw-btn' + (isDraw ? ' chosen' : '');
           drawBtn.textContent = 'Draw';
