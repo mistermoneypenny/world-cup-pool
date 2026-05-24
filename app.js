@@ -1375,7 +1375,7 @@ Final
 STANDINGS
 ——————————————————————————
 
-The leaderboard shows total points earned and remaining possible points. Players are ranked by total score, with possible points as a tiebreaker.
+The leaderboard shows each player's total points earned and their maximum possible score (current points plus potential points from picks already submitted for unplayed games). Players are ranked by total score. Tied players share the same rank.
 
 ——————————————————————————
 PARTICIPATING TEAMS BY POT
