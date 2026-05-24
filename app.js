@@ -456,9 +456,14 @@ function getGamesForRound(roundId) {
 
 // Favorites (lower seed/ranking) earn flat cfg.pts.
 // Underdogs earn an upset bonus: ((dogSeed - favSeed) + cfg.pts) * cfg.multiplier.
-// Draws (group stage only) earn flat cfg.pts — no upset bonus.
+// Draws earn (pot differential / 2) * multiplier.
 function calcPickPoints(game, pickedName, cfg) {
-  if (pickedName === 'Draw') return cfg.pts;
+  if (pickedName === 'Draw') {
+    const { t1, t2 } = getTeams(game);
+    if (!t1 || !t2) return 0;
+    const diff = Math.abs(t1.seed - t2.seed);
+    return Math.round((diff / 2) * cfg.multiplier * 10) / 10;
+  }
   const { t1, t2 } = getTeams(game);
   if (!t1 || !t2) return cfg.pts;
   const fav = t1.seed <= t2.seed ? t1 : t2;
@@ -1296,7 +1301,9 @@ Semifinals: 8 points per correct pick
 3rd Place Play-off: 8 points per correct pick
 Final: 15 points per correct pick
 
-In the Group Stage you may also pick a Draw. A correct Draw pick earns 1 point.
+In the Group Stage you may also pick a Draw. A correct Draw pick earns points based on the pot gap between the two teams:
+  (Pot differential / 2) × Round multiplier
+Example: Pot 1 vs Pot 3 draw → (2 / 2) × 1.0 = 1 pt. Same-pot draw → 0 pts.
 
 UPSET BONUS
 Picking an underdog (higher pot number) to win earns bonus points in every round — including the Group Stage. Teams are seeded by their FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). The formula is:
@@ -3056,7 +3063,7 @@ async function init() {
     loadDemoData();
     saveState();
   }
-  if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage')) {
+  if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage') || state.rulesText.includes('A correct Draw pick earns 1 point')) {
     // First run or old default text — replace with updated rules
     state.rulesText = DEFAULT_RULES_PLACEHOLDER;
     saveState();
