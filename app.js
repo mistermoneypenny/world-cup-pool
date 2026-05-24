@@ -1287,48 +1287,70 @@ function buildBracketCenter() {
 const DEFAULT_RULES_PLACEHOLDER = `WORLD CUP 2026 POOL — OFFICIAL RULES
 
 HOW IT WORKS
-Before each round begins, every player submits their picks for that round. Once the round is locked, picks can no longer be changed. Points are awarded based on correct picks, with bigger rewards for later rounds and for picking upsets.
+Before each round opens, every player submits their picks for that round. Once the round is locked by the Commissioner, picks can no longer be changed. Points are awarded for correct picks, with bigger rewards for later rounds and for picking upsets.
 
 PICK DEADLINES
-Picks must be submitted before the round is locked by the Commissioner. Late picks will not be accepted. Make sure you're logged in and have saved your picks before the deadline.
+Picks must be submitted before the Commissioner locks the round. Late picks will not be accepted. Make sure you are logged in and have saved your picks before the deadline.
 
-SCORING — BASE POINTS
-Group Stage: 1 point per correct pick
-Round of 32: 2 points per correct pick
-Round of 16: 3 points per correct pick
-Quarterfinals: 5 points per correct pick
-Semifinals: 8 points per correct pick
-3rd Place Play-off: 8 points per correct pick
-Final: 15 points per correct pick
+——————————————————————————
+SCORING
+——————————————————————————
 
-In the Group Stage you may also pick a Draw. A correct Draw pick earns base points plus a pot-gap bonus:
-  Base pts + (Pot differential / 2) × Round multiplier
-Example: Pot 1 vs Pot 3 draw → 1 + (2/2) × 1.0 = 2 pts. Same-pot draw → 1 pt (base only).
+BASE POINTS
+Every correct pick earns base points, regardless of which team wins:
 
-UPSET BONUS
-Picking an underdog (higher pot number) to win earns bonus points in every round — including the Group Stage. Teams are seeded by their FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). Base points are always earned flat; only the upset bonus is multiplied:
-  Base pts + (Underdog pot − Favourite pot) × Round multiplier
+  Group Stage       1 pt
+  Round of 32       2 pts
+  Round of 16       3 pts
+  Quarterfinals     5 pts
+  Semifinals        8 pts
+  3rd Place         8 pts
+  Final            15 pts
 
-Round multipliers: GRP ×1.0 · R32 ×1.1 · R16 ×1.15 · QF ×1.3 · SF ×1.5 · 3rd ×1.5 · Final ×2.0
+——————————————————————————
 
-Example: Picking Pot 4 (South Africa) to beat Pot 1 (Mexico) in the Group Stage:
-  1 + (4 − 1) × 1.0 = 4 points
+UPSET BONUS — PICKING A WINNER
+Teams are seeded by FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). If you pick a higher-pot team to beat a lower-pot team, you earn base points plus an upset bonus:
 
-Example: Picking Pot 3 (Ivory Coast) to beat Pot 1 (Germany) in the Round of 32:
-  2 + (3 − 1) × 1.1 = 4.2 points
+  Total = Base pts + (Underdog pot − Favourite pot) × Round multiplier
 
-Example: Picking Pot 4 to beat Pot 1 in the Final:
-  15 + (4 − 1) × 2.0 = 21 points
+Round multipliers:
+  Group Stage ×1.0  ·  R32 ×1.1  ·  R16 ×1.15
+  QF ×1.3  ·  SF ×1.5  ·  3rd Place ×1.5  ·  Final ×2.0
 
+If there is no pot differential (equal-pot teams, or favourite wins), you earn base points only — no multiplier applied.
+
+Examples:
+  Pot 4 beats Pot 1 in the Group Stage → 1 + (3 × 1.0) = 4 pts
+  Pot 3 beats Pot 1 in the Round of 32 → 2 + (2 × 1.1) = 4.2 pts
+  Pot 2 beats Pot 1 in the Quarterfinals → 5 + (1 × 1.3) = 6.3 pts
+  Pot 4 beats Pot 1 in the Final → 15 + (3 × 2.0) = 21 pts
+
+——————————————————————————
+
+DRAWS (Group Stage only)
+You may also pick a Draw in any Group Stage game. A correct draw pick earns base points plus a pot-gap bonus:
+
+  Total = Base pts + (Pot differential / 2) × Round multiplier
+
+Examples:
+  Same-pot draw (e.g. Pot 2 vs Pot 2) → 1 + 0 = 1 pt
+  Pot 1 vs Pot 2 draw → 1 + (0.5 × 1.0) = 1.5 pts
+  Pot 1 vs Pot 3 draw → 1 + (1.0 × 1.0) = 2 pts
+  Pot 1 vs Pot 4 draw → 1 + (1.5 × 1.0) = 2.5 pts
+
+——————————————————————————
 BONUS QUESTIONS
-Bonus questions are open for the duration of the relevant round. Answers must be submitted before the round locks.
+——————————————————————————
 
-Tournament-Wide Predictions (submit before the Group Stage)
+Each round includes bonus questions worth extra points. Answers must be submitted before the round locks.
+
+Tournament-Wide Predictions (due before the Group Stage begins)
   · Golden Boot Winner (player name) — 6 pts
   · Team with Best Time of Possession % — 6 pts
   · First Pot 1 Team to be Eliminated — 6 pts
 
-Group Stage Bonuses
+Group Stage
   · Team with Most Goals in the Group Stage — 5 pts
   · Confederation with Highest Win Rate — 5 pts
   · Highest Winning Margin in Any Single Game (goals) — 4 pts
@@ -1341,7 +1363,7 @@ Round of 16
 
 Quarterfinals
   · Team with Most Assists — 2 pts
-  · All Four Correct Picks (Semi-Finalists) — 10 pts
+  · All Four Correct Semi-Finalist Picks — 10 pts
 
 Semifinals
   · High Individual Scorer (Semi-Finals) — 3 pts
@@ -1349,11 +1371,15 @@ Semifinals
 Final
   · Man of the Match — 3 pts
 
+——————————————————————————
 STANDINGS
-The leaderboard shows total points earned plus remaining possible points. Players are ranked by total score, with possible points used as a tiebreaker.
+——————————————————————————
 
+The leaderboard shows total points earned and remaining possible points. Players are ranked by total score, with possible points as a tiebreaker.
+
+——————————————————————————
 PARTICIPATING TEAMS BY POT
-Teams are seeded by their FIFA Draw Pot. Pot 1 contains the strongest/highest-ranked nations; Pot 4 the lowest-ranked. Higher-pot upsets earn more bonus points.
+——————————————————————————
 
 Pot 1 (Top Seeds)
   Argentina · Belgium · Brazil · Canada · England · France
@@ -1371,7 +1397,10 @@ Pot 4
   Bosnia · Cape Verde · Curacao · Ghana · Haiti · Iraq
   Jordan · New Zealand · Paraguay · South Africa · Tunisia · Uzbekistan
 
+——————————————————————————
 GENERAL RULES
+——————————————————————————
+
 · The Commissioner's decisions are final.
 · All picks are private until the round is locked.
 · Have fun and may the best picker win!`;
