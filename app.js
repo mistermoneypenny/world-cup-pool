@@ -3580,11 +3580,8 @@ async function init() {
   if (state.r32Teams) rebuildGames();
 
   if (!state.players.length) {
+    // Fresh install — seed default players only (no demo data)
     state.players = DEFAULT_PLAYERS.map(p => ({ ...p, id: uid() }));
-    loadDemoData();
-    saveState();
-  } else if (!Object.keys(state.scores).length) {
-    loadDemoData();
     saveState();
   }
   if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage') || state.rulesText.includes('A correct Draw pick earns 1 point') || state.rulesText.includes('(Pot differential / 2) × Round multiplier') || state.rulesText.includes('((Underdog pot')) {
