@@ -1,7 +1,7 @@
 // World Cup 2026 Pool — Service Worker
 // Caches the app shell for fast loading; always fetches API data fresh.
 
-const CACHE_NAME  = 'wc-pool-v1';
+const CACHE_NAME  = 'wc-pool-v2';
 const SHELL_URLS  = ['/', '/app.js', '/styles.css', '/logo.png'];
 
 self.addEventListener('install', event => {
