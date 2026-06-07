@@ -296,7 +296,7 @@ let state = {
   picks: {},
   pendingPicks: {},
   games: {},
-  r32Teams: null,   // null = use INITIAL_TEAMS; set by admin after group stage
+  r32Teams: null,   // null = show TBD in knockout bracket; admin sets after group stage
   adminViewPlayer: null,
   sessionPlayer:   null,
   rulesText:       '',
@@ -347,17 +347,17 @@ function buildGames() {
     });
   });
 
-  // R32: 4 games per quadrant — use state.r32Teams if set (admin-updated after group stage),
-  // otherwise fall back to INITIAL_TEAMS (pre-tournament projections).
-  // Guard: [] is truthy but means "not yet set"; require a non-array object with region keys.
+  // R32: 4 games per quadrant — only populated once admin sets r32Teams after group stage.
+  // Until then all R32 slots show TBD. INITIAL_TEAMS is kept for the admin autofill tool only.
   const r32Source = (state.r32Teams && !Array.isArray(state.r32Teams) && Object.keys(state.r32Teams).length)
-    ? state.r32Teams : INITIAL_TEAMS;
+    ? state.r32Teams : null;
   REGIONS.forEach(region => {
-    const teams = r32Source[region];
+    const teams = r32Source ? r32Source[region] : null;
     for (let i = 0; i < 4; i++) {
       const id = gameId('r32', region, i);
       games[id] = { id, round: 'r32', region, idx: i,
-        t1: teams[i * 2], t2: teams[i * 2 + 1],
+        t1: teams ? teams[i * 2]     : null,
+        t2: teams ? teams[i * 2 + 1] : null,
         p1: null, p2: null };
     }
   });
