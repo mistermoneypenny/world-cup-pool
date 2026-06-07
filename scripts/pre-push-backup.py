@@ -10,7 +10,7 @@ import urllib.request
 import json
 import os
 import sys
-import datetime
+import datetime as dt
 
 LIVE_URL   = 'https://world-cup-pool.onrender.com/api/state'
 BACKUP_DIR = os.path.join(os.path.dirname(__file__), '..', 'backups')
@@ -35,10 +35,11 @@ def main():
         return 0
 
     os.makedirs(BACKUP_DIR, exist_ok=True)
-    ts       = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%SZ')
+    now      = dt.datetime.now(dt.timezone.utc)
+    ts       = now.strftime('%Y-%m-%dT%H-%M-%SZ')
     filename = os.path.join(BACKUP_DIR, f'pre-deploy-{ts}.json')
     snapshot = {
-        'savedAt':     datetime.datetime.utcnow().isoformat() + 'Z',
+        'savedAt':     now.isoformat(),
         'type':        'pre-deploy',
         'totalPicks':  all_picks,
         'playerCount': len(picks),
