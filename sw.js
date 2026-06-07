@@ -1,8 +1,10 @@
 // World Cup 2026 Pool — Service Worker
-// Caches the app shell for fast loading; always fetches API data fresh.
+// Static assets (images) cached for fast loading.
+// JS and CSS are NEVER cached here — server sends no-cache headers
+// so they are always fetched fresh, ensuring code updates take effect immediately.
 
-const CACHE_NAME  = 'wc-pool-v2';
-const SHELL_URLS  = ['/', '/app.js', '/styles.css', '/logo.png'];
+const CACHE_NAME  = 'wc-pool-v3';
+const SHELL_URLS  = ['/', '/logo.png'];   // JS/CSS intentionally excluded
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -22,11 +24,14 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  // Always go network-first for API calls and same-origin non-GET
-  if (url.pathname.startsWith('/api/') || event.request.method !== 'GET') {
-    return; // let the browser handle it normally
+  // Pass through: API calls, non-GET, and ALL code files (JS/CSS)
+  if (url.pathname.startsWith('/api/') ||
+      event.request.method !== 'GET'   ||
+      url.pathname.endsWith('.js')     ||
+      url.pathname.endsWith('.css')) {
+    return; // let the browser fetch normally — server sends no-cache headers
   }
-  // Cache-first for shell assets
+  // Cache-first for remaining static assets (images, manifest, etc.)
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );

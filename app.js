@@ -3604,20 +3604,24 @@ async function init() {
   setupEvents();
   setupOfflineDetection();
 
-  // Resume session from sessionStorage if player still exists
+  // Resume session from localStorage if player still exists.
+  // Render errors must NOT reach this catch or they'll re-show the login overlay.
+  let sessionRestored = false;
   try {
     const savedPid = localStorage.getItem('wcSession');
     if (savedPid && state.players.find(p => p.id === savedPid)) {
       state.sessionPlayer = savedPid;
       state.currentPlayer = savedPid;
-      document.getElementById('login-overlay').style.display = 'none';
-      updateSessionHeader();
-      updatePlayerSelect();
-      switchView('bracket');
-    } else {
-      renderLoginOverlay();
+      sessionRestored = true;
     }
-  } catch(e) {
+  } catch(e) { /* localStorage unavailable */ }
+
+  if (sessionRestored) {
+    document.getElementById('login-overlay').style.display = 'none';
+    updateSessionHeader();
+    updatePlayerSelect();
+    try { switchView('bracket'); } catch(e) { console.error('Render error:', e); }
+  } else {
     renderLoginOverlay();
   }
 
