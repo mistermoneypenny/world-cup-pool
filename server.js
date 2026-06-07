@@ -402,65 +402,6 @@ app.get('/api/scores', async (req, res) => {
   }
 });
 
-// ── TEMPORARY PICK RECOVERY ───────────────────────────────────
-// Fetches JSONBin version history using the real server key to recover lost picks
-app.get('/api/recover-versions', async (req, res) => {
-  try {
-    const state = await readState();
-    const sender = req.query._sender;
-    if (!isAdminSender(sender, state)) {
-      return res.status(403).json({ error: 'Admin only' });
-    }
-    const versUrl = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}/versions`;
-    const versResp = await fetch(versUrl, {
-      headers: { 'X-Master-Key': JSONBIN_KEY },
-    });
-    if (!versResp.ok) {
-      return res.status(versResp.status).json({ error: `JSONBin versions API returned ${versResp.status}` });
-    }
-    const versData = await versResp.json();
-    // Return summary: version number + group pick counts
-    const versions = versData.record || versData;
-    const summary = [];
-    if (Array.isArray(versions)) {
-      for (const v of versions.slice(0, 30)) {
-        const vNum = v.version || v.versionNumber || v.id;
-        summary.push({ version: vNum, createdAt: v.createdAt });
-      }
-    }
-    res.json({ versions: summary, raw: versData });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.get('/api/recover-version/:vnum', async (req, res) => {
-  try {
-    const state = await readState();
-    const sender = req.query._sender;
-    if (!isAdminSender(sender, state)) {
-      return res.status(403).json({ error: 'Admin only' });
-    }
-    const vNum = req.params.vnum;
-    const vUrl = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}/${vNum}`;
-    const vResp = await fetch(vUrl, { headers: { 'X-Master-Key': JSONBIN_KEY } });
-    if (!vResp.ok) {
-      return res.status(vResp.status).json({ error: `JSONBin version ${vNum} returned ${vResp.status}` });
-    }
-    const vData = await vResp.json();
-    const record = vData.record || {};
-    const picks = record.picks || {};
-    // Count group picks per player
-    const summary = {};
-    for (const [pid, pdata] of Object.entries(picks)) {
-      summary[pid] = Object.keys(pdata.groups || {}).length;
-    }
-    res.json({ version: vNum, pickCounts: summary, picks, record });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 // ── HEALTH CHECK ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({
