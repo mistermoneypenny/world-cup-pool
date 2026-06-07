@@ -348,8 +348,10 @@ function buildGames() {
   });
 
   // R32: 4 games per quadrant — use state.r32Teams if set (admin-updated after group stage),
-  // otherwise fall back to INITIAL_TEAMS (pre-tournament projections)
-  const r32Source = state.r32Teams || INITIAL_TEAMS;
+  // otherwise fall back to INITIAL_TEAMS (pre-tournament projections).
+  // Guard: [] is truthy but means "not yet set"; require a non-array object with region keys.
+  const r32Source = (state.r32Teams && !Array.isArray(state.r32Teams) && Object.keys(state.r32Teams).length)
+    ? state.r32Teams : INITIAL_TEAMS;
   REGIONS.forEach(region => {
     const teams = r32Source[region];
     for (let i = 0; i < 4; i++) {
@@ -652,7 +654,9 @@ function applyLoadedState(saved) {
   if (saved.bonusPicks)   state.bonusPicks   = saved.bonusPicks;
   if (saved.bonusAnswers) state.bonusAnswers = saved.bonusAnswers;
   if (saved.playerPins)   state.playerPins   = saved.playerPins;
-  if (saved.r32Teams)     state.r32Teams     = saved.r32Teams;
+  // Only restore r32Teams if it's a real object with region keys (not an empty array)
+  if (saved.r32Teams && !Array.isArray(saved.r32Teams) && Object.keys(saved.r32Teams).length)
+    state.r32Teams = saved.r32Teams;
   if (saved.scores)         state.scores         = saved.scores;
   if (saved.roundDeadlines) state.roundDeadlines = saved.roundDeadlines;
   if (saved.pickSavedAt)    state.pickSavedAt    = saved.pickSavedAt;
