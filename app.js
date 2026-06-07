@@ -1080,8 +1080,8 @@ function renderGroupStageBracket(wrapper) {
           else teamEl.classList.add('loser');
         }
         if (playerPick === team.name) teamEl.classList.add('picked');
-        const displaySc = sc !== undefined ? sc : liveSc;
-        const goalStr = displaySc !== undefined
+        const displaySc = sc ?? liveSc;
+        const goalStr = displaySc != null
           ? (idx === 0 ? displaySc.t1 : displaySc.t2)
           : (isDraw && idx === 0 ? 'D' : '');
         const scoreClass = `group-game-goal${isLiveGroup ? ' live' : ''}`;
