@@ -116,10 +116,47 @@ async function readState() {
   return {};
 }
 
+// ── PICKS BACKUP ─────────────────────────────────────────────
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const MAX_BACKUPS = 20;
+let lastBackupPicksHash = null;
+
+function picksHash(picks) {
+  return JSON.stringify(picks || {});
+}
+
+function writePicksBackup(picks) {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const ts  = new Date().toISOString().replace(/[:.]/g, '-');
+    const file = path.join(BACKUP_DIR, `picks-${ts}.json`);
+    fs.writeFileSync(file, JSON.stringify({ savedAt: new Date().toISOString(), picks }, null, 2), 'utf8');
+    // Keep only the most recent MAX_BACKUPS files
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('picks-')).sort();
+    while (files.length > MAX_BACKUPS) {
+      try { fs.unlinkSync(path.join(BACKUP_DIR, files.shift())); } catch (_) {}
+    }
+    console.log(`Picks backup written: ${path.basename(file)}`);
+  } catch (e) {
+    console.warn('Picks backup write failed:', e.message);
+  }
+}
+
 // ── Helper: write state to memory + local + JSONBin ─────────
 async function writeState(data) {
   memoryState = data;
   lastJsonBinRead = Date.now();
+
+  // Snapshot picks whenever they change (guards against accidental clears)
+  const hash = picksHash(data.picks);
+  if (hash !== lastBackupPicksHash && data.picks && Object.keys(data.picks).length > 0) {
+    const totalPicks = Object.values(data.picks).reduce((sum, p) =>
+      sum + Object.values(p).reduce((s2, r) => s2 + Object.keys(r).length, 0), 0);
+    if (totalPicks > 0) {
+      writePicksBackup(data.picks);
+      lastBackupPicksHash = hash;
+    }
+  }
 
   try {
     const tmpFile = DATA_FILE + '.tmp';
@@ -399,6 +436,68 @@ app.get('/api/scores', async (req, res) => {
   } catch (e) {
     console.error('GET /api/scores error:', e.message);
     res.json({});
+  }
+});
+
+// ── PICKS BACKUP ENDPOINTS ────────────────────────────────────
+
+// List available backup files
+app.get('/api/picks-backups', async (req, res) => {
+  try {
+    const state = await readState();
+    const sender = req.query._sender;
+    if (!isAdminSender(sender, state)) return res.status(403).json({ error: 'Admin only' });
+    if (!fs.existsSync(BACKUP_DIR)) return res.json({ backups: [] });
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('picks-')).sort().reverse();
+    const backups = files.map(f => {
+      try {
+        const raw = fs.readFileSync(path.join(BACKUP_DIR, f), 'utf8');
+        const data = JSON.parse(raw);
+        const totalPicks = Object.values(data.picks || {}).reduce((sum, p) =>
+          sum + Object.values(p).reduce((s2, r) => s2 + Object.keys(r).length, 0), 0);
+        const playerCount = Object.keys(data.picks || {}).length;
+        return { filename: f, savedAt: data.savedAt, totalPicks, playerCount };
+      } catch (_) { return { filename: f }; }
+    });
+    res.json({ backups });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Download a specific backup file
+app.get('/api/picks-backup/:filename', async (req, res) => {
+  try {
+    const state = await readState();
+    const sender = req.query._sender;
+    if (!isAdminSender(sender, state)) return res.status(403).json({ error: 'Admin only' });
+    const file = req.params.filename.replace(/[^a-zA-Z0-9._-]/g, ''); // sanitise
+    const filePath = path.join(BACKUP_DIR, file);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
+    res.setHeader('Content-Disposition', `attachment; filename="${file}"`);
+    res.setHeader('Content-Type', 'application/json');
+    fs.createReadStream(filePath).pipe(res);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Restore picks from a backup (admin only)
+app.post('/api/picks-restore', async (req, res) => {
+  try {
+    const result = await withWriteLock(async () => {
+      const existing = await readState();
+      const sender = req.body._sender;
+      if (!isAdminSender(sender, existing)) return res.status(403).json({ error: 'Admin only' });
+      const { picks } = req.body;
+      if (!picks || typeof picks !== 'object') return res.status(400).json({ error: 'picks required' });
+      existing.picks = picks;
+      await writeState(existing);
+      return { ok: true, playerCount: Object.keys(picks).length };
+    });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 

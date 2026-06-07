@@ -201,6 +201,21 @@
           </div>
         </div>
 
+        <div class="admin-card">
+          <h3 class="admin-card-title">&#128190; Picks Backup</h3>
+          <p style="color:var(--text-3);font-size:0.8rem;margin-bottom:0.75rem">
+            The server automatically snapshots picks whenever they change (up to 20 rolling backups).
+            Use these buttons to download the current state or browse server backups.
+          </p>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+            <button class="btn btn-primary" id="backup-download-btn">&#8659; Download State Now</button>
+            <button class="btn btn-secondary" id="backup-list-btn">&#128448; View Server Backups</button>
+          </div>
+          <div id="backup-list-container" style="display:none">
+            <div id="backup-list-content" style="font-size:0.8rem;color:var(--text-2)">Loading…</div>
+          </div>
+        </div>
+
         <div class="admin-card danger-zone">
           <h3 class="admin-card-title" style="color:var(--red)">Danger Zone</h3>
           <button class="btn btn-danger" id="reset-btn">Reset All Data</button>

@@ -2,3 +2,7 @@ node_modules/
 data/
 *.tmp
 .DS_Store
+
+# Local pick backups — kept for recovery but not committed
+# (pre-deploy snapshots live in backups/ on your machine)
+backups/*.json

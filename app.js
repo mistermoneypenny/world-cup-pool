@@ -2862,6 +2862,75 @@ function savePins() {
   showToast('PINs saved!', 'success');
 }
 
+// ── PICKS BACKUP HELPERS ─────────────────────────────────────
+
+function downloadStateBackup() {
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    picks:       state.picks,
+    bonusPicks:  state.bonusPicks,
+    players:     state.players,
+    results:     state.results,
+    bonusAnswers:state.bonusAnswers,
+    currentRound:state.currentRound,
+    roundStatus: state.roundStatus,
+  };
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `wc2026-backup-${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Backup downloaded!', 'success');
+}
+
+async function showServerBackups() {
+  const container = document.getElementById('backup-list-container');
+  const content   = document.getElementById('backup-list-content');
+  if (!container || !content) return;
+  const visible = container.style.display !== 'none';
+  if (visible) { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  content.textContent = 'Loading…';
+  try {
+    const adminId = state.sessionPlayer || state.currentPlayer;
+    const res = await fetch(`/api/picks-backups?_sender=${adminId}`);
+    const data = await res.json();
+    if (!data.backups || !data.backups.length) {
+      content.textContent = 'No server backups found yet. They appear automatically once picks are saved.';
+      return;
+    }
+    content.innerHTML = '';
+    const table = document.createElement('table');
+    table.style.cssText = 'width:100%;border-collapse:collapse;margin-top:0.5rem';
+    table.innerHTML = `<thead><tr style="text-align:left;border-bottom:1px solid var(--border)">
+      <th style="padding:4px 8px">File</th>
+      <th style="padding:4px 8px">Saved</th>
+      <th style="padding:4px 8px">Picks</th>
+      <th style="padding:4px 8px"></th>
+    </tr></thead>`;
+    const tbody = document.createElement('tbody');
+    data.backups.forEach(b => {
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--border)';
+      const dt = b.savedAt ? new Date(b.savedAt).toLocaleString() : '—';
+      tr.innerHTML = `<td style="padding:4px 8px;font-family:monospace;font-size:0.75rem">${b.filename}</td>
+        <td style="padding:4px 8px">${dt}</td>
+        <td style="padding:4px 8px">${b.totalPicks ?? '?'}</td>
+        <td style="padding:4px 8px">
+          <a href="/api/picks-backup/${b.filename}?_sender=${adminId}" download
+             style="color:var(--primary);text-decoration:none;font-size:0.78rem">&#8659; Download</a>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    content.appendChild(table);
+  } catch (e) {
+    content.textContent = 'Error loading backups: ' + e.message;
+  }
+}
+
 function populateRoundSelects() {
   ['admin-round-sel', 'results-round-sel'].forEach(selId => {
     const sel = document.getElementById(selId);
@@ -3551,6 +3620,9 @@ function setupEvents() {
     showToast(`Generated ${n} random picks across ${state.players.length} players`, 'success');
     renderAdmin();
   });
+
+  document.getElementById('backup-download-btn')?.addEventListener('click', downloadStateBackup);
+  document.getElementById('backup-list-btn')?.addEventListener('click', showServerBackups);
 
   document.getElementById('reset-btn')?.addEventListener('click', () => {
     if (!confirm('Reset ALL data? This cannot be undone.')) return;
