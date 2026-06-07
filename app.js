@@ -86,25 +86,25 @@ const SF_PAIRINGS = [
 // Pot 2–4: remaining 36 teams ranked by FIFA Coca-Cola Rankings.
 const GROUP_TEAMS = {
   A: [
-    { seed: 1, name: 'Morocco'        },
+    { seed: 2, name: 'Mexico'         },
     { seed: 2, name: 'South Korea'    },
     { seed: 3, name: 'Czech Republic' },
     { seed: 4, name: 'South Africa'   },
   ],
   B: [
-    { seed: 1, name: 'Colombia'       },
+    { seed: 2, name: 'Canada'         },
     { seed: 2, name: 'Switzerland'    },
     { seed: 3, name: 'Qatar'          },
     { seed: 4, name: 'Bosnia'         },
   ],
   C: [
     { seed: 1, name: 'Brazil'         },
-    { seed: 2, name: 'Mexico'         },
+    { seed: 1, name: 'Morocco'        },
     { seed: 3, name: 'Scotland'       },
     { seed: 4, name: 'Haiti'          },
   ],
   D: [
-    { seed: 1, name: 'Croatia'        },
+    { seed: 2, name: 'USA'            },
     { seed: 2, name: 'Turkey'         },
     { seed: 3, name: 'Australia'      },
     { seed: 4, name: 'Paraguay'       },
@@ -147,13 +147,13 @@ const GROUP_TEAMS = {
   ],
   K: [
     { seed: 1, name: 'Portugal'       },
-    { seed: 2, name: 'Canada'         },
+    { seed: 1, name: 'Colombia'       },
     { seed: 3, name: 'DR Congo'       },
     { seed: 4, name: 'Uzbekistan'     },
   ],
   L: [
     { seed: 1, name: 'England'        },
-    { seed: 2, name: 'USA'            },
+    { seed: 1, name: 'Croatia'        },
     { seed: 3, name: 'Panama'         },
     { seed: 4, name: 'Ghana'          },
   ],
@@ -187,7 +187,7 @@ const INITIAL_TEAMS = {
     { seed: 1, name: 'France'         },
     { seed: 3, name: 'Czech Republic' },
     { seed: 1, name: 'Portugal'       },
-    { seed: 2, name: 'Canada'         },
+    { seed: 1, name: 'Colombia'       },
     { seed: 1, name: 'Belgium'        },
     { seed: 3, name: 'Egypt'          },
     { seed: 1, name: 'Argentina'      },
@@ -195,22 +195,22 @@ const INITIAL_TEAMS = {
   ],
   B: [
     { seed: 1, name: 'England'        },
-    { seed: 2, name: 'USA'            },
+    { seed: 1, name: 'Croatia'        },
     { seed: 1, name: 'Netherlands'    },
     { seed: 2, name: 'Japan'          },
     { seed: 1, name: 'Spain'          },
     { seed: 2, name: 'Uruguay'        },
     { seed: 1, name: 'Brazil'         },
-    { seed: 2, name: 'Mexico'         },
+    { seed: 1, name: 'Morocco'        },
   ],
   C: [
     { seed: 1, name: 'Germany'        },
     { seed: 3, name: 'Ivory Coast'    },
-    { seed: 1, name: 'Morocco'        },
+    { seed: 2, name: 'Mexico'         },
     { seed: 2, name: 'South Korea'    },
-    { seed: 1, name: 'Colombia'       },
     { seed: 2, name: 'Switzerland'    },
-    { seed: 1, name: 'Croatia'        },
+    { seed: 2, name: 'Canada'         },
+    { seed: 2, name: 'USA'            },
     { seed: 2, name: 'Turkey'         },
   ],
   D: [
@@ -232,9 +232,12 @@ const ALL_TEAM_NAMES = Object.values(GROUP_TEAMS)
   .sort((a, b) => a.localeCompare(b));
 
 // Build sorted list of Pot 1 (seed === 1) teams for bonus dropdown
+// Uses flat filter so groups with multiple seed-1 teams (e.g. after
+// re-seeding) are all included, and groups with no seed-1 team are skipped.
 const POT1_TEAMS = Object.values(GROUP_TEAMS)
-  .map(g => g.find(t => t.seed === 1)?.name)
-  .filter(Boolean)
+  .flat()
+  .filter(t => t.seed === 1)
+  .map(t => t.name)
   .sort((a, b) => a.localeCompare(b));
 
 // Resolve __ALL_TEAMS__ and __POT1_TEAMS__ placeholders in BONUS_CONFIG
