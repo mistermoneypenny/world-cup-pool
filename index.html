@@ -5,10 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>World Cup 2026 Pool</title>
   <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#00a651" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <div id="app">
+
+  <!-- ── INSTALL BANNER (PWA) ── -->
+  <div id="install-banner" class="install-banner" style="display:none">
+    <span>📱 Install World Cup Pool on your home screen for quick access.</span>
+    <div style="display:flex;gap:0.4rem;flex-shrink:0">
+      <button id="install-btn" class="install-banner-btn">Install</button>
+      <button id="install-dismiss-btn" class="install-banner-dismiss">✕</button>
+    </div>
+  </div>
+
+  <!-- ── BROADCAST BANNER ── -->
+  <div id="broadcast-banner" class="broadcast-banner" style="display:none">
+    <span class="broadcast-icon">📢</span>
+    <span id="broadcast-text" class="broadcast-text"></span>
+    <button class="broadcast-dismiss-btn" onclick="dismissBroadcast()">✕</button>
+  </div>
 
   <!-- ── OFFLINE BANNER ── -->
   <div id="offline-banner" style="display:none;background:#c0392b;color:#fff;text-align:center;padding:0.4rem 1rem;font-size:0.85rem;font-weight:600;">

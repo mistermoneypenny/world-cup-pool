@@ -299,6 +299,10 @@ let state = {
   bonusPicks:   {},
   bonusAnswers: {},
   playerPins:   {},
+  roundDeadlines: {},
+  pickSavedAt:    {},
+  reactions:      {},
+  broadcast:      null,
 };
 
 // ── GAME GENERATION ───────────────────────────────────────────
@@ -596,8 +600,12 @@ function saveState() {
     bonusPicks:   state.bonusPicks,
     bonusAnswers: state.bonusAnswers,
     playerPins:   state.playerPins,
-    r32Teams:     state.r32Teams,
-    scores:       state.scores,
+    r32Teams:       state.r32Teams,
+    scores:         state.scores,
+    roundDeadlines: state.roundDeadlines,
+    pickSavedAt:    state.pickSavedAt,
+    reactions:      state.reactions,
+    broadcast:      state.broadcast,
     _sender: state.sessionPlayer || state.currentPlayer,
   };
   fetch('/api/state', {
@@ -641,7 +649,11 @@ function applyLoadedState(saved) {
   if (saved.bonusAnswers) state.bonusAnswers = saved.bonusAnswers;
   if (saved.playerPins)   state.playerPins   = saved.playerPins;
   if (saved.r32Teams)     state.r32Teams     = saved.r32Teams;
-  if (saved.scores)       state.scores       = saved.scores;
+  if (saved.scores)         state.scores         = saved.scores;
+  if (saved.roundDeadlines) state.roundDeadlines = saved.roundDeadlines;
+  if (saved.pickSavedAt)    state.pickSavedAt    = saved.pickSavedAt;
+  if (saved.reactions)      state.reactions      = saved.reactions;
+  if ('broadcast' in saved) state.broadcast      = saved.broadcast;
   // Default bracketSubView to 'groups' when in groups round, else 'knockout'
   state.bracketSubView = (state.currentRound === 'groups') ? 'groups' : 'knockout';
 }
@@ -649,6 +661,10 @@ function applyLoadedState(saved) {
 // ── TOAST ─────────────────────────────────────────────────────
 
 let toastTimer;
+let countdownTimer        = null;
+let notifPermission       = 'default';
+let dismissedBroadcastId  = null;
+let deferredInstallPrompt = null;
 function showToast(msg, type = 'info') {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -682,6 +698,7 @@ function renderCurrentView() {
   updateRoundStatus();
   updatePlayerSelect();
   updateSessionHeader();
+  updateBroadcastBanner();
   switch (state.currentView) {
     case 'rules':       renderRules();        break;
     case 'bracket':     renderBracket();      break;
@@ -1535,6 +1552,29 @@ function renderPicksBody() {
   }
   body.appendChild(msg);
 
+  // ── Countdown timer (Feature 1) ──────────────────────────────
+  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+  const dlRaw = (state.roundDeadlines || {})[roundId];
+  if (dlRaw && isCurrentRound && state.roundStatus === 'open') {
+    const dlMs = new Date(dlRaw).getTime();
+    if (dlMs > Date.now()) {
+      const cdDiv = document.createElement('div');
+      cdDiv.className = 'picks-countdown';
+      cdDiv.id = 'picks-countdown';
+      body.appendChild(cdDiv);
+      startCountdown(cdDiv, dlMs);
+    }
+  }
+
+  // ── Last-saved indicator (Feature 3) ─────────────────────────
+  const savedAt = (state.pickSavedAt || {})[viewId]?.[roundId];
+  if (savedAt) {
+    const tsDiv = document.createElement('div');
+    tsDiv.className = 'picks-last-saved';
+    tsDiv.textContent = `💾 Last saved: ${relativeTime(savedAt)}`;
+    body.appendChild(tsDiv);
+  }
+
   if (roundId === 'groups') {
     // Group stage: 12 groups, 6 games each, organized in group sections
     const MATCHDAY_IDX_PICKS = [0, 0, 1, 1, 2, 2];
@@ -1824,6 +1864,24 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     card.appendChild(row);
   });
 
+  // ── Emoji reactions (Feature 9) ─────────────────────────────
+  if (state.results[game.id] !== undefined) {
+    const reactionBar = document.createElement('div');
+    reactionBar.className = 'reaction-bar';
+    const myPid = state.sessionPlayer || state.currentPlayer;
+    ['⚽', '🔥', '😮', '👏'].forEach(emoji => {
+      const cnt    = (state.reactions?.[game.id]?.[emoji] || []).length;
+      const reacted = !!(state.reactions?.[game.id]?.[emoji]?.includes(myPid));
+      const btn = document.createElement('button');
+      btn.className = 'reaction-btn' + (reacted ? ' reacted' : '');
+      btn.innerHTML = cnt ? `${emoji}<span class="reaction-cnt">${cnt}</span>` : emoji;
+      btn.title = emoji;
+      btn.addEventListener('click', ev => { ev.stopPropagation(); toggleReaction(game.id, emoji); });
+      reactionBar.appendChild(btn);
+    });
+    card.appendChild(reactionBar);
+  }
+
   return card;
 }
 
@@ -1925,6 +1983,9 @@ function savePicks() {
   if (!pid) return;
   if (!state.picks[pid]) state.picks[pid] = {};
   state.picks[pid][rid] = { ...state.pendingPicks };
+  if (!state.pickSavedAt)       state.pickSavedAt       = {};
+  if (!state.pickSavedAt[pid])  state.pickSavedAt[pid]  = {};
+  state.pickSavedAt[pid][rid] = new Date().toISOString();
   saveState();
   showToast('Picks saved!', 'success');
   renderPicks();
@@ -1983,7 +2044,7 @@ function renderLbBody() {
   const thead = document.createElement('thead');
   let thHTML = '<tr><th>#</th><th>Player</th>';
   if (state.lbRound === 'all') {
-    thHTML += '<th>Score</th><th>Total</th>';
+    thHTML += '<th>Score</th><th>Total</th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
     ROUND_CONFIG.forEach(cfg => { thHTML += `<th class="num">${cfg.short}</th>`; });
   } else {
     thHTML += '<th class="num">Score</th><th class="num">Total</th>';
@@ -2013,9 +2074,13 @@ function renderLbBody() {
     const btnTitle   = cantPeek ? ' title="You can only view your own picks"'
       : linkLocked ? ' title="Picks revealed when the round is closed"' : '';
 
-    const avatar = playerAvatarHtml(row.player.name, 64);
+    const avatar   = playerAvatarHtml(row.player.name, 64);
+    const canH2H   = !isMe && picksVisible && !linkLocked;
+    const h2hBtnHtml = canH2H
+      ? `<button class="lb-h2h-btn" data-h2hpid="${row.player.id}" title="Head-to-head vs ${esc(row.player.name)}">⚔</button>`
+      : '';
     let tdHTML = `<td class="rank-num ${rankCls}">${rankIcon}</td>
-      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button></div></td>`;
+      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button>${h2hBtnHtml}</div></td>`;
 
     if (state.lbRound === 'all') {
       const maxPossible = row.total.total + row.total.possible;
@@ -2024,9 +2089,12 @@ function renderLbBody() {
       const wl = row.total.correct || row.total.wrong
         ? `<span class="lb-wl"><span class="lb-w">${row.total.correct}✔</span> <span class="lb-l">${row.total.wrong}✘</span></span>`
         : '';
+      const bestRank    = getBestPossibleRank(row.player.id, rows);
+      const bRankIcon   = bestRank <= 3 ? ['🥇','🥈','🥉'][bestRank - 1] : `#${bestRank}`;
       tdHTML += `<td><span class="lb-total">${fmtScore(row.total.total)}</span>${wl}
           <div class="pct-bar-wrap"><div class="pct-bar" style="width:${pctW}%"></div></div></td>
-        <td class="lb-possible">${fmtScore(maxPossible)}</td>`;
+        <td class="lb-possible">${fmtScore(maxPossible)}</td>
+        <td class="num lb-best-finish" title="Best possible finish if all remaining picks win">${bRankIcon}</td>`;
       ROUND_CONFIG.forEach(cfg => {
         const s = row.byRound[cfg.id];
         const isBest = roundBest[cfg.id] && s.score === roundBest[cfg.id];
@@ -2063,6 +2131,12 @@ function renderLbBody() {
   body.appendChild(scrollWrap);
 
   tbody.addEventListener('click', e => {
+    const h2hBtn = e.target.closest('.lb-h2h-btn');
+    if (h2hBtn) {
+      const rid = state.lbRound === 'all' ? state.currentRound : state.lbRound;
+      openH2H(h2hBtn.dataset.h2hpid, rid);
+      return;
+    }
     const btn = e.target.closest('.lb-player-link');
     if (!btn) return;
     const pid = btn.dataset.pid;
@@ -2085,6 +2159,9 @@ function renderLbBody() {
     }
     switchView('picks');
   });
+
+  // ── Upset tracker (Feature 7) ─────────────────────────────
+  if (state.lbRound === 'all') renderUpsetTracker(body);
 }
 
 // ── PICKS AUTO-FIX ────────────────────────────────────────────
@@ -2680,6 +2757,8 @@ function renderAdmin() {
   renderPinsAdmin();
   renderBonusAdmin();
   renderR32Admin();
+  renderDeadlineAdmin();
+  renderBroadcastAdmin();
 }
 
 function renderPickStatusGrid() {
@@ -2972,6 +3051,407 @@ function uid() {
   return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+// ── FEATURE 1: COUNTDOWN TIMER ───────────────────────────────
+
+function startCountdown(target, deadlineMs) {
+  const update = () => {
+    const diff = deadlineMs - Date.now();
+    if (diff <= 0) {
+      target.textContent = '⏰ Deadline passed — picks may be locked soon';
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      setTimeout(pollServer, 600);
+      return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const parts = [];
+    if (h > 0) parts.push(`${h}h`);
+    parts.push(`${String(m).padStart(2,'0')}m`);
+    parts.push(`${String(s).padStart(2,'0')}s`);
+    target.textContent = `⏰ Picks lock in: ${parts.join(' ')}`;
+  };
+  update();
+  countdownTimer = setInterval(update, 1000);
+}
+
+// ── FEATURE 3: RELATIVE TIME ──────────────────────────────────
+
+function relativeTime(isoStr) {
+  if (!isoStr) return '';
+  const diff = Date.now() - new Date(isoStr).getTime();
+  if (diff < 60000)    return 'just now';
+  if (diff < 3600000)  return `${Math.floor(diff / 60000)} min ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  return new Date(isoStr).toLocaleDateString(undefined,
+    { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// ── FEATURE 6: BEST POSSIBLE FINISH ──────────────────────────
+
+function getBestPossibleRank(playerId, rows) {
+  const myRow = rows.find(r => r.player.id === playerId);
+  if (!myRow) return rows.length;
+  const myMax = myRow.total.total + myRow.total.possible;
+  return 1 + rows.filter(r => r.player.id !== playerId && r.total.total > myMax).length;
+}
+
+// ── FEATURE 7: UPSET TRACKER ─────────────────────────────────
+
+function computeUpsets() {
+  const upsets = [];
+  for (const [gid, resultName] of Object.entries(state.results)) {
+    if (resultName === 'Draw') continue;
+    const game = state.games[gid];
+    if (!game) continue;
+    const { t1, t2 } = getTeams(game);
+    if (!t1 || !t2) continue;
+    const winner = getWinner(gid);
+    if (!winner) continue;
+    const fav = t1.seed <= t2.seed ? t1 : t2;
+    const dog = fav === t1 ? t2 : t1;
+    if (winner.name !== dog.name) continue; // not an upset
+    const cfg = ROUND_CONFIG.find(r => r.id === game.round);
+    if (!cfg) continue;
+    const bonusPts = Math.round((dog.seed - fav.seed) * cfg.multiplier * 10) / 10;
+    const pickedBy = state.players
+      .filter(p => (state.picks[p.id] || {})[game.round]?.[gid] === winner.name)
+      .map(p => p.name);
+    upsets.push({ game, winner, loser: fav, seedDiff: dog.seed - fav.seed, bonusPts, cfg, pickedBy });
+  }
+  return upsets.sort((a, b) => b.bonusPts - a.bonusPts);
+}
+
+function renderUpsetTracker(container) {
+  const upsets = computeUpsets();
+  const section = document.createElement('div');
+  section.className = 'upset-tracker';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'upset-tracker-hdr';
+  hdr.innerHTML = `<span class="upset-tracker-title">⚡ Upset Tracker</span>
+    <span class="upset-tracker-count">${upsets.length} upset${upsets.length !== 1 ? 's' : ''}</span>`;
+  section.appendChild(hdr);
+
+  if (!upsets.length) {
+    const empty = document.createElement('div');
+    empty.className = 'upset-empty';
+    empty.textContent = 'No upsets yet — all favorites winning so far.';
+    section.appendChild(empty);
+    container.appendChild(section);
+    return;
+  }
+
+  upsets.forEach(u => {
+    const row = document.createElement('div');
+    row.className = 'upset-row';
+    const pickedByHtml = u.pickedBy.length
+      ? `<span class="upset-picked-by">Picked by: ${u.pickedBy.map(n => esc(n)).join(', ')}</span>`
+      : '<span class="upset-picked-by nobody">Nobody picked this</span>';
+    row.innerHTML = `
+      <div class="upset-game">
+        <span class="upset-winner">${flag(u.winner.name)}${esc(u.winner.name)}<span class="upset-seed"> (${u.winner.seed})</span></span>
+        <span class="upset-arrow">beat</span>
+        <span class="upset-loser">${flag(u.loser.name)}${esc(u.loser.name)}<span class="upset-seed"> (${u.loser.seed})</span></span>
+      </div>
+      <div class="upset-meta">
+        <span class="upset-round">${u.cfg.short}</span>
+        <span class="upset-bonus">+${u.bonusPts} upset bonus</span>
+        ${pickedByHtml}
+      </div>`;
+    section.appendChild(row);
+  });
+
+  container.appendChild(section);
+}
+
+// ── FEATURE 9: EMOJI REACTIONS ────────────────────────────────
+
+function toggleReaction(gameId, emoji) {
+  const myPid = state.sessionPlayer || state.currentPlayer;
+  if (!myPid) return;
+  if (!state.reactions)           state.reactions           = {};
+  if (!state.reactions[gameId])   state.reactions[gameId]   = {};
+  if (!state.reactions[gameId][emoji]) state.reactions[gameId][emoji] = [];
+  const arr = state.reactions[gameId][emoji];
+  const idx = arr.indexOf(myPid);
+  if (idx >= 0) arr.splice(idx, 1); else arr.push(myPid);
+  saveState();
+  renderCurrentView();
+}
+
+function getReactionCounts(gameId) {
+  const out = {};
+  for (const [emoji, players] of Object.entries(state.reactions?.[gameId] || {})) {
+    if (players.length) out[emoji] = players.length;
+  }
+  return out;
+}
+
+// ── FEATURE 10: BROADCAST BANNER ─────────────────────────────
+
+function updateBroadcastBanner() {
+  const banner = document.getElementById('broadcast-banner');
+  if (!banner) return;
+  const msg = state.broadcast?.message;
+  const id  = state.broadcast?.id;
+  if (msg && id && id !== dismissedBroadcastId) {
+    document.getElementById('broadcast-text').textContent = msg;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function dismissBroadcast() {
+  dismissedBroadcastId = state.broadcast?.id || null;
+  const banner = document.getElementById('broadcast-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+function sendBroadcast() {
+  const input = document.getElementById('broadcast-input');
+  const msg = input?.value.trim();
+  if (!msg) { showToast('Enter a message first', 'error'); return; }
+  state.broadcast = { message: msg, id: uid() };
+  saveState();
+  updateBroadcastBanner();
+  renderBroadcastAdmin();
+  showToast('Broadcast sent! 📢', 'success');
+}
+
+function clearBroadcast() {
+  state.broadcast = null;
+  saveState();
+  updateBroadcastBanner();
+  renderBroadcastAdmin();
+  showToast('Broadcast cleared', 'info');
+}
+
+function renderBroadcastAdmin() {
+  const wrapper = document.querySelector('.admin-wrapper');
+  if (!wrapper) return;
+  let card = document.getElementById('broadcast-admin-card');
+  if (!card) {
+    card = document.createElement('div');
+    card.className = 'admin-card';
+    card.id = 'broadcast-admin-card';
+    const dangerZone = wrapper.querySelector('.danger-zone');
+    dangerZone ? wrapper.insertBefore(card, dangerZone) : wrapper.appendChild(card);
+  }
+  const current = state.broadcast?.message || '';
+  card.innerHTML = `
+    <h3 class="admin-card-title">Commissioner Broadcast</h3>
+    <p style="color:var(--text-3);font-size:0.8rem;margin-bottom:0.5rem">Send a banner message to all players — stays until dismissed or cleared.</p>
+    <div class="admin-row">
+      <textarea id="broadcast-input" rows="2" maxlength="200" placeholder="Type your message..."
+        style="flex:1;resize:vertical;background:var(--surface-3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px;font-size:0.85rem">${esc(current)}</textarea>
+    </div>
+    <div class="admin-row" style="margin-top:0.5rem;gap:0.5rem">
+      <button class="btn btn-primary"   id="send-broadcast-btn">📢 Send</button>
+      <button class="btn btn-secondary" id="clear-broadcast-btn">Clear</button>
+      <button class="btn btn-secondary" id="notif-btn" style="margin-left:auto" title="Enable desktop notifications for round lock / result alerts">🔔 Notifications</button>
+    </div>
+    ${current ? `<div style="font-size:0.75rem;color:var(--accent);margin-top:0.4rem">Active: "${esc(current)}"</div>` : ''}
+  `;
+  card.querySelector('#send-broadcast-btn')?.addEventListener('click',  sendBroadcast);
+  card.querySelector('#clear-broadcast-btn')?.addEventListener('click', clearBroadcast);
+  card.querySelector('#notif-btn')?.addEventListener('click', requestNotifPermission);
+}
+
+// ── FEATURE 1: PICK DEADLINE ADMIN ───────────────────────────
+
+function renderDeadlineAdmin() {
+  const wrapper = document.querySelector('.admin-wrapper');
+  if (!wrapper) return;
+  let card = document.getElementById('deadline-admin-card');
+  if (!card) {
+    card = document.createElement('div');
+    card.className = 'admin-card';
+    card.id = 'deadline-admin-card';
+    const dangerZone = wrapper.querySelector('.danger-zone');
+    dangerZone ? wrapper.insertBefore(card, dangerZone) : wrapper.appendChild(card);
+  }
+  const optHtml = ROUND_CONFIG.map(r =>
+    `<option value="${r.id}"${r.id === state.currentRound ? ' selected' : ''}>${r.label}</option>`
+  ).join('');
+  card.innerHTML = `
+    <h3 class="admin-card-title">Pick Deadline</h3>
+    <p style="color:var(--text-3);font-size:0.8rem;margin-bottom:0.5rem">Set a countdown deadline — players see a live timer on My Picks.</p>
+    <div class="admin-row">
+      <label>Round:</label>
+      <select id="deadline-round-sel" class="sel-input">${optHtml}</select>
+    </div>
+    <div class="admin-row" style="margin-top:0.5rem;flex-wrap:wrap;gap:0.4rem">
+      <input type="datetime-local" id="deadline-input" class="sel-input" style="flex:1;min-width:170px" />
+      <button class="btn btn-primary"   id="save-deadline-btn">Set</button>
+      <button class="btn btn-secondary" id="clear-deadline-btn">Clear</button>
+    </div>
+    <div id="deadline-current" style="font-size:0.75rem;color:var(--text-3);margin-top:0.35rem"></div>
+  `;
+  const roundSel   = card.querySelector('#deadline-round-sel');
+  const input      = card.querySelector('#deadline-input');
+  const currentDiv = card.querySelector('#deadline-current');
+  const refresh = () => {
+    const dl = (state.roundDeadlines || {})[roundSel.value];
+    if (dl) {
+      input.value = new Date(dl).toISOString().slice(0, 16);
+      currentDiv.textContent = `Set: ${new Date(dl).toLocaleString()}`;
+    } else {
+      input.value = '';
+      currentDiv.textContent = 'No deadline set for this round.';
+    }
+  };
+  roundSel.addEventListener('change', refresh);
+  refresh();
+  card.querySelector('#save-deadline-btn').addEventListener('click', () => {
+    if (!input.value) { showToast('Pick a date & time', 'error'); return; }
+    if (!state.roundDeadlines) state.roundDeadlines = {};
+    state.roundDeadlines[roundSel.value] = new Date(input.value).toISOString();
+    saveState(); refresh();
+    showToast('Deadline set!', 'success');
+  });
+  card.querySelector('#clear-deadline-btn').addEventListener('click', () => {
+    if (state.roundDeadlines) delete state.roundDeadlines[roundSel.value];
+    saveState(); refresh();
+    showToast('Deadline cleared', 'info');
+  });
+}
+
+// ── FEATURE 2: BROWSER NOTIFICATIONS ─────────────────────────
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) {
+    showToast('Notifications not supported in this browser', 'error'); return;
+  }
+  const result = await Notification.requestPermission();
+  notifPermission = result;
+  if (result === 'granted')  showToast('Notifications enabled! 🔔', 'success');
+  else if (result === 'denied') showToast('Notifications blocked — check browser settings', 'error');
+  else showToast('Notification permission dismissed', 'info');
+}
+
+function fireNotif(title, body) {
+  if (notifPermission !== 'granted') return;
+  if (!document.hidden) return; // only when tab is in background
+  try { new Notification(title, { body, icon: 'logo.png' }); } catch (e) {}
+}
+
+// ── FEATURE 4: HEAD-TO-HEAD ───────────────────────────────────
+
+function openH2H(opponentId, roundId) {
+  let modal = document.getElementById('h2h-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'h2h-modal';
+    modal.className = 'h2h-modal-overlay';
+    modal.innerHTML = `
+      <div class="h2h-modal-card">
+        <div class="h2h-modal-hdr">
+          <span id="h2h-title" class="h2h-modal-title"></span>
+          <button class="h2h-close-btn" onclick="closeH2H()">✕</button>
+        </div>
+        <div id="h2h-body"></div>
+      </div>`;
+    modal.addEventListener('click', e => { if (e.target === modal) closeH2H(); });
+    document.body.appendChild(modal);
+  }
+  const myId   = state.sessionPlayer || state.currentPlayer;
+  const myName = state.players.find(p => p.id === myId)?.name       || 'Me';
+  const opName = state.players.find(p => p.id === opponentId)?.name || 'Opponent';
+  document.getElementById('h2h-title').textContent = `${myName} vs ${opName}`;
+  renderH2HBody(document.getElementById('h2h-body'), myId, opponentId, roundId);
+  modal.style.display = 'flex';
+}
+
+function closeH2H() {
+  const modal = document.getElementById('h2h-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderH2HBody(container, myId, opponentId, roundId) {
+  container.innerHTML = '';
+  const cfg = ROUND_CONFIG.find(r => r.id === roundId);
+  if (!cfg) return;
+  const myPicks  = (state.picks[myId]       || {})[roundId] || {};
+  const oppPicks = (state.picks[opponentId] || {})[roundId] || {};
+  const myName   = state.players.find(p => p.id === myId)?.name       || 'Me';
+  const oppName  = state.players.find(p => p.id === opponentId)?.name || 'Opponent';
+  const games    = getGamesForRound(roundId);
+  if (!games.length) {
+    container.innerHTML = '<div class="h2h-empty">No games in this round yet.</div>';
+    return;
+  }
+  const myScore  = getPlayerRoundScore(myId,       roundId);
+  const oppScore = getPlayerRoundScore(opponentId, roundId);
+
+  const summary = document.createElement('div');
+  summary.className = 'h2h-summary';
+  summary.innerHTML = `
+    <div class="h2h-s-player${myScore.score >= oppScore.score ? ' h2h-leading' : ''}">
+      ${playerAvatarHtml(myName, 44)}
+      <div class="h2h-s-name">${esc(myName)}</div>
+      <div class="h2h-s-score">${fmtScore(myScore.score)} pts</div>
+      <div class="h2h-s-wl">${myScore.correct}✔ ${myScore.wrong}✘</div>
+    </div>
+    <div class="h2h-vs">vs</div>
+    <div class="h2h-s-player${oppScore.score > myScore.score ? ' h2h-leading' : ''}">
+      ${playerAvatarHtml(oppName, 44)}
+      <div class="h2h-s-name">${esc(oppName)}</div>
+      <div class="h2h-s-score">${fmtScore(oppScore.score)} pts</div>
+      <div class="h2h-s-wl">${oppScore.correct}✔ ${oppScore.wrong}✘</div>
+    </div>`;
+  container.appendChild(summary);
+
+  const rndLabel = document.createElement('div');
+  rndLabel.className = 'h2h-round-label';
+  rndLabel.textContent = cfg.label;
+  container.appendChild(rndLabel);
+
+  const gamesDiv = document.createElement('div');
+  gamesDiv.className = 'h2h-games';
+  games.forEach(game => {
+    const { t1, t2 } = getTeams(game);
+    if (!t1 && !t2) return;
+    const winner  = getWinner(game.id);
+    const myPick  = myPicks[game.id];
+    const oppPick = oppPicks[game.id];
+    const same    = myPick && oppPick && myPick === oppPick;
+    const isCorrect = pick => {
+      if (!pick || !state.results[game.id]) return null;
+      if (state.results[game.id] === 'Draw') return pick === 'Draw';
+      return !!(winner && pick === winner.name);
+    };
+    const pickHtml = pick => {
+      if (!pick) return '<span class="h2h-no-pick">—</span>';
+      const c = isCorrect(pick);
+      const cls = c === true ? 'h2h-pick correct' : c === false ? 'h2h-pick wrong' : 'h2h-pick pending';
+      const icon = c === true ? ' ✔' : c === false ? ' ✗' : '';
+      const fl   = pick !== 'Draw' ? flag(pick) : '';
+      return `<span class="${cls}">${fl}${esc(pick)}${icon}</span>`;
+    };
+    const label = game.round === 'groups'
+      ? (game.label || '').replace(/^Group [A-L]: /i, '')
+      : (game.label || game.region || '');
+    const row = document.createElement('div');
+    row.className = 'h2h-game-row' + (same ? ' h2h-same' : '');
+    row.innerHTML = `
+      <div class="h2h-game-pick my-pick">${pickHtml(myPick)}</div>
+      <div class="h2h-game-label">${esc(label)}</div>
+      <div class="h2h-game-pick opp-pick">${pickHtml(oppPick)}</div>`;
+    gamesDiv.appendChild(row);
+  });
+  container.appendChild(gamesDiv);
+}
+
+// ── FEATURE 8: PWA INSTALL BANNER ────────────────────────────
+
+function showInstallBanner() {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'flex';
+}
+
 // ── EVENT HANDLERS ────────────────────────────────────────────
 
 function setupEvents() {
@@ -3075,6 +3555,20 @@ function setupEvents() {
     updatePlayerSelect();
     renderAdmin();
   });
+
+  // PWA install banner buttons (Feature 8)
+  document.getElementById('install-btn')?.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'none';
+  });
+  document.getElementById('install-dismiss-btn')?.addEventListener('click', () => {
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'none';
+  });
 }
 
 // ── INIT ──────────────────────────────────────────────────────
@@ -3124,6 +3618,16 @@ async function init() {
 
   startPolling();
   startScoresPolling();
+
+  // Feature 8: PWA service worker + install prompt
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    showInstallBanner();
+  });
 }
 
 function setupOfflineDetection() {
@@ -3157,6 +3661,7 @@ function startPolling() {
     rulesText: state.rulesText, bonusPicks: state.bonusPicks,
     bonusAnswers: state.bonusAnswers, playerPins: state.playerPins,
     r32Teams: state.r32Teams, scores: state.scores,
+    reactions: state.reactions, broadcast: state.broadcast,
   });
 
   pollTimer = setInterval(pollServer, 8000);
@@ -3180,14 +3685,31 @@ async function pollServer() {
       rulesText: saved.rulesText, bonusPicks: saved.bonusPicks,
       bonusAnswers: saved.bonusAnswers, playerPins: saved.playerPins,
       r32Teams: saved.r32Teams, scores: saved.scores,
+      reactions: saved.reactions, broadcast: saved.broadcast,
     });
 
     if (newHash === lastStateHash) return;
     lastStateHash = newHash;
+
+    // Snapshot for notification detection (before state is mutated)
+    const oldRoundStatus = state.roundStatus;
+    const oldResultCount = Object.keys(state.results).length;
+
     const hadR32 = JSON.stringify(state.r32Teams);
     applyLoadedState(saved);
     if (JSON.stringify(state.r32Teams) !== hadR32) rebuildGames();
     renderCurrentView();
+
+    // Fire browser notifications on key changes
+    if (saved.roundStatus === 'locked' && oldRoundStatus !== 'locked') {
+      const cfg = ROUND_CONFIG.find(r => r.id === saved.currentRound);
+      fireNotif('Picks Locked 🔒', `${cfg?.label || 'Round'} picks are locked — games in progress!`);
+    }
+    const newResultCount = Object.keys(saved.results || {}).length;
+    if (newResultCount > oldResultCount) {
+      const n = newResultCount - oldResultCount;
+      fireNotif('Results In ⚽', `${n} new result${n !== 1 ? 's' : ''} entered — check the leaderboard!`);
+    }
   } catch (e) { /* silently ignore */ }
 }
 

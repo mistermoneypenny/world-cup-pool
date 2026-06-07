@@ -193,7 +193,8 @@ app.post('/api/state', async (req, res) => {
 
       if (admin) {
         const adminFields = ['currentRound', 'roundStatus', 'results', 'scores', 'rulesText',
-                             'defaultPlayersKey', 'bonusAnswers', 'r32Teams'];
+                             'defaultPlayersKey', 'bonusAnswers', 'r32Teams',
+                             'roundDeadlines', 'broadcast'];
         adminFields.forEach(field => {
           if (incoming[field] !== undefined) existing[field] = incoming[field];
         });
@@ -225,6 +226,24 @@ app.post('/api/state', async (req, res) => {
         existing.bonusPicks[sender] = incoming.bonusPicks[sender] || {};
       } else if (incoming.bonusPicks && !sender) {
         existing.bonusPicks = incoming.bonusPicks;
+      }
+
+      // Reactions: any player can update (fun feature, not score-critical)
+      if (incoming.reactions) {
+        if (!existing.reactions) existing.reactions = {};
+        for (const [gid, emojis] of Object.entries(incoming.reactions)) {
+          existing.reactions[gid] = emojis;
+        }
+      }
+
+      // pickSavedAt: each player writes only their own entry
+      if (incoming.pickSavedAt) {
+        if (!existing.pickSavedAt) existing.pickSavedAt = {};
+        if (admin || !sender) {
+          existing.pickSavedAt = incoming.pickSavedAt;
+        } else if (sender && incoming.pickSavedAt[sender]) {
+          existing.pickSavedAt[sender] = incoming.pickSavedAt[sender];
+        }
       }
 
       await writeState(existing);
