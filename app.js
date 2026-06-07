@@ -416,6 +416,43 @@ function gameId(round, region, idx) {
   return region ? `${round}-${region.toLowerCase()}-${idx}` : `${round}-${idx}`;
 }
 
+// ── PICK STORAGE KEYS (matchup-based, immune to team reordering) ──
+// Picks are stored as { "Mexico|South Africa": "Mexico" } instead of
+// { "groups-a-0": "Mexico" }. This means reordering GROUP_TEAMS or
+// changing bracket structure never invalidates stored picks.
+function gameKey(t1Name, t2Name) {
+  return [t1Name, t2Name].sort().join('|');
+}
+function getPickKey(game) {
+  const { t1, t2 } = getTeams(game);
+  if (!t1 || !t2) return game.id; // TBD knockout games: fall back to ID
+  return gameKey(t1.name, t2.name);
+}
+// One-time migration: converts old game-ID picks to matchup-key picks.
+// Called on every load; only does work when old-format keys are detected.
+function migratePicksToMatchupKeys(picks) {
+  const pat = /^(groups|r32|r16|qf|sf|third|final)(-[a-l])?-\d+$/i;
+  let migrated = false;
+  for (const [pid, pdata] of Object.entries(picks)) {
+    for (const [rid, rPicks] of Object.entries(pdata)) {
+      if (!rPicks || typeof rPicks !== 'object') continue;
+      if (!Object.keys(rPicks).some(k => pat.test(k))) continue;
+      const games = getGamesForRound(rid);
+      const newPicks = {};
+      for (const [gid, picked] of Object.entries(rPicks)) {
+        if (!pat.test(gid)) { newPicks[gid] = picked; continue; } // already new format
+        const g = games.find(x => x.id === gid);
+        if (!g) continue; // game no longer exists — drop stale pick
+        const { t1, t2 } = getTeams(g);
+        if (t1 && t2) newPicks[gameKey(t1.name, t2.name)] = picked;
+      }
+      picks[pid][rid] = newPicks;
+      migrated = true;
+    }
+  }
+  return migrated;
+}
+
 function getLoser(gid) {
   const winner = getWinner(gid);
   if (!winner) return null;
@@ -499,7 +536,7 @@ function getPlayerRoundScore(playerId, roundId) {
   const cfg = ROUND_CONFIG.find(r => r.id === roundId);
   let score = 0, possible = 0, correct = 0, wrong = 0;
   getGamesForRound(roundId).forEach(game => {
-    const pickedName = roundPicks[game.id];
+    const pickedName = roundPicks[getPickKey(game)];
     const resultName = state.results[game.id];
     if (pickedName) {
       if (resultName !== undefined) {
@@ -650,7 +687,11 @@ function applyLoadedState(saved) {
   }
   if (saved.players?.length)  state.players  = saved.players;
   if (saved.results)          state.results  = saved.results;
-  if (saved.picks)            state.picks    = saved.picks;
+  if (saved.picks) {
+    state.picks = saved.picks;
+    // Silently migrate any old game-ID picks to matchup keys and re-save
+    if (migratePicksToMatchupKeys(state.picks)) setTimeout(() => saveState(), 500);
+  }
   if (saved.currentRound)     state.currentRound = saved.currentRound;
   if (saved.roundStatus)      state.roundStatus  = saved.roundStatus;
   if (saved.rulesText !== undefined) state.rulesText = saved.rulesText;
@@ -1052,7 +1093,7 @@ function renderGroupStageBracket(wrapper) {
       const { t1, t2 } = getTeams(game);
       const winner = getWinner(game.id);
       const isDraw = state.results[game.id] === 'Draw';
-      const playerPick = (state.picks[state.currentPlayer] || {})['groups']?.[game.id];
+      const playerPick = (state.picks[state.currentPlayer] || {})['groups']?.[getPickKey(game)];
       const gameRow = document.createElement('div');
       gameRow.className = 'group-game-row' + (gameRowCount % 2 === 1 ? ' alt' : '');
       gameRowCount++;
@@ -1164,7 +1205,7 @@ function buildRoundCol(region, roundId) {
 function buildMatchup(game) {
   const { t1, t2 } = getTeams(game);
   const winner      = getWinner(game.id);
-  const playerPick  = (state.picks[state.currentPlayer] || {})[game.round]?.[game.id];
+  const playerPick  = (state.picks[state.currentPlayer] || {})[game.round]?.[getPickKey(game)];
 
   const card = document.createElement('div');
   card.className = 'matchup';
@@ -1597,7 +1638,7 @@ function renderPicksBody() {
       const section = document.createElement('div');
       section.className = 'picks-group-section';
       const groupGamesAll = getGamesForRound('groups').filter(g => g.region === group);
-      const pickedCount = groupGamesAll.filter(g => state.pendingPicks[g.id]).length;
+      const pickedCount = groupGamesAll.filter(g => state.pendingPicks[getPickKey(g)]).length;
       const sectionHdr = document.createElement('div');
       sectionHdr.className = 'picks-group-hdr';
       sectionHdr.innerHTML = `Group ${group}<span class="picks-group-progress">${pickedCount}/${groupGamesAll.length}</span>`;
@@ -1661,7 +1702,7 @@ function renderPicksBody() {
         const srcRound = b.sourceRound || 'qf';
         const srcGames = getGamesForRound(srcRound);
         const srcPicks = (state.picks[viewId] || {})[srcRound] || {};
-        const autoTeams = srcGames.map(g => srcPicks[g.id] || '');
+        const autoTeams = srcGames.map(g => srcPicks[getPickKey(g)] || '');
 
         if (!state.bonusPicks[viewId]) state.bonusPicks[viewId] = {};
         state.bonusPicks[viewId][b.id] = autoTeams;
@@ -1785,7 +1826,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     return card;
   }
 
-  const savedPick = savedPicks[game.id];
+  const savedPick = savedPicks[getPickKey(game)];
   const isDrawResult = state.results[game.id] === 'Draw';
 
   // Draw only available in Group Stage (knockout rounds decided by penalties)
@@ -1794,13 +1835,13 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     : [{ team: t1 }, { team: t2 }];
 
   // Pre-compute pick popularity for locked/closed rounds
-  const popData = (!isOpen && state.players.length > 1) ? getPickPopularity(game.id, game.round) : null;
+  const popData = (!isOpen && state.players.length > 1) ? getPickPopularity(game, game.round) : null;
 
   options.forEach(({ team, isDraw }) => {
     const optionName = isDraw ? 'Draw' : team?.name;
     if (!team && !isDraw) return;
 
-    const isPicked     = state.pendingPicks[game.id] === optionName;
+    const isPicked     = state.pendingPicks[getPickKey(game)] === optionName;
     const isPlayerPick = savedPick === optionName;
     const row = document.createElement('div');
     row.className = 'pick-option' + (isDraw ? ' pick-draw-option' : '');
@@ -1862,7 +1903,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
 
     if (isOpen) {
       row.addEventListener('click', () => {
-        state.pendingPicks[game.id] = optionName;
+        state.pendingPicks[getPickKey(game)] = optionName;
         document.querySelectorAll(`[name="game-${game.id}"]`).forEach(r => r.checked = false);
         radio.checked = true;
         document.querySelectorAll(`.pick-option`).forEach(el => {
@@ -1899,11 +1940,12 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
 }
 
 // ── PICK POPULARITY ───────────────────────────────────────────
-function getPickPopularity(gameId, roundId) {
+function getPickPopularity(game, roundId) {
+  const pickKey = getPickKey(game);
   const counts = {};
   let total = 0;
   state.players.forEach(p => {
-    const pick = (state.picks[p.id] || {})[roundId]?.[gameId];
+    const pick = (state.picks[p.id] || {})[roundId]?.[pickKey];
     if (pick) { counts[pick] = (counts[pick] || 0) + 1; total++; }
   });
   return { counts, total };
@@ -1965,13 +2007,11 @@ function updateSaveStatus() {
   if (!statusEl) return;
   const roundId = state.activePicksRound;
   const games   = getGamesForRound(roundId);
-  const picked  = Object.keys(state.pendingPicks).filter(gid =>
-    games.find(g => g.id === gid) && state.pendingPicks[gid]
-  ).length;
+  const picked  = games.filter(g => state.pendingPicks[getPickKey(g)]).length;
   if (roundId === 'groups') {
     const incomplete = GROUP_LETTERS.filter(g => {
       const grpGames = games.filter(gm => gm.region === g);
-      return grpGames.some(gm => !state.pendingPicks[gm.id]);
+      return grpGames.some(gm => !state.pendingPicks[getPickKey(gm)]);
     });
     statusEl.textContent = picked === games.length
       ? `All ${games.length} picks complete ✔`
@@ -1981,7 +2021,7 @@ function updateSaveStatus() {
       const grpLetter = section.querySelector('.picks-group-hdr')?.textContent?.match(/Group ([A-L])/)?.[1];
       if (!grpLetter) return;
       const grpGames = games.filter(gm => gm.region === grpLetter);
-      const done = grpGames.filter(gm => state.pendingPicks[gm.id]).length;
+      const done = grpGames.filter(gm => state.pendingPicks[getPickKey(gm)]).length;
       const prog = section.querySelector('.picks-group-progress');
       if (prog) prog.textContent = `${done}/${grpGames.length}`;
     });
@@ -2188,13 +2228,14 @@ function fixInvalidPicks() {
       getGamesForRound(cfg.id).forEach(g => {
         const { t1, t2 } = getTeams(g);
         if (!t1 || !t2) return;
-        const stored = state.picks[p.id][cfg.id][g.id];
+        const key    = getPickKey(g);
+        const stored = state.picks[p.id][cfg.id][key];
         const validPicks = cfg.id === 'groups'
           ? [t1.name, t2.name, 'Draw']
           : [t1.name, t2.name];
         if (!validPicks.includes(stored)) {
           const r = Math.random();
-          state.picks[p.id][cfg.id][g.id] = cfg.id === 'groups'
+          state.picks[p.id][cfg.id][key] = cfg.id === 'groups'
             ? (r < 0.4 ? t1.name : r < 0.75 ? t2.name : 'Draw')
             : (r < 0.5 ? t1.name : t2.name);
           fixed++;
@@ -2512,7 +2553,7 @@ function generateRandomPicks() {
           // right and wrong. Each player gets a different coin flip per game.
           pick = rng() < 0.5 ? t1.name : t2.name;
         }
-        state.picks[player.id][cfg.id][game.id] = pick;
+        state.picks[player.id][cfg.id][getPickKey(game)] = pick;
         filled++;
       });
     });
@@ -2718,7 +2759,7 @@ function loadDemoData() {
         const fav = t1.seed <= t2.seed ? t1 : t2;
         const dog = t1 === fav ? t2 : t1;
         const upsetProb = boldness * (dog.seed - fav.seed) / 7;
-        state.picks[player.id][cfg.id][game.id] = rng() < upsetProb ? dog.name : fav.name;
+        state.picks[player.id][cfg.id][getPickKey(game)] = rng() < upsetProb ? dog.name : fav.name;
       });
     });
 
@@ -2729,7 +2770,7 @@ function loadDemoData() {
           const srcRound = b.sourceRound || 'qf';
           const srcGames = getGamesForRound(srcRound);
           const srcPicks = (state.picks[player.id] || {})[srcRound] || {};
-          state.bonusPicks[player.id][b.id] = srcGames.map(g => srcPicks[g.id] || '');
+          state.bonusPicks[player.id][b.id] = srcGames.map(g => srcPicks[getPickKey(g)] || '');
         } else if (b.type === 'select' && b.options) {
           const idx = Math.floor(rng() * b.options.length);
           state.bonusPicks[player.id][b.id] = b.options[idx];
@@ -3198,7 +3239,7 @@ function computeUpsets() {
     if (!cfg) continue;
     const bonusPts = Math.round((dog.seed - fav.seed) * cfg.multiplier * 10) / 10;
     const pickedBy = state.players
-      .filter(p => (state.picks[p.id] || {})[game.round]?.[gid] === winner.name)
+      .filter(p => (state.picks[p.id] || {})[game.round]?.[getPickKey(game)] === winner.name)
       .map(p => p.name);
     upsets.push({ game, winner, loser: fav, seedDiff: dog.seed - fav.seed, bonusPts, cfg, pickedBy });
   }
@@ -3497,8 +3538,8 @@ function renderH2HBody(container, myId, opponentId, roundId) {
     const { t1, t2 } = getTeams(game);
     if (!t1 && !t2) return;
     const winner  = getWinner(game.id);
-    const myPick  = myPicks[game.id];
-    const oppPick = oppPicks[game.id];
+    const myPick  = myPicks[getPickKey(game)];
+    const oppPick = oppPicks[getPickKey(game)];
     const same    = myPick && oppPick && myPick === oppPick;
     const isCorrect = pick => {
       if (!pick || !state.results[game.id]) return null;
