@@ -343,19 +343,20 @@ async function fetchESPNScores() {
 }
 
 // Group stage teams + pairs (mirrors app.js) for server-side auto-results
+// Order determines fixture pairings: MD1: t0vt1, t2vt3 | MD2: t0vt2, t1vt3 | MD3: t0vt3, t1vt2
 const SRV_GROUP_TEAMS = {
-  A:[{n:'Mexico'},{n:'South Korea'},{n:'South Africa'},{n:'Czech Republic'}],
-  B:[{n:'Switzerland'},{n:'Canada'},{n:'Qatar'},{n:'Bosnia'}],
-  C:[{n:'Brazil'},{n:'Morocco'},{n:'Scotland'},{n:'Haiti'}],
-  D:[{n:'USA'},{n:'Australia'},{n:'Paraguay'},{n:'Turkey'}],
-  E:[{n:'Germany'},{n:'Ecuador'},{n:'Ivory Coast'},{n:'Curacao'}],
-  F:[{n:'Netherlands'},{n:'Japan'},{n:'Tunisia'},{n:'Sweden'}],
-  G:[{n:'Belgium'},{n:'Iran'},{n:'Egypt'},{n:'New Zealand'}],
-  H:[{n:'Spain'},{n:'Uruguay'},{n:'Saudi Arabia'},{n:'Cape Verde'}],
-  I:[{n:'France'},{n:'Senegal'},{n:'Norway'},{n:'Iraq'}],
-  J:[{n:'Argentina'},{n:'Austria'},{n:'Algeria'},{n:'Jordan'}],
-  K:[{n:'Portugal'},{n:'Colombia'},{n:'Uzbekistan'},{n:'DR Congo'}],
-  L:[{n:'England'},{n:'Croatia'},{n:'Panama'},{n:'Ghana'}],
+  A:[{n:'Mexico'},{n:'South Africa'},{n:'South Korea'},{n:'Czech Republic'}],
+  B:[{n:'Canada'},{n:'Bosnia'},{n:'Qatar'},{n:'Switzerland'}],
+  C:[{n:'Brazil'},{n:'Morocco'},{n:'Haiti'},{n:'Scotland'}],
+  D:[{n:'USA'},{n:'Paraguay'},{n:'Australia'},{n:'Turkey'}],
+  E:[{n:'Germany'},{n:'Curacao'},{n:'Ivory Coast'},{n:'Ecuador'}],
+  F:[{n:'Netherlands'},{n:'Japan'},{n:'Sweden'},{n:'Tunisia'}],
+  G:[{n:'Belgium'},{n:'Egypt'},{n:'Iran'},{n:'New Zealand'}],
+  H:[{n:'Spain'},{n:'Cape Verde'},{n:'Saudi Arabia'},{n:'Uruguay'}],
+  I:[{n:'France'},{n:'Senegal'},{n:'Iraq'},{n:'Norway'}],
+  J:[{n:'Argentina'},{n:'Algeria'},{n:'Austria'},{n:'Jordan'}],
+  K:[{n:'Portugal'},{n:'DR Congo'},{n:'Uzbekistan'},{n:'Colombia'}],
+  L:[{n:'England'},{n:'Croatia'},{n:'Ghana'},{n:'Panama'}],
 };
 const SRV_PAIRS = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
 
@@ -398,6 +399,65 @@ app.get('/api/scores', async (req, res) => {
   } catch (e) {
     console.error('GET /api/scores error:', e.message);
     res.json({});
+  }
+});
+
+// ── TEMPORARY PICK RECOVERY ───────────────────────────────────
+// Fetches JSONBin version history using the real server key to recover lost picks
+app.get('/api/recover-versions', async (req, res) => {
+  try {
+    const state = await readState();
+    const sender = req.query._sender;
+    if (!isAdminSender(sender, state)) {
+      return res.status(403).json({ error: 'Admin only' });
+    }
+    const versUrl = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}/versions`;
+    const versResp = await fetch(versUrl, {
+      headers: { 'X-Master-Key': JSONBIN_KEY },
+    });
+    if (!versResp.ok) {
+      return res.status(versResp.status).json({ error: `JSONBin versions API returned ${versResp.status}` });
+    }
+    const versData = await versResp.json();
+    // Return summary: version number + group pick counts
+    const versions = versData.record || versData;
+    const summary = [];
+    if (Array.isArray(versions)) {
+      for (const v of versions.slice(0, 30)) {
+        const vNum = v.version || v.versionNumber || v.id;
+        summary.push({ version: vNum, createdAt: v.createdAt });
+      }
+    }
+    res.json({ versions: summary, raw: versData });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/recover-version/:vnum', async (req, res) => {
+  try {
+    const state = await readState();
+    const sender = req.query._sender;
+    if (!isAdminSender(sender, state)) {
+      return res.status(403).json({ error: 'Admin only' });
+    }
+    const vNum = req.params.vnum;
+    const vUrl = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}/${vNum}`;
+    const vResp = await fetch(vUrl, { headers: { 'X-Master-Key': JSONBIN_KEY } });
+    if (!vResp.ok) {
+      return res.status(vResp.status).json({ error: `JSONBin version ${vNum} returned ${vResp.status}` });
+    }
+    const vData = await vResp.json();
+    const record = vData.record || {};
+    const picks = record.picks || {};
+    // Count group picks per player
+    const summary = {};
+    for (const [pid, pdata] of Object.entries(picks)) {
+      summary[pid] = Object.keys(pdata.groups || {}).length;
+    }
+    res.json({ version: vNum, pickCounts: summary, picks, record });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
