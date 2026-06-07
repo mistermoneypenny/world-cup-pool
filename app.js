@@ -912,15 +912,17 @@ function renderBracket() {
     return;
   }
 
-  // Show notice if group stage isn't complete yet
+  // Show notice above the bracket (not inside the flex row or it stretches as a column)
+  const scrollEl = wrapper.parentElement;
+  scrollEl.querySelectorAll('.knockout-notice').forEach(el => el.remove());
   const groupGamesTotal  = GROUP_LETTERS.length * 6;
   const groupResultsDone = GROUP_LETTERS.reduce((n, g) =>
     n + getGamesForRound('groups').filter(gm => gm.region === g && state.results[gm.id] !== undefined).length, 0);
   if (groupResultsDone < groupGamesTotal) {
     const notice = document.createElement('div');
     notice.className = 'knockout-notice';
-    notice.innerHTML = `&#9888; Knockout bracket will be confirmed after the Group Stage concludes (${groupResultsDone}/${groupGamesTotal} group results entered). Teams shown below are projected.`;
-    wrapper.appendChild(notice);
+    notice.innerHTML = `&#9888; Projected bracket — finalised after the Group Stage (${groupResultsDone}/${groupGamesTotal} results entered).`;
+    scrollEl.insertBefore(notice, wrapper);
   }
 
   // Left column: Quadrant A (top) + Quadrant B (bottom), rounds L→R
