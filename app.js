@@ -85,77 +85,80 @@ const SF_PAIRINGS = [
 // Hosts USA/Mexico/Canada relegated to Pot 2 based on FIFA rankings.
 // Pot 2–4: remaining 36 teams ranked by FIFA Coca-Cola Rankings.
 const GROUP_TEAMS = {
+  // Team order within each group determines fixture pairings via GROUP_PAIRS:
+  // MD1: t0vt1, t2vt3 | MD2: t0vt2, t1vt3 | MD3: t0vt3, t1vt2
+  // Order is set to match the official FIFA 2026 fixture schedule exactly.
   A: [
-    { seed: 2, name: 'Mexico'         },
-    { seed: 2, name: 'South Korea'    },
+    { seed: 2, name: 'Mexico'         },  // MD1: Mexico vs S.Africa | S.Korea vs Czechia
+    { seed: 4, name: 'South Africa'   },  // MD2: Mexico vs S.Korea  | S.Africa vs Czechia
+    { seed: 2, name: 'South Korea'    },  // MD3: Mexico vs Czechia  | S.Africa vs S.Korea
     { seed: 3, name: 'Czech Republic' },
-    { seed: 4, name: 'South Africa'   },
   ],
   B: [
-    { seed: 2, name: 'Canada'         },
+    { seed: 2, name: 'Canada'         },  // MD1: Canada vs Bosnia   | Qatar vs Switzerland
+    { seed: 4, name: 'Bosnia'         },  // MD2: Canada vs Qatar    | Bosnia vs Switzerland
+    { seed: 3, name: 'Qatar'          },  // MD3: Canada vs Switz.   | Bosnia vs Qatar
     { seed: 2, name: 'Switzerland'    },
-    { seed: 3, name: 'Qatar'          },
-    { seed: 4, name: 'Bosnia'         },
   ],
   C: [
-    { seed: 1, name: 'Brazil'         },
-    { seed: 1, name: 'Morocco'        },
+    { seed: 1, name: 'Brazil'         },  // MD1: Brazil vs Morocco  | Haiti vs Scotland
+    { seed: 1, name: 'Morocco'        },  // MD2: Brazil vs Haiti    | Morocco vs Scotland
+    { seed: 4, name: 'Haiti'          },  // MD3: Brazil vs Scotland | Morocco vs Haiti
     { seed: 3, name: 'Scotland'       },
-    { seed: 4, name: 'Haiti'          },
   ],
   D: [
-    { seed: 2, name: 'USA'            },
+    { seed: 2, name: 'USA'            },  // MD1: USA vs Paraguay    | Australia vs Turkey
+    { seed: 4, name: 'Paraguay'       },  // MD2: USA vs Australia   | Turkey vs Paraguay
+    { seed: 3, name: 'Australia'      },  // MD3: USA vs Turkey      | Paraguay vs Australia
     { seed: 2, name: 'Turkey'         },
-    { seed: 3, name: 'Australia'      },
-    { seed: 4, name: 'Paraguay'       },
   ],
   E: [
-    { seed: 1, name: 'Germany'        },
+    { seed: 1, name: 'Germany'        },  // MD1: Germany vs Curacao | Ivory Coast vs Ecuador
+    { seed: 4, name: 'Curacao'        },  // MD2: Germany vs I.Coast | Ecuador vs Curacao
+    { seed: 3, name: 'Ivory Coast'    },  // MD3: Germany vs Ecuador | Curacao vs I.Coast
     { seed: 2, name: 'Ecuador'        },
-    { seed: 3, name: 'Ivory Coast'    },
-    { seed: 4, name: 'Curacao'        },
   ],
   F: [
-    { seed: 1, name: 'Netherlands'    },
-    { seed: 2, name: 'Japan'          },
-    { seed: 3, name: 'Sweden'         },
+    { seed: 1, name: 'Netherlands'    },  // MD1: Netherlands vs Japan | Sweden vs Tunisia
+    { seed: 2, name: 'Japan'          },  // MD2: Netherlands vs Sweden | Japan vs Tunisia
+    { seed: 3, name: 'Sweden'         },  // MD3: Netherlands vs Tunisia | Japan vs Sweden
     { seed: 4, name: 'Tunisia'        },
   ],
   G: [
-    { seed: 1, name: 'Belgium'        },
-    { seed: 2, name: 'Iran'           },
-    { seed: 3, name: 'Egypt'          },
+    { seed: 1, name: 'Belgium'        },  // MD1: Belgium vs Egypt   | Iran vs New Zealand
+    { seed: 3, name: 'Egypt'          },  // MD2: Belgium vs Iran    | Egypt vs New Zealand
+    { seed: 2, name: 'Iran'           },  // MD3: Belgium vs N.Zeal. | Egypt vs Iran
     { seed: 4, name: 'New Zealand'    },
   ],
   H: [
-    { seed: 1, name: 'Spain'          },
+    { seed: 1, name: 'Spain'          },  // MD1: Spain vs Cape Verde | Saudi Arabia vs Uruguay
+    { seed: 4, name: 'Cape Verde'     },  // MD2: Spain vs S.Arabia  | Uruguay vs Cape Verde
+    { seed: 3, name: 'Saudi Arabia'   },  // MD3: Spain vs Uruguay   | Cape Verde vs S.Arabia
     { seed: 2, name: 'Uruguay'        },
-    { seed: 3, name: 'Saudi Arabia'   },
-    { seed: 4, name: 'Cape Verde'     },
   ],
   I: [
-    { seed: 1, name: 'France'         },
-    { seed: 2, name: 'Senegal'        },
+    { seed: 1, name: 'France'         },  // MD1: France vs Senegal  | Iraq vs Norway
+    { seed: 2, name: 'Senegal'        },  // MD2: France vs Iraq     | Norway vs Senegal
+    { seed: 4, name: 'Iraq'           },  // MD3: France vs Norway   | Senegal vs Iraq
     { seed: 3, name: 'Norway'         },
-    { seed: 4, name: 'Iraq'           },
   ],
   J: [
-    { seed: 1, name: 'Argentina'      },
-    { seed: 2, name: 'Austria'        },
-    { seed: 3, name: 'Algeria'        },
+    { seed: 1, name: 'Argentina'      },  // MD1: Argentina vs Algeria | Austria vs Jordan
+    { seed: 3, name: 'Algeria'        },  // MD2: Argentina vs Austria | Jordan vs Algeria
+    { seed: 2, name: 'Austria'        },  // MD3: Argentina vs Jordan  | Algeria vs Austria
     { seed: 4, name: 'Jordan'         },
   ],
   K: [
-    { seed: 1, name: 'Portugal'       },
+    { seed: 1, name: 'Portugal'       },  // MD1: Portugal vs DR Congo | Uzbekistan vs Colombia
+    { seed: 3, name: 'DR Congo'       },  // MD2: Portugal vs Uzbekistan | Colombia vs DR Congo
+    { seed: 4, name: 'Uzbekistan'     },  // MD3: Portugal vs Colombia | DR Congo vs Uzbekistan
     { seed: 1, name: 'Colombia'       },
-    { seed: 3, name: 'DR Congo'       },
-    { seed: 4, name: 'Uzbekistan'     },
   ],
   L: [
-    { seed: 1, name: 'England'        },
-    { seed: 1, name: 'Croatia'        },
+    { seed: 1, name: 'England'        },  // MD1: England vs Croatia  | Ghana vs Panama
+    { seed: 1, name: 'Croatia'        },  // MD2: England vs Ghana    | Panama vs Croatia
+    { seed: 4, name: 'Ghana'          },  // MD3: England vs Panama   | Croatia vs Ghana
     { seed: 3, name: 'Panama'         },
-    { seed: 4, name: 'Ghana'          },
   ],
 };
 
@@ -317,20 +320,20 @@ const GROUP_PAIRS = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
 const GROUP_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 
 // Scheduled dates for each group's three matchdays (FIFA World Cup 2026)
-// MD1: Jun 12–17 | MD2: Jun 21–26 | MD3: Jun 29–Jul 2 (simultaneous pairs)
+// MD1: Jun 11–17 | MD2: Jun 18–23 | MD3: Jun 24–27 (simultaneous pairs)
 const MATCHDAY_DATES = {
-  A: ['Jun 12', 'Jun 21', 'Jun 29'],
-  B: ['Jun 12', 'Jun 21', 'Jun 29'],
-  C: ['Jun 13', 'Jun 22', 'Jun 30'],
-  D: ['Jun 13', 'Jun 22', 'Jun 30'],
-  E: ['Jun 14', 'Jun 23', 'Jul 1'],
-  F: ['Jun 14', 'Jun 23', 'Jul 1'],
-  G: ['Jun 15', 'Jun 24', 'Jul 2'],
-  H: ['Jun 15', 'Jun 24', 'Jul 2'],
-  I: ['Jun 16', 'Jun 25', 'Jun 29'],
-  J: ['Jun 16', 'Jun 25', 'Jun 30'],
-  K: ['Jun 17', 'Jun 26', 'Jul 1'],
-  L: ['Jun 17', 'Jun 26', 'Jul 2'],
+  A: ['Jun 11', 'Jun 18', 'Jun 24'],
+  B: ['Jun 12', 'Jun 18', 'Jun 24'],
+  C: ['Jun 13', 'Jun 19', 'Jun 24'],
+  D: ['Jun 12', 'Jun 19', 'Jun 25'],
+  E: ['Jun 14', 'Jun 20', 'Jun 25'],
+  F: ['Jun 14', 'Jun 20', 'Jun 25'],
+  G: ['Jun 15', 'Jun 21', 'Jun 26'],
+  H: ['Jun 15', 'Jun 21', 'Jun 26'],
+  I: ['Jun 16', 'Jun 22', 'Jun 26'],
+  J: ['Jun 16', 'Jun 22', 'Jun 27'],
+  K: ['Jun 17', 'Jun 23', 'Jun 27'],
+  L: ['Jun 17', 'Jun 23', 'Jun 27'],
 };
 
 function buildGames() {
