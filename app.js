@@ -81,29 +81,30 @@ const SF_PAIRINGS = [
 // ── TEAM DATA ─────────────────────────────────────────────────
 // GROUP_TEAMS: 48 teams in 12 groups (A–L), 4 teams per group.
 // Seed = FIFA Draw Pot (1–4). Official draw Dec 5, 2025.
-// Pot 1: hosts (USA/Mexico/Canada) + top 9 ranked nations.
+// Pot 1: Morocco, Colombia, Croatia (replacing hosts) + top 9 ranked nations.
+// Hosts USA/Mexico/Canada relegated to Pot 2 based on FIFA rankings.
 // Pot 2–4: remaining 36 teams ranked by FIFA Coca-Cola Rankings.
 const GROUP_TEAMS = {
   A: [
-    { seed: 1, name: 'Mexico'         },
+    { seed: 1, name: 'Morocco'        },
     { seed: 2, name: 'South Korea'    },
     { seed: 3, name: 'Czech Republic' },
     { seed: 4, name: 'South Africa'   },
   ],
   B: [
-    { seed: 1, name: 'Canada'         },
+    { seed: 1, name: 'Colombia'       },
     { seed: 2, name: 'Switzerland'    },
     { seed: 3, name: 'Qatar'          },
     { seed: 4, name: 'Bosnia'         },
   ],
   C: [
     { seed: 1, name: 'Brazil'         },
-    { seed: 2, name: 'Morocco'        },
+    { seed: 2, name: 'Mexico'         },
     { seed: 3, name: 'Scotland'       },
     { seed: 4, name: 'Haiti'          },
   ],
   D: [
-    { seed: 1, name: 'USA'            },
+    { seed: 1, name: 'Croatia'        },
     { seed: 2, name: 'Turkey'         },
     { seed: 3, name: 'Australia'      },
     { seed: 4, name: 'Paraguay'       },
@@ -146,13 +147,13 @@ const GROUP_TEAMS = {
   ],
   K: [
     { seed: 1, name: 'Portugal'       },
-    { seed: 2, name: 'Colombia'       },
+    { seed: 2, name: 'Canada'         },
     { seed: 3, name: 'DR Congo'       },
     { seed: 4, name: 'Uzbekistan'     },
   ],
   L: [
     { seed: 1, name: 'England'        },
-    { seed: 2, name: 'Croatia'        },
+    { seed: 2, name: 'USA'            },
     { seed: 3, name: 'Panama'         },
     { seed: 4, name: 'Ghana'          },
   ],
@@ -186,7 +187,7 @@ const INITIAL_TEAMS = {
     { seed: 1, name: 'France'         },
     { seed: 3, name: 'Czech Republic' },
     { seed: 1, name: 'Portugal'       },
-    { seed: 2, name: 'Colombia'       },
+    { seed: 2, name: 'Canada'         },
     { seed: 1, name: 'Belgium'        },
     { seed: 3, name: 'Egypt'          },
     { seed: 1, name: 'Argentina'      },
@@ -194,22 +195,22 @@ const INITIAL_TEAMS = {
   ],
   B: [
     { seed: 1, name: 'England'        },
-    { seed: 2, name: 'Croatia'        },
+    { seed: 2, name: 'USA'            },
     { seed: 1, name: 'Netherlands'    },
     { seed: 2, name: 'Japan'          },
     { seed: 1, name: 'Spain'          },
     { seed: 2, name: 'Uruguay'        },
     { seed: 1, name: 'Brazil'         },
-    { seed: 2, name: 'Morocco'        },
+    { seed: 2, name: 'Mexico'         },
   ],
   C: [
     { seed: 1, name: 'Germany'        },
     { seed: 3, name: 'Ivory Coast'    },
-    { seed: 1, name: 'Mexico'         },
+    { seed: 1, name: 'Morocco'        },
     { seed: 2, name: 'South Korea'    },
+    { seed: 1, name: 'Colombia'       },
     { seed: 2, name: 'Switzerland'    },
-    { seed: 1, name: 'Canada'         },
-    { seed: 1, name: 'USA'            },
+    { seed: 1, name: 'Croatia'        },
     { seed: 2, name: 'Turkey'         },
   ],
   D: [
@@ -1399,12 +1400,12 @@ PARTICIPATING TEAMS BY POT
 ——————————————————————————
 
 Pot 1 (Top Seeds)
-  Argentina · Belgium · Brazil · Canada · England · France
-  Germany · Mexico · Netherlands · Portugal · Spain · USA
+  Argentina · Belgium · Brazil · Colombia · Croatia · England
+  France · Germany · Morocco · Netherlands · Portugal · Spain
 
 Pot 2
-  Austria · Colombia · Croatia · Ecuador · Iran · Japan
-  Morocco · Senegal · South Korea · Switzerland · Turkey · Uruguay
+  Austria · Canada · Ecuador · Iran · Japan · Mexico
+  Senegal · South Korea · Switzerland · Turkey · Uruguay · USA
 
 Pot 3
   Algeria · Australia · Czech Republic · DR Congo · Egypt · Ivory Coast
@@ -3584,7 +3585,7 @@ async function init() {
     state.players = DEFAULT_PLAYERS.map(p => ({ ...p, id: uid() }));
     saveState();
   }
-  if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage') || state.rulesText.includes('A correct Draw pick earns 1 point') || state.rulesText.includes('(Pot differential / 2) × Round multiplier') || state.rulesText.includes('((Underdog pot')) {
+  if (!state.rulesText || state.rulesText.includes('Total number of draws in the group stage') || state.rulesText.includes('A correct Draw pick earns 1 point') || state.rulesText.includes('(Pot differential / 2) × Round multiplier') || state.rulesText.includes('((Underdog pot') || state.rulesText.includes('Germany · Mexico · Netherlands')) {
     // First run or old default text — replace with updated rules
     state.rulesText = DEFAULT_RULES_PLACEHOLDER;
     saveState();
