@@ -793,7 +793,7 @@ function loginAs(pid) {
   state.sessionPlayer   = pid;
   state.currentPlayer   = pid;
   state.adminViewPlayer = null;
-  try { sessionStorage.setItem('wcSession', pid); } catch(e) {}
+  try { localStorage.setItem('wcSession', pid); } catch(e) {}
   document.getElementById('login-overlay').style.display = 'none';
   updateSessionHeader();
   updatePlayerSelect();
@@ -803,7 +803,7 @@ function loginAs(pid) {
 function logoutSession() {
   state.sessionPlayer   = null;
   state.adminViewPlayer = null;
-  try { sessionStorage.removeItem('wcSession'); } catch(e) {}
+  try { localStorage.removeItem('wcSession'); } catch(e) {}
   renderLoginOverlay();
 }
 
@@ -3606,7 +3606,7 @@ async function init() {
 
   // Resume session from sessionStorage if player still exists
   try {
-    const savedPid = sessionStorage.getItem('wcSession');
+    const savedPid = localStorage.getItem('wcSession');
     if (savedPid && state.players.find(p => p.id === savedPid)) {
       state.sessionPlayer = savedPid;
       state.currentPlayer = savedPid;
