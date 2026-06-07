@@ -325,7 +325,7 @@ a { color: var(--accent); }
 .third-place-sep { width: 80%; border-top: 1px solid var(--border); margin: 0.25rem auto 0; }
 .third-place-label { font-size: 0.72rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.15rem; }
 .t-seed { font-size: 0.65rem; font-weight: 700; color: var(--text-3); min-width: 14px; flex-shrink: 0; }
-.t-name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.t-name { flex: 1; display: flex; align-items: center; gap: 0.2rem; overflow: hidden; min-width: 0; white-space: nowrap; }
 .team-slot.winner .t-seed { color: var(--green); }
 
 /* PICKS VIEW */
@@ -760,7 +760,7 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 .h2h-game-pick { display: flex; }
 .h2h-game-pick.my-pick  { justify-content: flex-end; }
 .h2h-game-pick.opp-pick { justify-content: flex-start; }
-.h2h-pick { padding: 2px 6px; border-radius: 4px; font-size: 0.78rem; white-space: nowrap; }
+.h2h-pick { padding: 2px 6px; border-radius: 4px; font-size: 0.78rem; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.25rem; }
 .h2h-pick.correct { color: var(--green);  background: rgba(46,204,113,0.12); }
 .h2h-pick.wrong   { color: var(--red);    background: rgba(231,76,60,0.12);  }
 .h2h-pick.pending { color: var(--text-2); background: var(--surface-2); }
@@ -808,8 +808,8 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
   display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem;
   font-size: 0.83rem;
 }
-.upset-winner { font-weight: 700; color: var(--text); }
-.upset-loser  { color: var(--text-3); }
+.upset-winner { font-weight: 700; color: var(--text); display: inline-flex; align-items: center; gap: 0.2rem; }
+.upset-loser  { color: var(--text-3); display: inline-flex; align-items: center; gap: 0.2rem; }
 .upset-seed   { font-size: 0.72rem; color: var(--text-3); }
 .upset-arrow  { color: var(--red); font-size: 0.7rem; font-weight: 700; }
 .upset-meta   { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.72rem; }
