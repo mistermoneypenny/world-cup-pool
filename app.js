@@ -89,25 +89,25 @@ const GROUP_TEAMS = {
   // MD1: t0vt1, t2vt3 | MD2: t0vt2, t1vt3 | MD3: t0vt3, t1vt2
   // Order is set to match the official FIFA 2026 fixture schedule exactly.
   A: [
-    { seed: 1, name: 'Mexico'         },  // MD1: Mexico vs S.Africa | S.Korea vs Czechia
+    { seed: 2, name: 'Mexico'         },  // MD1: Mexico vs S.Africa | S.Korea vs Czechia
     { seed: 3, name: 'South Africa'   },  // MD2: Mexico vs S.Korea  | S.Africa vs Czechia
     { seed: 2, name: 'South Korea'    },  // MD3: Mexico vs Czechia  | S.Africa vs S.Korea
     { seed: 4, name: 'Czech Republic' },
   ],
   B: [
-    { seed: 1, name: 'Canada'         },  // MD1: Canada vs Bosnia   | Qatar vs Switzerland
+    { seed: 2, name: 'Canada'         },  // MD1: Canada vs Bosnia   | Qatar vs Switzerland
     { seed: 4, name: 'Bosnia'         },  // MD2: Canada vs Qatar    | Bosnia vs Switzerland
     { seed: 3, name: 'Qatar'          },  // MD3: Canada vs Switz.   | Bosnia vs Qatar
     { seed: 2, name: 'Switzerland'    },
   ],
   C: [
     { seed: 1, name: 'Brazil'         },  // MD1: Brazil vs Morocco  | Haiti vs Scotland
-    { seed: 2, name: 'Morocco'        },  // MD2: Brazil vs Haiti    | Morocco vs Scotland
+    { seed: 1, name: 'Morocco'        },  // MD2: Brazil vs Haiti    | Morocco vs Scotland
     { seed: 4, name: 'Haiti'          },  // MD3: Brazil vs Scotland | Morocco vs Haiti
     { seed: 3, name: 'Scotland'       },
   ],
   D: [
-    { seed: 1, name: 'USA'            },  // MD1: USA vs Paraguay    | Australia vs Turkey
+    { seed: 2, name: 'USA'            },  // MD1: USA vs Paraguay    | Australia vs Turkey
     { seed: 3, name: 'Paraguay'       },  // MD2: USA vs Australia   | Turkey vs Paraguay
     { seed: 2, name: 'Australia'      },  // MD3: USA vs Turkey      | Paraguay vs Australia
     { seed: 4, name: 'Turkey'         },
@@ -152,11 +152,11 @@ const GROUP_TEAMS = {
     { seed: 1, name: 'Portugal'       },  // MD1: Portugal vs DR Congo | Uzbekistan vs Colombia
     { seed: 4, name: 'DR Congo'       },  // MD2: Portugal vs Uzbekistan | Colombia vs DR Congo
     { seed: 3, name: 'Uzbekistan'     },  // MD3: Portugal vs Colombia | DR Congo vs Uzbekistan
-    { seed: 2, name: 'Colombia'       },
+    { seed: 1, name: 'Colombia'       },
   ],
   L: [
     { seed: 1, name: 'England'        },  // MD1: England vs Croatia  | Ghana vs Panama
-    { seed: 2, name: 'Croatia'        },  // MD2: England vs Ghana    | Panama vs Croatia
+    { seed: 1, name: 'Croatia'        },  // MD2: England vs Ghana    | Panama vs Croatia
     { seed: 4, name: 'Ghana'          },  // MD3: England vs Panama   | Croatia vs Ghana
     { seed: 3, name: 'Panama'         },
   ],
@@ -190,7 +190,7 @@ const INITIAL_TEAMS = {
     { seed: 1, name: 'France'         },
     { seed: 4, name: 'Czech Republic' },
     { seed: 1, name: 'Portugal'       },
-    { seed: 2, name: 'Colombia'       },
+    { seed: 1, name: 'Colombia'       },
     { seed: 1, name: 'Belgium'        },
     { seed: 3, name: 'Egypt'          },
     { seed: 1, name: 'Argentina'      },
@@ -198,22 +198,22 @@ const INITIAL_TEAMS = {
   ],
   B: [
     { seed: 1, name: 'England'        },
-    { seed: 2, name: 'Croatia'        },
+    { seed: 1, name: 'Croatia'        },
     { seed: 1, name: 'Netherlands'    },
     { seed: 2, name: 'Japan'          },
     { seed: 1, name: 'Spain'          },
     { seed: 2, name: 'Uruguay'        },
     { seed: 1, name: 'Brazil'         },
-    { seed: 2, name: 'Morocco'        },
+    { seed: 1, name: 'Morocco'        },
   ],
   C: [
     { seed: 1, name: 'Germany'        },
     { seed: 3, name: 'Ivory Coast'    },
-    { seed: 1, name: 'Mexico'         },
+    { seed: 2, name: 'Mexico'         },
     { seed: 2, name: 'South Korea'    },
     { seed: 2, name: 'Switzerland'    },
-    { seed: 1, name: 'Canada'         },
-    { seed: 1, name: 'USA'            },
+    { seed: 2, name: 'Canada'         },
+    { seed: 2, name: 'USA'            },
     { seed: 4, name: 'Turkey'         },
   ],
   D: [
