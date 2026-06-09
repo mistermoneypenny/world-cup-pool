@@ -92,7 +92,7 @@ const GROUP_TEAMS = {
     { seed: 1, name: 'Mexico'         },  // MD1: Mexico vs S.Africa | S.Korea vs Czechia
     { seed: 3, name: 'South Africa'   },  // MD2: Mexico vs S.Korea  | S.Africa vs Czechia
     { seed: 2, name: 'South Korea'    },  // MD3: Mexico vs Czechia  | S.Africa vs S.Korea
-    { seed: 3, name: 'Czech Republic' },
+    { seed: 4, name: 'Czech Republic' },
   ],
   B: [
     { seed: 1, name: 'Canada'         },  // MD1: Canada vs Bosnia   | Qatar vs Switzerland
@@ -188,7 +188,7 @@ function flag(name) {
 const INITIAL_TEAMS = {
   A: [
     { seed: 1, name: 'France'         },
-    { seed: 3, name: 'Czech Republic' },
+    { seed: 4, name: 'Czech Republic' },
     { seed: 1, name: 'Portugal'       },
     { seed: 2, name: 'Colombia'       },
     { seed: 1, name: 'Belgium'        },
