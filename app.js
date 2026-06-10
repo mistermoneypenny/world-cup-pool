@@ -281,18 +281,18 @@ Object.values(BONUS_CONFIG).forEach(bonuses => {
 
 // ── PLAYER AVATARS ────────────────────────────────────────────
 const PLAYER_AVATARS = {
-  'Matthias':        'Matthias.jpg',
-  'Diego':           'Diego.jpg',
+  'Matthias':        'Matthias.png',
+  'Diego':           'Diego.png',
   'Lorenz':          'Lorenz.png',
-  'Cole':            'Cole.jpg',
+  'Cole':            'Cole.png',
   'Commish':         'David.png',
-  'Late Night Lang': 'Lang.jpg',
-  'Jose':            'Jose.jpg',
-  'Rafa':            'Rafa.jpg',
-  'Mike Jones':      'MikeJones.jpg',
-  'Dennis':          'Dennis.jpg',
-  'Pataky':          'Pataky.jpg',
-  'Puschel':         'Puschel.jpg',
+  'Late Night Lang': 'Lang.png',
+  'Jose':            'Jose.png',
+  'Rafa':            'Rafa.png',
+  'Mike Jones':      'MikeJones.png',
+  'Dennis':          'Dennis.png',
+  'Pataky':          'Pataky.png',
+  'Puschel':         'Puschel.png',
 };
 
 const PLAYER_AVATAR_POS = {
