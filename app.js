@@ -2886,17 +2886,82 @@ function renderAnalytics() {
 
   const MONO = "'Consolas','Courier New',monospace";
   const BB   = '#FF6600';
-  const BBC  = ['#FF6600','#00CFFF','#FFFF00','#00FF87','#FF3D6B','#CC44FF','#FF9933','#00FFCC','#FF6666','#66B3FF','#FFD700','#99FF99','#FF99FF'];
+  const BBC  = ['#FF6600','#00CFFF','#FFFF00','#00FF87','#FF3D6B','#CC44FF','#FF9933','#00FFCC','#FF6666','#66B3FF','#FFD700','#99FF99','#FF99FF','#FF8866','#88CCFF','#CCFF88','#FF88CC','#88FFCC','#CCFF00','#FF00CC'];
+  const bbC  = i => BBC[i % BBC.length];
 
-  const players = ['Lorenz','Diego','Cole','Matthias','Commish','Lang','Rafa','Dennis','Pataky','Puschel','Francisco','Josh','Sean'];
-  const short   = ['LOR','DIE','COL','MAT','COM','LAN','RAF','DEN','PAT','PUS','FRA','JOS','SEA'];
+  Chart.defaults.color               = '#888';
+  Chart.defaults.font.family         = MONO;
+  Chart.defaults.font.size           = 9;
+  Chart.defaults.animation           = false;
+  Chart.defaults.maintainAspectRatio = false;
 
-  Chart.defaults.color                = '#888';
-  Chart.defaults.font.family          = MONO;
-  Chart.defaults.font.size            = 9;
-  Chart.defaults.animation            = false;
-  Chart.defaults.maintainAspectRatio  = false;
+  // ── Live data helpers ─────────────────────────────────────────
+  const allPlayers = state.players || [];
 
+  // All 72 group stage games
+  const allGames = [];
+  for (const [letter, teams] of Object.entries(GROUP_TEAMS)) {
+    for (const [i, j] of GROUP_PAIRS) {
+      const t1 = teams[i], t2 = teams[j];
+      allGames.push({ key: gameKey(t1.name, t2.name), t1, t2, group: letter });
+    }
+  }
+
+  const gPicks = pid => (state.picks[pid] || {})['groups'] || {};
+
+  function agreePct(p1id, p2id) {
+    if (p1id === p2id) return 100;
+    const a = gPicks(p1id), b = gPicks(p2id);
+    let same = 0, total = 0;
+    allGames.forEach(g => {
+      const pa = a[g.key], pb = b[g.key];
+      if (pa && pb) { total++; if (pa === pb) same++; }
+    });
+    return total ? Math.round(same / total * 100) : null;
+  }
+
+  // Upset pick count per player
+  const upsetData = allPlayers.map(p => {
+    const picks = gPicks(p.id);
+    return allGames.reduce((n, g) => {
+      const picked = picks[g.key];
+      if (!picked) return n;
+      const pt = picked === g.t1.name ? g.t1 : g.t2;
+      const ot = picked === g.t1.name ? g.t2 : g.t1;
+      return n + (pt.seed > ot.seed ? 1 : 0);
+    }, 0);
+  });
+
+  // Risk buckets (by seed of picked team) per player
+  const riskData = allPlayers.map(p => {
+    const picks = gPicks(p.id);
+    const b = {1:0,2:0,3:0,4:0};
+    allGames.forEach(g => {
+      const picked = picks[g.key];
+      if (!picked) return;
+      const pt = picked === g.t1.name ? g.t1 : g.t2;
+      b[pt.seed]++;
+    });
+    return b;
+  });
+
+  // Consensus: top 8 most contested games (closest to 50/50)
+  const consensusGames = allGames.map(g => {
+    let forT1 = 0, total = 0;
+    allPlayers.forEach(p => {
+      const pick = gPicks(p.id)[g.key];
+      if (pick) { total++; if (pick === g.t1.name) forT1++; }
+    });
+    if (!total) return null;
+    const pct = Math.round(forT1 / total * 100);
+    const lbl = `${g.t1.name.split(' ')[0].slice(0,7)} vs ${g.t2.name.split(' ')[0].slice(0,7)}`;
+    return { lbl, pct1: pct, pct2: 100 - pct };
+  }).filter(Boolean).sort((a, b) => Math.abs(50 - a.pct1) - Math.abs(50 - b.pct1)).slice(0, 8);
+
+  // Short names for agreement matrix
+  const shortName = n => n.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase();
+
+  // ── Shared chart config ───────────────────────────────────────
   const gc = '#111';
   const sc = {
     x: { grid: { color: gc, lineWidth: 1 }, ticks: { color: '#777', font: { family: MONO, size: 9 } }, border: { color: '#333' } },
@@ -2908,13 +2973,13 @@ function renderAnalytics() {
     titleFont: { family: MONO, size: 10, weight: 'bold' },
     bodyFont: { family: MONO, size: 9 },
   };
-  const leg = (pos) => ({ position: pos || 'bottom', labels: { color: '#888', font: { family: MONO, size: 8 }, boxWidth: 8, boxHeight: 8, padding: 10 } });
+  const leg = pos => ({ position: pos || 'bottom', labels: { color: '#888', font: { family: MONO, size: 8 }, boxWidth: 8, boxHeight: 8, padding: 10 } });
 
-  // Bloomberg page header
+  // ── Page header ───────────────────────────────────────────────
   const hdr = document.createElement('div');
   hdr.className = 'bb-page-header';
   hdr.innerHTML = `<span class="bb-page-title">ANALYTICS</span>` +
-    `<span class="bb-page-sub">WORLD CUP POOL 2026 &diams; DUMMY DATA &diams; ALL FIGURES ILLUSTRATIVE</span>` +
+    `<span class="bb-page-sub">WORLD CUP POOL 2026 &diams; ${allPlayers.length} PLAYERS &diams; GROUP STAGE PICKS</span>` +
     `<span class="bb-page-num">PG 1/1</span>`;
   body.appendChild(hdr);
 
@@ -2938,13 +3003,16 @@ function renderAnalytics() {
     _analyticsCharts.push(new Chart(canvas, config));
   }
 
-  // 1 ── Upset Index
-  addCard('ch-upset', 'UPSET INDEX', 'Underdog picks per player — higher = bolder strategy');
+  const names = allPlayers.map(p => p.name);
+  const mdays = ['MD1','MD2','MD3','R32','R16','QF','SF','FINAL'];
+
+  // 1 ── Upset Index (LIVE)
+  addCard('ch-upset', 'UPSET INDEX', 'Group stage underdog picks per player — higher = bolder strategy');
   mkChart('ch-upset', {
     type: 'bar',
     data: {
-      labels: players,
-      datasets: [{ label: 'UPSET PICKS', data: [22,18,15,14,17,11,13,9,8,16,12,5,14],
+      labels: names,
+      datasets: [{ label: 'UPSET PICKS', data: upsetData,
         backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
     },
     options: {
@@ -2954,40 +3022,42 @@ function renderAnalytics() {
     }
   });
 
-  // 2 ── Pick Consensus
+  // 2 ── Pick Consensus (LIVE)
   addCard('ch-consensus', 'PICK CONSENSUS', 'Most contested matchups — 50% = perfectly split pool');
-  const matchups = ['Mexico vs S.Africa','USA vs Paraguay','Brazil vs Morocco','England vs Croatia','Neth. vs Japan','Germany vs Curacao','France vs Senegal','Arg. vs Algeria'];
-  const pct1 = [53,49,48,45,71,82,67,55];
-  mkChart('ch-consensus', {
-    type: 'bar',
-    data: {
-      labels: matchups,
-      datasets: [
-        { label: 'TEAM A %', data: pct1,                   backgroundColor: BB,    borderWidth: 0, borderRadius: 0 },
-        { label: 'TEAM B %', data: pct1.map(v => 100 - v), backgroundColor: '#1a1a1a', borderWidth: 0, borderRadius: 0 },
-      ]
-    },
-    options: {
-      indexAxis: 'y',
-      plugins: { legend: leg('bottom'), tooltip: tip },
-      scales: {
-        x: { ...sc.x, stacked: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
-        y: { ...sc.y, stacked: true },
+  if (consensusGames.length > 0) {
+    mkChart('ch-consensus', {
+      type: 'bar',
+      data: {
+        labels: consensusGames.map(g => g.lbl),
+        datasets: [
+          { label: 'TEAM A %', data: consensusGames.map(g => g.pct1), backgroundColor: BB,        borderWidth: 0, borderRadius: 0 },
+          { label: 'TEAM B %', data: consensusGames.map(g => g.pct2), backgroundColor: '#1a1a1a', borderWidth: 0, borderRadius: 0 },
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: leg('bottom'), tooltip: tip },
+        scales: {
+          x: { ...sc.x, stacked: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
+          y: { ...sc.y, stacked: true },
+        }
       }
-    }
-  });
+    });
+  } else {
+    document.getElementById('wrap-ch-consensus').innerHTML = '<div class="bb-no-data">NO PICKS DATA YET</div>';
+  }
 
-  // 3 ── Risk Profile
+  // 3 ── Risk Profile (LIVE)
   addCard('ch-risk', 'RISK PROFILE', 'Pick distribution by pot — Pot 3/4 picks are upsets');
   mkChart('ch-risk', {
     type: 'bar',
     data: {
-      labels: players,
+      labels: names,
       datasets: [
-        { label: 'POT 1 WINS',   data: [28,32,38,35,30,25,36,34,40,29,33,37,31], backgroundColor: BB,       borderWidth: 0, borderRadius: 0 },
-        { label: 'POT 2 WINS',   data: [20,18,15,17,22,24,16,18,14,21,19,15,20], backgroundColor: '#00CFFF', borderWidth: 0, borderRadius: 0 },
-        { label: 'POT 3 UPSETS', data: [14,12,10,11,13,15,10,11, 9,14,12,10,13], backgroundColor: '#FFFF00', borderWidth: 0, borderRadius: 0 },
-        { label: 'POT 4 UPSETS', data: [10,10, 9, 9, 7, 8,10, 9, 9, 8, 8,10, 8], backgroundColor: '#FF3D6B', borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 1 WINS',   data: riskData.map(b => b[1]), backgroundColor: BB,        borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 2 WINS',   data: riskData.map(b => b[2]), backgroundColor: '#00CFFF', borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 3 UPSETS', data: riskData.map(b => b[3]), backgroundColor: '#FFFF00', borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 4 UPSETS', data: riskData.map(b => b[4]), backgroundColor: '#FF3D6B', borderWidth: 0, borderRadius: 0 },
       ]
     },
     options: {
@@ -2996,87 +3066,85 @@ function renderAnalytics() {
     }
   });
 
-  // 4 ── Agreement Matrix (HTML table)
+  // 4 ── Agreement Matrix (LIVE)
   addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)');
   const wrap4 = document.getElementById('wrap-ch-agreement');
   wrap4.innerHTML = '';
-  const seed = (i, j) => Math.min(95, Math.max(30, Math.round(60 + Math.sin(i * 3.1 + j * 7.3) * 22)));
+  const shorts = allPlayers.map(p => shortName(p.name));
   let tbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
-    short.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
-  short.forEach((row, i) => {
-    tbl += `<tr><th>${row}</th>`;
-    short.forEach((_, j) => {
-      const v   = i === j ? 100 : seed(i, j);
-      const pct = (v - 30) / 70;
+    shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
+  allPlayers.forEach((p1, i) => {
+    tbl += `<tr><th>${shorts[i]}</th>`;
+    allPlayers.forEach((p2, j) => {
+      const v   = agreePct(p1.id, p2.id);
+      const display = i === j ? '100%' : (v === null ? '—' : v + '%');
+      const pct = v === null ? 0 : (v - 30) / 70;
       const r   = Math.round(255 * pct + 10 * (1 - pct));
-      const g   = Math.round(102 * pct + 10 * (1 - pct));
-      const b   = Math.round(0);
-      const bg  = i === j ? BB : `rgb(${r},${g},${b})`;
-      const fg  = (pct > 0.4 || i === j) ? '#FFF' : '#555';
-      tbl += `<td style="background:${bg};color:${fg}">${v}%</td>`;
+      const g2  = Math.round(102 * pct + 10 * (1 - pct));
+      const bg  = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
+      const fg  = (pct > 0.4 || i === j) ? '#FFF' : '#444';
+      tbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
     });
     tbl += '</tr>';
   });
   tbl += '</tbody></table></div>';
   wrap4.innerHTML = tbl;
 
-  // 5 ── Score Over Time
-  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday (dummy data)', true);
-  const mdays = ['MD1','MD2','MD3','R32','R16','QF','SF','FINAL'];
+  // 5 ── Score Over Time (DUMMY — needs results)
+  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday — awaiting results', true);
   mkChart('ch-score-time', {
     type: 'line',
     data: {
       labels: mdays,
-      datasets: players.map((name, i) => {
+      datasets: allPlayers.map((p, i) => {
         let cum = 0;
         return {
-          label: name,
+          label: p.name,
           data: mdays.map((_, mi) => { cum += 7 + Math.round(Math.sin(i * 1.7 + mi * 2.3) * 5 + 5); return cum; }),
-          borderColor: BBC[i], backgroundColor: 'transparent',
-          borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: BBC[i], tension: 0,
+          borderColor: bbC(i), backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i), tension: 0,
         };
       })
     },
     options: { plugins: { legend: leg('bottom'), tooltip: tip }, scales: sc }
   });
 
-  // 6 ── Score Ceiling
-  addCard('ch-ceiling', 'SCORE CEILING', 'Maximum possible score remaining per player (dummy data)', true);
+  // 6 ── Score Ceiling (DUMMY — needs results)
+  addCard('ch-ceiling', 'SCORE CEILING', 'Maximum possible score remaining per player — awaiting results', true);
   mkChart('ch-ceiling', {
     type: 'line',
     data: {
       labels: mdays,
-      datasets: players.map((name, i) => {
+      datasets: allPlayers.map((p, i) => {
         let cur = 95 + Math.round(Math.sin(i * 2.3) * 8);
         return {
-          label: name,
+          label: p.name,
           data: mdays.map((_, mi) => { cur -= 5 + Math.round(Math.abs(Math.sin(i * 1.3 + mi * 3.1)) * 4); return Math.max(cur, 15); }),
-          borderColor: BBC[i], backgroundColor: 'transparent',
-          borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: BBC[i], tension: 0,
+          borderColor: bbC(i), backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i), tension: 0,
         };
       })
     },
     options: { plugins: { legend: leg('bottom'), tooltip: tip }, scales: sc }
   });
 
-  // 7 ── Accuracy by Group
-  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group — top 5 players shown (dummy data)');
+  // 7 ── Accuracy by Group (DUMMY — needs results)
+  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group — top 5 players — awaiting results');
   mkChart('ch-group-acc', {
     type: 'radar',
     data: {
       labels: ['A','B','C','D','E','F','G','H','I','J','K','L'],
-      datasets: players.slice(0, 5).map((name, i) => ({
-        label: name,
+      datasets: allPlayers.slice(0, 5).map((p, i) => ({
+        label: p.name,
         data: Array.from({length:12}, (_, gi) => Math.max(0, Math.min(100, 55 + Math.round(Math.sin(i * 2.1 + gi * 1.7) * 30)))),
-        borderColor: BBC[i], backgroundColor: BBC[i] + '18',
-        borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: BBC[i],
+        borderColor: bbC(i), backgroundColor: bbC(i) + '18',
+        borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i),
       }))
     },
     options: {
       plugins: { legend: leg('bottom'), tooltip: tip },
       scales: { r: {
-        grid: { color: '#1a1a1a' },
-        angleLines: { color: '#1a1a1a' },
+        grid: { color: '#1a1a1a' }, angleLines: { color: '#1a1a1a' },
         ticks: { color: '#555', backdropColor: 'transparent', stepSize: 25, font: { family: MONO, size: 8 } },
         pointLabels: { color: '#888', font: { family: MONO, size: 9 } },
         suggestedMin: 0, suggestedMax: 100,
@@ -3084,17 +3152,15 @@ function renderAnalytics() {
     }
   });
 
-  // 8 ── Upset Hit Rate
-  addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct (dummy data)');
-  const hitData = [48,42,55,38,61,35,44,50,33,47,52,40,45];
+  // 8 ── Upset Hit Rate (DUMMY — needs results)
+  addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct — awaiting results');
   mkChart('ch-upset-hit', {
     type: 'bar',
     data: {
-      labels: players,
+      labels: names,
       datasets: [{ label: 'HIT RATE',
-        data: hitData,
-        backgroundColor: hitData.map(v => v >= 50 ? BB : '#2a1400'),
-        hoverBackgroundColor: hitData.map(v => v >= 50 ? '#FF8833' : '#3d1e00'),
+        data: allPlayers.map((_, i) => 35 + Math.round(Math.abs(Math.sin(i * 2.7)) * 35)),
+        backgroundColor: allPlayers.map((_, i) => (35 + Math.round(Math.abs(Math.sin(i * 2.7)) * 35)) >= 50 ? BB : '#2a1400'),
         borderWidth: 0, borderRadius: 0,
       }]
     },
