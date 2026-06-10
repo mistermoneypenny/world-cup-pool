@@ -295,10 +295,14 @@ const PLAYER_AVATARS = {
   'Puschel':         'Puschel.jpg',
 };
 
+const PLAYER_AVATAR_POS = {
+  'Diego': 'top',
+};
 function playerAvatarHtml(playerName, size = 32) {
   const file = PLAYER_AVATARS[playerName];
   if (!file) return `<span class="player-avatar-placeholder" style="width:${size}px;height:${size}px"></span>`;
-  return `<img src="${file}" alt="${esc(playerName)}" class="player-avatar" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+  const pos = PLAYER_AVATAR_POS[playerName] || 'center';
+  return `<img src="${file}" alt="${esc(playerName)}" class="player-avatar" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:${pos};flex-shrink:0;">`;
 }
 
 const DEFAULT_PLAYERS = [
