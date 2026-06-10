@@ -297,13 +297,17 @@ const PLAYER_AVATARS = {
 
 const PLAYER_AVATAR_POS = {
   'Diego':    'top',
-  'Matthias': 'top',
+  'Pataky':   'center',
+};
+const PLAYER_AVATAR_FIT = {
+  'Matthias': 'contain',
 };
 function playerAvatarHtml(playerName, size = 32) {
   const file = PLAYER_AVATARS[playerName];
   if (!file) return `<span class="player-avatar-placeholder" style="width:${size}px;height:${size}px"></span>`;
   const pos = PLAYER_AVATAR_POS[playerName] || 'center';
-  return `<img src="${file}" alt="${esc(playerName)}" class="player-avatar" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:${pos};flex-shrink:0;">`;
+  const fit = PLAYER_AVATAR_FIT[playerName] || 'cover';
+  return `<img src="${file}" alt="${esc(playerName)}" class="player-avatar" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:${fit};object-position:${pos};flex-shrink:0;">`;
 }
 
 const DEFAULT_PLAYERS = [
