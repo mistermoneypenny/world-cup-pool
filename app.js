@@ -798,6 +798,7 @@ function renderCurrentView() {
     case 'bracket':     renderBracket();      break;
     case 'picks':       renderPicks();        break;
     case 'leaderboard': renderLeaderboard();  break;
+    case 'analytics':   renderAnalytics();   break;
     case 'admin':       renderAdmin();        break;
   }
 }
@@ -2842,6 +2843,204 @@ function loadDemoData() {
   fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     .catch(err => console.warn('Demo save failed:', err));
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {}
+}
+
+// ── ANALYTICS ─────────────────────────────────────────────────
+
+let _analyticsCharts = [];
+
+function renderAnalytics() {
+  _analyticsCharts.forEach(c => c.destroy());
+  _analyticsCharts = [];
+
+  const body = document.getElementById('analytics-body');
+  if (!body) return;
+  body.innerHTML = '';
+
+  const players = ['Lorenz','Diego','Cole','Matthias','Commish','Lang','Rafa','Dennis','Pataky','Puschel','Francisco','Josh','Sean'];
+  const short   = ['Lor','Die','Col','Mat','Com','Lan','Raf','Den','Pat','Pus','Fra','Jos','Sea'];
+  const COLORS  = ['#00a651','#ffd700','#4fc3f7','#ff6b6b','#ce93d8','#ffb74d','#4db6ac','#f06292','#aed581','#90caf9','#ff8a65','#a5d6a7','#ffe082'];
+
+  Chart.defaults.color       = '#8a9bb4';
+  Chart.defaults.font.family = 'Arial, sans-serif';
+  Chart.defaults.font.size   = 11;
+
+  const gc = 'rgba(255,255,255,0.06)';
+  const sc = {
+    x: { grid: { color: gc }, ticks: { color: '#8a9bb4' } },
+    y: { grid: { color: gc }, ticks: { color: '#8a9bb4' } },
+  };
+
+  const grid = document.createElement('div');
+  grid.className = 'analytics-grid';
+  body.appendChild(grid);
+
+  function addCard(id, title, desc, wide) {
+    const card = document.createElement('div');
+    card.className = 'analytics-card' + (wide ? ' analytics-card-wide' : '');
+    card.innerHTML = `<h3 class="analytics-card-title">${title}</h3>` +
+      `<p class="analytics-card-desc">${desc}</p>` +
+      `<div class="analytics-chart-wrap" id="wrap-${id}"><canvas id="${id}"></canvas></div>`;
+    grid.appendChild(card);
+  }
+
+  function mkChart(id, config) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    _analyticsCharts.push(new Chart(canvas, config));
+  }
+
+  // 1 ── Upset Index
+  addCard('ch-upset', 'Upset Index', 'Underdog picks per player — higher = bolder strategy');
+  mkChart('ch-upset', {
+    type: 'bar',
+    data: {
+      labels: players,
+      datasets: [{ label: 'Upset picks', data: [22,18,15,14,17,11,13,9,8,16,12,5,14], backgroundColor: COLORS, borderRadius: 4 }]
+    },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ...sc.x, beginAtZero: true }, y: sc.y } }
+  });
+
+  // 2 ── Pick Consensus
+  addCard('ch-consensus', 'Pick Consensus', 'Most contested matchups — 50% means the pool is perfectly split');
+  const matchups = ['Mexico vs S.Africa','USA vs Paraguay','Brazil vs Morocco','England vs Croatia','Neth. vs Japan','Germany vs Curacao','France vs Senegal','Arg. vs Algeria'];
+  const pct1     = [53,49,48,45,71,82,67,55];
+  mkChart('ch-consensus', {
+    type: 'bar',
+    data: {
+      labels: matchups,
+      datasets: [
+        { label: 'Team A %', data: pct1,                  backgroundColor: '#00a651', borderRadius: 4 },
+        { label: 'Team B %', data: pct1.map(v => 100 - v), backgroundColor: '#1e3758', borderRadius: 4 },
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { position: 'bottom', labels: { color: '#8a9bb4', boxWidth: 12 } } },
+      scales: {
+        x: { ...sc.x, stacked: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
+        y: { ...sc.y, stacked: true },
+      }
+    }
+  });
+
+  // 3 ── Risk Profile
+  addCard('ch-risk', 'Risk Profile', 'Pick distribution by pot — Pot 3/4 picks are upsets');
+  mkChart('ch-risk', {
+    type: 'bar',
+    data: {
+      labels: players,
+      datasets: [
+        { label: 'Pot 1 wins',   data: [28,32,38,35,30,25,36,34,40,29,33,37,31], backgroundColor: '#00a651' },
+        { label: 'Pot 2 wins',   data: [20,18,15,17,22,24,16,18,14,21,19,15,20], backgroundColor: '#4fc3f7' },
+        { label: 'Pot 3 upsets', data: [14,12,10,11,13,15,10,11, 9,14,12,10,13], backgroundColor: '#ffd700' },
+        { label: 'Pot 4 upsets', data: [10,10, 9, 9, 7, 8,10, 9, 9, 8, 8,10, 8], backgroundColor: '#ff6b6b' },
+      ]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { color: '#8a9bb4', boxWidth: 12 } } },
+      scales: { x: { ...sc.x, stacked: true }, y: { ...sc.y, stacked: true } }
+    }
+  });
+
+  // 4 ── Agreement Matrix (HTML table)
+  addCard('ch-agreement', 'Player Agreement Matrix', 'How often any two players picked the same team (%)');
+  const wrap4 = document.getElementById('wrap-ch-agreement');
+  wrap4.innerHTML = '';
+  const seed = (i, j) => Math.min(95, Math.max(30, Math.round(60 + Math.sin(i * 3.1 + j * 7.3) * 22)));
+  let tbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
+    short.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
+  short.forEach((row, i) => {
+    tbl += `<tr><th>${row}</th>`;
+    short.forEach((_, j) => {
+      const v = i === j ? 100 : seed(i, j);
+      const alpha = ((v - 30) / 70).toFixed(2);
+      const bg  = i === j ? '#00a651' : `rgba(79,195,247,${alpha})`;
+      const fg  = (v > 65 || i === j) ? '#fff' : '#8a9bb4';
+      tbl += `<td style="background:${bg};color:${fg}">${v}%</td>`;
+    });
+    tbl += '</tr>';
+  });
+  tbl += '</tbody></table></div>';
+  wrap4.innerHTML = tbl;
+
+  // 5 ── Score Over Time
+  addCard('ch-score-time', 'Score Over Time', 'Cumulative points per player by matchday (dummy data)', true);
+  const mdays = ['MD1','MD2','MD3','R32','R16','QF','SF','Final'];
+  mkChart('ch-score-time', {
+    type: 'line',
+    data: {
+      labels: mdays,
+      datasets: players.map((name, i) => {
+        let cum = 0;
+        return {
+          label: name,
+          data: mdays.map((_, mi) => { cum += 7 + Math.round(Math.sin(i * 1.7 + mi * 2.3) * 5 + 5); return cum; }),
+          borderColor: COLORS[i], backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.3
+        };
+      })
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { color: '#8a9bb4', boxWidth: 12, font: { size: 10 } } } },
+      scales: sc
+    }
+  });
+
+  // 6 ── Score Ceiling
+  addCard('ch-ceiling', 'Score Ceiling', 'Maximum possible score remaining per player (dummy data)', true);
+  mkChart('ch-ceiling', {
+    type: 'line',
+    data: {
+      labels: mdays,
+      datasets: players.map((name, i) => {
+        let cur = 95 + Math.round(Math.sin(i * 2.3) * 8);
+        return {
+          label: name,
+          data: mdays.map((_, mi) => { cur -= 5 + Math.round(Math.abs(Math.sin(i * 1.3 + mi * 3.1)) * 4); return Math.max(cur, 15); }),
+          borderColor: COLORS[i], backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.3
+        };
+      })
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { color: '#8a9bb4', boxWidth: 12, font: { size: 10 } } } },
+      scales: sc
+    }
+  });
+
+  // 7 ── Accuracy by Group
+  addCard('ch-group-acc', 'Accuracy by Group', 'Correct pick % per group — top 5 players shown (dummy data)');
+  mkChart('ch-group-acc', {
+    type: 'radar',
+    data: {
+      labels: ['A','B','C','D','E','F','G','H','I','J','K','L'],
+      datasets: players.slice(0, 5).map((name, i) => ({
+        label: name,
+        data: Array.from({length:12}, (_, gi) => Math.max(0, Math.min(100, 55 + Math.round(Math.sin(i * 2.1 + gi * 1.7) * 30)))),
+        borderColor: COLORS[i], backgroundColor: COLORS[i] + '22', borderWidth: 2, pointRadius: 2,
+      }))
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { color: '#8a9bb4', boxWidth: 12, font: { size: 10 } } } },
+      scales: { r: { grid: { color: gc }, ticks: { color: '#8a9bb4', backdropColor: 'transparent', stepSize: 25 }, pointLabels: { color: '#8a9bb4' }, suggestedMin: 0, suggestedMax: 100 } }
+    }
+  });
+
+  // 8 ── Upset Hit Rate
+  addCard('ch-upset-hit', 'Upset Hit Rate', '% of upset picks that were correct (dummy data)');
+  mkChart('ch-upset-hit', {
+    type: 'bar',
+    data: {
+      labels: players,
+      datasets: [{ label: 'Hit rate', data: [48,42,55,38,61,35,44,50,33,47,52,40,45], backgroundColor: COLORS, borderRadius: 4 }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: sc.x,
+        y: { ...sc.y, beginAtZero: true, max: 100, ticks: { color: '#8a9bb4', callback: v => v + '%' } }
+      }
+    }
+  });
 }
 
 // ── ADMIN RENDERING ───────────────────────────────────────────

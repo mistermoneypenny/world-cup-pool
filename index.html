@@ -51,6 +51,7 @@
       <button class="nav-btn active" data-view="bracket">Bracket</button>
       <button class="nav-btn" data-view="picks">My Picks</button>
       <button class="nav-btn" data-view="leaderboard">Standings</button>
+      <button class="nav-btn" data-view="analytics">Analytics</button>
       <button class="nav-btn admin-btn" id="admin-nav-btn" data-view="admin">&#9881; Admin</button>
     </nav>
 
@@ -118,6 +119,14 @@
         <div class="round-tabs" id="lb-tabs"></div>
       </div>
       <div id="lb-body"><!-- Populated by JS --></div>
+    </section>
+
+    <!-- ANALYTICS VIEW -->
+    <section id="view-analytics" class="view">
+      <div class="view-header">
+        <h2 class="view-title">Analytics</h2>
+      </div>
+      <div id="analytics-body"></div>
     </section>
 
     <!-- ADMIN VIEW -->
@@ -258,6 +267,7 @@
 
 <div id="toast" class="toast" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

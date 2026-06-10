@@ -871,3 +871,47 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 }
 .broadcast-dismiss-btn:hover { background: rgba(0,0,0,0.28); }
 @keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* ── ANALYTICS ───────────────────────────────────────────────── */
+#analytics-body { padding: 1rem; }
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+  gap: 1rem;
+}
+.analytics-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem 1.3rem;
+  display: flex; flex-direction: column; gap: 0.35rem;
+}
+.analytics-card-wide { grid-column: 1 / -1; }
+.analytics-card-title {
+  font-size: 0.95rem; font-weight: 700;
+  color: var(--text); margin: 0;
+}
+.analytics-card-desc {
+  font-size: 0.78rem; color: var(--text-2); margin: 0 0 0.5rem;
+}
+.analytics-chart-wrap {
+  position: relative; flex: 1; min-height: 240px;
+}
+.analytics-card-wide .analytics-chart-wrap { min-height: 280px; }
+.analytics-chart-wrap canvas { width: 100% !important; height: 100% !important; }
+/* Agreement matrix */
+.ag-scroll { overflow-x: auto; }
+.ag-table {
+  border-collapse: collapse; font-size: 0.72rem;
+  width: 100%; min-width: 520px;
+}
+.ag-table th {
+  padding: 4px 6px; color: var(--text-2);
+  font-weight: 600; text-align: center;
+  white-space: nowrap; background: var(--surface);
+}
+.ag-table td {
+  padding: 4px 6px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.7rem; font-weight: 600;
+}
