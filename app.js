@@ -285,6 +285,7 @@ const PLAYER_AVATARS = {
   'Diego':           'Diego.png',
   'Lorenz':          'Lorenz.png',
   'Cole':            'Cole.png',
+  'Aapo':            'Aapo.png',
   'Commish':         'David.png',
   'Late Night Lang': 'Lang.png',
   'Jose':            'Jose.png',
@@ -296,11 +297,11 @@ const PLAYER_AVATARS = {
 };
 
 const PLAYER_AVATAR_POS = {
-  'Diego':    'top',
-  'Pataky':   'center',
+  'Diego': 'top',
 };
 const PLAYER_AVATAR_FIT = {
   'Matthias': 'contain',
+  'Pataky':   'contain',
 };
 function playerAvatarHtml(playerName, size = 32) {
   const file = PLAYER_AVATARS[playerName];
