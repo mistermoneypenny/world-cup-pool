@@ -3066,31 +3066,7 @@ function renderAnalytics() {
     }
   });
 
-  // 4 ── Agreement Matrix (LIVE)
-  addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)');
-  const wrap4 = document.getElementById('wrap-ch-agreement');
-  wrap4.innerHTML = '';
-  const shorts = allPlayers.map(p => shortName(p.name));
-  let tbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
-    shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
-  allPlayers.forEach((p1, i) => {
-    tbl += `<tr><th>${shorts[i]}</th>`;
-    allPlayers.forEach((p2, j) => {
-      const v   = agreePct(p1.id, p2.id);
-      const display = i === j ? '100%' : (v === null ? '—' : v + '%');
-      const pct = v === null ? 0 : (v - 30) / 70;
-      const r   = Math.round(255 * pct + 10 * (1 - pct));
-      const g2  = Math.round(102 * pct + 10 * (1 - pct));
-      const bg  = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
-      const fg  = (pct > 0.4 || i === j) ? '#FFF' : '#444';
-      tbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
-    });
-    tbl += '</tr>';
-  });
-  tbl += '</tbody></table></div>';
-  wrap4.innerHTML = tbl;
-
-  // 5 ── Score Over Time (DUMMY — needs results)
+  // 4 ── Score Over Time (DUMMY — needs results)
   addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday — awaiting results', true);
   mkChart('ch-score-time', {
     type: 'line',
@@ -3172,6 +3148,30 @@ function renderAnalytics() {
       }
     }
   });
+
+  // 8 ── Agreement Matrix (LIVE)
+  addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)');
+  const wrap4 = document.getElementById('wrap-ch-agreement');
+  wrap4.innerHTML = '';
+  const shorts = allPlayers.map(p => shortName(p.name));
+  let tbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
+    shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
+  allPlayers.forEach((p1, i) => {
+    tbl += `<tr><th>${shorts[i]}</th>`;
+    allPlayers.forEach((p2, j) => {
+      const v   = agreePct(p1.id, p2.id);
+      const display = i === j ? '100%' : (v === null ? '—' : v + '%');
+      const pct = v === null ? 0 : (v - 30) / 70;
+      const r   = Math.round(255 * pct + 10 * (1 - pct));
+      const g2  = Math.round(102 * pct + 10 * (1 - pct));
+      const bg  = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
+      const fg  = (pct > 0.4 || i === j) ? '#FFF' : '#444';
+      tbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
+    });
+    tbl += '</tr>';
+  });
+  tbl += '</tbody></table></div>';
+  wrap4.innerHTML = tbl;
 }
 
 // ── ADMIN RENDERING ───────────────────────────────────────────
