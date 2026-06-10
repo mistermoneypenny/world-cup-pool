@@ -912,9 +912,30 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 }
 .analytics-card-wide { grid-column: 1 / -1; }
 .bb-card-header {
+  display: flex; align-items: center; gap: 0.5rem;
   border-bottom: 1px solid #FF6600;
   padding-bottom: 0.2rem;
   margin-bottom: 0.2rem;
+}
+.bb-fs-btn {
+  margin-left: auto; flex-shrink: 0;
+  background: none; border: 1px solid #444;
+  color: #777; cursor: pointer;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.62rem; padding: 1px 5px; line-height: 1.4;
+}
+.bb-fs-btn:hover { border-color: #FF6600; color: #FF6600; }
+.bb-fs-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); z-index: 9998;
+}
+.analytics-card.bb-fullscreen {
+  position: fixed; inset: 16px;
+  z-index: 9999; border: 1px solid #FF6600 !important;
+  overflow: auto;
+}
+.analytics-card.bb-fullscreen .analytics-chart-wrap {
+  height: calc(100vh - 148px) !important;
 }
 .analytics-card-title {
   font-size: 0.68rem; font-weight: 700;

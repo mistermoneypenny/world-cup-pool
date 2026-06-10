@@ -2849,6 +2849,33 @@ function loadDemoData() {
 
 let _analyticsCharts = [];
 
+function bbToggleFullscreen(btn) {
+  const card = btn.closest('.analytics-card');
+  const isFs = card.classList.toggle('bb-fullscreen');
+  btn.textContent = isFs ? '✕' : '⊞';
+
+  if (isFs) {
+    const bd = document.createElement('div');
+    bd.id = 'bb-fs-backdrop';
+    bd.className = 'bb-fs-backdrop';
+    bd.onclick = () => bbToggleFullscreen(btn);
+    document.body.appendChild(bd);
+    document._bbFsEsc = e => { if (e.key === 'Escape') bbToggleFullscreen(btn); };
+    document.addEventListener('keydown', document._bbFsEsc);
+  } else {
+    const bd = document.getElementById('bb-fs-backdrop');
+    if (bd) bd.remove();
+    if (document._bbFsEsc) {
+      document.removeEventListener('keydown', document._bbFsEsc);
+      delete document._bbFsEsc;
+    }
+  }
+
+  setTimeout(() => {
+    _analyticsCharts.forEach(ch => { if (card.contains(ch.canvas)) ch.resize(); });
+  }, 50);
+}
+
 function renderAnalytics() {
   _analyticsCharts.forEach(c => c.destroy());
   _analyticsCharts = [];
@@ -2899,7 +2926,7 @@ function renderAnalytics() {
     const card = document.createElement('div');
     card.className = 'analytics-card' + (wide ? ' analytics-card-wide' : '');
     card.innerHTML =
-      `<div class="bb-card-header"><span class="analytics-card-title">${title}</span></div>` +
+      `<div class="bb-card-header"><span class="analytics-card-title">${title}</span><button class="bb-fs-btn" onclick="bbToggleFullscreen(this)" title="Fullscreen">⊞</button></div>` +
       `<p class="analytics-card-desc">${desc}</p>` +
       `<div class="analytics-chart-wrap" id="wrap-${id}"><canvas id="${id}"></canvas></div>`;
     grid.appendChild(card);
