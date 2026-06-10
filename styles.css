@@ -872,46 +872,83 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 .broadcast-dismiss-btn:hover { background: rgba(0,0,0,0.28); }
 @keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-/* ── ANALYTICS ───────────────────────────────────────────────── */
-#analytics-body { padding: 1rem; }
+/* ── ANALYTICS — BLOOMBERG TERMINAL STYLE ────────────────────── */
+#analytics-body {
+  padding: 0;
+  background: #000;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+.bb-page-header {
+  display: flex; align-items: baseline; gap: 1.5rem;
+  padding: 0.3rem 0.75rem;
+  background: #FF6600;
+}
+.bb-page-title {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
+  color: #000; font-family: 'Consolas', 'Courier New', monospace;
+}
+.bb-page-sub {
+  font-size: 0.65rem; color: #4a1800; flex: 1;
+  font-family: 'Consolas', 'Courier New', monospace;
+  letter-spacing: 0.04em;
+}
+.bb-page-num {
+  font-size: 0.65rem; font-weight: 700; color: #000;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
 .analytics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-  gap: 1rem;
+  gap: 1px;
+  background: #1c1c1c;
+  padding: 1px;
 }
 .analytics-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.1rem 1.2rem 1.3rem;
-  display: flex; flex-direction: column; gap: 0.35rem;
+  background: #000;
+  border: none;
+  border-radius: 0;
+  padding: 0.45rem 0.6rem 0.7rem;
+  display: flex; flex-direction: column; gap: 0;
 }
 .analytics-card-wide { grid-column: 1 / -1; }
+.bb-card-header {
+  border-bottom: 1px solid #FF6600;
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.2rem;
+}
 .analytics-card-title {
-  font-size: 0.95rem; font-weight: 700;
-  color: var(--text); margin: 0;
+  font-size: 0.68rem; font-weight: 700;
+  color: #FF6600; text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: 'Consolas', 'Courier New', monospace;
+  margin: 0;
 }
 .analytics-card-desc {
-  font-size: 0.78rem; color: var(--text-2); margin: 0 0 0.5rem;
+  font-size: 0.6rem; color: #555; margin: 0 0 0.4rem;
+  font-family: 'Consolas', 'Courier New', monospace;
+  text-transform: uppercase; letter-spacing: 0.04em;
 }
 .analytics-chart-wrap {
-  position: relative; flex: 1; min-height: 240px;
+  position: relative; flex: 1; min-height: 230px;
 }
-.analytics-card-wide .analytics-chart-wrap { min-height: 280px; }
+.analytics-card-wide .analytics-chart-wrap { min-height: 270px; }
 .analytics-chart-wrap canvas { width: 100% !important; height: 100% !important; }
 /* Agreement matrix */
 .ag-scroll { overflow-x: auto; }
 .ag-table {
-  border-collapse: collapse; font-size: 0.72rem;
+  border-collapse: collapse; font-size: 0.62rem;
   width: 100%; min-width: 520px;
+  font-family: 'Consolas', 'Courier New', monospace;
 }
 .ag-table th {
-  padding: 4px 6px; color: var(--text-2);
-  font-weight: 600; text-align: center;
-  white-space: nowrap; background: var(--surface);
+  padding: 3px 5px; color: #FF6600;
+  font-weight: 700; text-align: center;
+  white-space: nowrap; background: #000;
+  border: 1px solid #1c1c1c;
+  font-size: 0.6rem; text-transform: uppercase;
 }
 .ag-table td {
-  padding: 4px 6px; text-align: center;
-  border: 1px solid rgba(255,255,255,0.04);
-  font-size: 0.7rem; font-weight: 600;
+  padding: 3px 5px; text-align: center;
+  border: 1px solid #0a0a0a;
+  font-size: 0.6rem; font-weight: 700;
 }
