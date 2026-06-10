@@ -296,7 +296,8 @@ const PLAYER_AVATARS = {
 };
 
 const PLAYER_AVATAR_POS = {
-  'Diego': 'top',
+  'Diego':    'top',
+  'Matthias': 'top',
 };
 function playerAvatarHtml(playerName, size = 32) {
   const file = PLAYER_AVATARS[playerName];
