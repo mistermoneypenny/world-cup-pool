@@ -281,15 +281,18 @@ Object.values(BONUS_CONFIG).forEach(bonuses => {
 
 // ── PLAYER AVATARS ────────────────────────────────────────────
 const PLAYER_AVATARS = {
-  'Matthias':   'Matthias.png',
-  'Diego':      'Diego.png',
-  'Lorenz':     'Lorenz.png',
-  'Cole':       'Cole.png',
-  'Commish':    'David.png',
+  'Matthias':        'Matthias.jpg',
+  'Diego':           'Diego.jpg',
+  'Lorenz':          'Lorenz.png',
+  'Cole':            'Cole.jpg',
+  'Commish':         'David.png',
   'Late Night Lang': 'Lang.jpg',
-  'Jose':       'Jose.jpg',
-  'Rafa':       'Rafa.jpg',
-  'Mike Jones': 'MikeJones.jpg',
+  'Jose':            'Jose.jpg',
+  'Rafa':            'Rafa.jpg',
+  'Mike Jones':      'MikeJones.jpg',
+  'Dennis':          'Dennis.jpg',
+  'Pataky':          'Pataky.jpg',
+  'Puschel':         'Puschel.jpg',
 };
 
 function playerAvatarHtml(playerName, size = 32) {
