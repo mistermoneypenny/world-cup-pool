@@ -2867,6 +2867,7 @@ function renderAnalytics() {
   Chart.defaults.color       = '#888';
   Chart.defaults.font.family = MONO;
   Chart.defaults.font.size   = 9;
+  Chart.defaults.animation   = false;
 
   const gc = '#111';
   const sc = {
