@@ -929,10 +929,9 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
   text-transform: uppercase; letter-spacing: 0.04em;
 }
 .analytics-chart-wrap {
-  position: relative; flex: 1; min-height: 230px;
+  position: relative; height: 240px;
 }
-.analytics-card-wide .analytics-chart-wrap { min-height: 270px; }
-.analytics-chart-wrap canvas { width: 100% !important; height: 100% !important; }
+.analytics-card-wide .analytics-chart-wrap { height: 280px; }
 /* Agreement matrix */
 .ag-scroll { overflow-x: auto; }
 .ag-table {

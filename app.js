@@ -2864,10 +2864,11 @@ function renderAnalytics() {
   const players = ['Lorenz','Diego','Cole','Matthias','Commish','Lang','Rafa','Dennis','Pataky','Puschel','Francisco','Josh','Sean'];
   const short   = ['LOR','DIE','COL','MAT','COM','LAN','RAF','DEN','PAT','PUS','FRA','JOS','SEA'];
 
-  Chart.defaults.color       = '#888';
-  Chart.defaults.font.family = MONO;
-  Chart.defaults.font.size   = 9;
-  Chart.defaults.animation   = false;
+  Chart.defaults.color                = '#888';
+  Chart.defaults.font.family          = MONO;
+  Chart.defaults.font.size            = 9;
+  Chart.defaults.animation            = false;
+  Chart.defaults.maintainAspectRatio  = false;
 
   const gc = '#111';
   const sc = {
