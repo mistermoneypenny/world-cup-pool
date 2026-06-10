@@ -297,6 +297,7 @@ const PLAYER_AVATARS = {
 };
 
 const PLAYER_AVATAR_POS = {
+  'Aapo':  'top',
   'Diego': 'top',
 };
 const PLAYER_AVATAR_FIT = {
