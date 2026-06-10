@@ -183,6 +183,34 @@ function flag(name) {
   return c ? `<img src="https://flagcdn.com/w40/${c}.png" width="20" height="15" alt="" class="team-flag">` : '';
 }
 
+const PLAYER_FLAGS = {
+  'Aapo':                 ['fi'],
+  'Bergman':              ['us'],
+  'Cole':                 ['ca', 'gb'],
+  'Commish':              ['us', 'de', 'gb'],
+  'Dennis':               ['de'],
+  'Diego':                ['es', 'ar'],
+  'Francisco':            ['es', 'ar'],
+  'Jeremy':               ['us'],
+  'Jose':                 ['pt'],
+  'Josh':                 ['us'],
+  'Late Night Lang':      ['gb'],
+  'Lorenz':               ['de'],
+  'Matthias':             ['at'],
+  'Mike Jones':           ['gb'],
+  'Pataky':               ['us'],
+  'Puschel':              ['de'],
+  'Rafa':                 ['es'],
+  'Ricky':                ['pt'],
+  'Santiago':             ['co'],
+  "Sean 'Diddler' Combs": ['gb', 'nz'],
+};
+function playerFlagsHtml(name) {
+  return (PLAYER_FLAGS[name] || [])
+    .map(c => `<img src="https://flagcdn.com/w40/${c}.png" width="20" height="15" alt="" class="player-nat-flag">`)
+    .join('');
+}
+
 // INITIAL_TEAMS: 32 projected knockout-round teams, 8 per quadrant, in R32 matchup pairs.
 // Seeds = FIFA Draw Pot (1–4). Admin updates after group stage.
 const INITIAL_TEAMS = {
@@ -2132,8 +2160,9 @@ function renderLbBody() {
     const h2hBtnHtml = canH2H
       ? `<button class="lb-h2h-btn" data-h2hpid="${row.player.id}" title="Head-to-head vs ${esc(row.player.name)}">⚔</button>`
       : '';
+    const natFlags = playerFlagsHtml(row.player.name);
     let tdHTML = `<td class="rank-num ${rankCls}">${rankIcon}</td>
-      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button>${h2hBtnHtml}</div></td>`;
+      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button>${natFlags}${h2hBtnHtml}</div></td>`;
 
     if (state.lbRound === 'all') {
       const maxPossible = row.total.total + row.total.possible;
