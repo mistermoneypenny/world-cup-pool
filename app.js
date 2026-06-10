@@ -2097,7 +2097,7 @@ function renderLbBody() {
   const thead = document.createElement('thead');
   let thHTML = '<tr><th>#</th><th>Player</th>';
   if (state.lbRound === 'all') {
-    thHTML += '<th>Score</th><th>Total</th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
+    thHTML += '<th>Score</th><th>Total Possible</th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
     ROUND_CONFIG.forEach(cfg => { thHTML += `<th class="num">${cfg.short}</th>`; });
   } else {
     thHTML += '<th class="num">Score</th><th class="num">Total</th>';
