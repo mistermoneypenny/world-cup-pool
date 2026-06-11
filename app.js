@@ -1866,12 +1866,22 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const rawLabel = game.label || (game.region ? `Quadrant ${game.region}` : '');
   const regionLabel = game.round === 'groups' ? rawLabel.replace(/^Group [A-L]: /i, '') : rawLabel;
   const sc = state.scores[game.id];
-  const scoreTag = sc !== undefined
+  const liveSc = findGameScore(t1?.name, t2?.name);
+  const isLive = !sc && liveSc && liveSc.status === 'in';
+  const scoreHtml = sc !== undefined
     ? `<span class="pick-card-score">${sc.t1}–${sc.t2}</span>`
+    : liveSc
+      ? `<span class="pick-card-score${isLive ? ' live' : ''}">${liveSc.t1}–${liveSc.t2}</span>`
+      : '';
+  const liveBadgeHtml = isLive
+    ? (liveSc.link
+        ? `<a href="${esc(liveSc.link)}" target="_blank" rel="noopener noreferrer" class="live-badge-inline">${esc(liveSc.statusDetail || 'LIVE')}</a>`
+        : `<span class="live-badge-inline">${esc(liveSc.statusDetail || 'LIVE')}</span>`)
     : '';
   const hdr = document.createElement('div');
   hdr.className = 'pick-card-hdr';
   hdr.innerHTML = `<span class="pick-card-hdr-label">${esc(regionLabel)}</span>
+    ${liveBadgeHtml}${scoreHtml}
     <span class="pick-pts">${cfg.pts} pt${cfg.pts > 1 ? 's' : ''}</span>`;
   card.appendChild(hdr);
 
@@ -1898,7 +1908,9 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     const optionName = isDraw ? 'Draw' : team?.name;
     if (!team && !isDraw) return;
 
-    const isPicked     = state.pendingPicks[getPickKey(game)] === optionName;
+    const isPicked     = isOpen
+      ? state.pendingPicks[getPickKey(game)] === optionName
+      : savedPick === optionName;
     const isPlayerPick = savedPick === optionName;
     const row = document.createElement('div');
     row.className = 'pick-option' + (isDraw ? ' pick-draw-option' : '');
