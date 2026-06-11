@@ -3114,47 +3114,6 @@ function renderAnalytics() {
   tbl += '</tbody></table></div>';
   wrap4.innerHTML = tbl;
 
-  // 9 ── Knockout Bracket Similarity Matrix (LIVE)
-  addCard('ch-ko-sim', 'KNOCKOUT BRACKET SIMILARITY', 'How often any two players picked the same team in knockout rounds (%)', false, hMtx);
-  const wrapKO = document.getElementById('wrap-ch-ko-sim');
-  wrapKO.innerHTML = '';
-  const koRounds = ['r32', 'r16', 'qf', 'sf', 'final'];
-  let hasKOPicks = false;
-  allPlayers.forEach(p => koRounds.forEach(r => { if (Object.keys((state.picks[p.id] || {})[r] || {}).length) hasKOPicks = true; }));
-  if (!hasKOPicks) {
-    wrapKO.innerHTML = '<div class="bb-no-data">NO KNOCKOUT PICKS YET</div>';
-  } else {
-    function koAgreePct(pid1, pid2) {
-      let same = 0, total = 0;
-      koRounds.forEach(r => {
-        const p1 = (state.picks[pid1] || {})[r] || {};
-        const p2 = (state.picks[pid2] || {})[r] || {};
-        new Set([...Object.keys(p1), ...Object.keys(p2)]).forEach(k => {
-          if (p1[k] && p2[k]) { total++; if (p1[k] === p2[k]) same++; }
-        });
-      });
-      return total ? Math.round(same / total * 100) : null;
-    }
-    let koTbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
-      shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
-    allPlayers.forEach((p1, i) => {
-      koTbl += `<tr><th>${shorts[i]}</th>`;
-      allPlayers.forEach((p2, j) => {
-        const v = koAgreePct(p1.id, p2.id);
-        const display = i === j ? '100%' : (v === null ? '—' : v + '%');
-        const pct = v === null ? 0 : (v - 30) / 70;
-        const r = Math.round(255 * pct + 10 * (1 - pct));
-        const g2 = Math.round(102 * pct + 10 * (1 - pct));
-        const bg = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
-        const fg = (pct > 0.4 || i === j) ? '#FFF' : '#444';
-        koTbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
-      });
-      koTbl += '</tr>';
-    });
-    koTbl += '</tbody></table></div>';
-    wrapKO.innerHTML = koTbl;
-  }
-
   // 10 ── Round-by-Round Score Breakdown (LIVE when results exist)
   const rrRoundIds = ['groups', 'r32', 'r16', 'qf', 'sf', 'final'];
   const rrColors   = [BB, '#00CFFF', '#FFFF00', '#FF3D6B', '#00FF99', '#FF8800'];
@@ -3233,7 +3192,7 @@ function renderAnalytics() {
   });
   costlyGames.sort((a, b) => b.cost - a.cost);
   const topCostly = costlyGames.slice(0, 20);
-  addCard('ch-costly', 'MOST COSTLY WRONG PICKS', 'Avg points lost per player per game (% wrong × round value) — sorted by pain', false, Math.max(320, topCostly.length * 34));
+  addCard('ch-costly', 'MOST COSTLY WRONG PICKS', 'Avg points lost per player per game (% wrong × round value) — sorted by pain', true, Math.max(320, topCostly.length * 34));
   if (topCostly.length) {
     mkChart('ch-costly', {
       type: 'bar',
@@ -3308,6 +3267,53 @@ function renderAnalytics() {
           y: sc.y
         }
       }
+    });
+  }
+
+  // 13 ── Knockout Bracket Similarity Matrix (LIVE; dummy until KO picks submitted) — bottom-right
+  const koRounds = ['r32', 'r16', 'qf', 'sf', 'final'];
+  let hasKOPicks = false;
+  allPlayers.forEach(p => koRounds.forEach(r => { if (Object.keys((state.picks[p.id] || {})[r] || {}).length) hasKOPicks = true; }));
+  addCard('ch-ko-sim', 'KNOCKOUT BRACKET SIMILARITY', 'How often any two players picked the same team in knockout rounds (%)', false, hMtx);
+  const wrapKO = document.getElementById('wrap-ch-ko-sim');
+  wrapKO.innerHTML = '';
+  function buildKOTable(pctFn) {
+    let koTbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
+      shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
+    allPlayers.forEach((p1, i) => {
+      koTbl += `<tr><th>${shorts[i]}</th>`;
+      allPlayers.forEach((p2, j) => {
+        const v = pctFn(i, j, p1.id, p2.id);
+        const display = i === j ? '100%' : (v === null ? '—' : v + '%');
+        const pct = v === null ? 0 : (v - 30) / 70;
+        const r = Math.round(255 * pct + 10 * (1 - pct));
+        const g2 = Math.round(102 * pct + 10 * (1 - pct));
+        const bg = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
+        const fg = (pct > 0.4 || i === j) ? '#FFF' : '#444';
+        koTbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
+      });
+      koTbl += '</tr>';
+    });
+    return koTbl + '</tbody></table></div>';
+  }
+  if (hasKOPicks) {
+    wrapKO.innerHTML = buildKOTable((i, j, pid1, pid2) => {
+      if (i === j) return 100;
+      let same = 0, total = 0;
+      koRounds.forEach(r => {
+        const p1 = (state.picks[pid1] || {})[r] || {};
+        const p2 = (state.picks[pid2] || {})[r] || {};
+        new Set([...Object.keys(p1), ...Object.keys(p2)]).forEach(k => {
+          if (p1[k] && p2[k]) { total++; if (p1[k] === p2[k]) same++; }
+        });
+      });
+      return total ? Math.round(same / total * 100) : null;
+    });
+  } else {
+    // DUMMY — simulate knockout agreement until KO picks are submitted
+    wrapKO.innerHTML = buildKOTable((i, j) => {
+      if (i === j) return 100;
+      return 40 + Math.round(Math.abs(Math.sin(i * 2.3 + j * 1.7)) * 45);
     });
   }
 }
