@@ -291,9 +291,11 @@ const PLAYER_AVATARS = {
   'Jose':            'Jose.png',
   'Rafa':            'Rafa.png',
   'Mike Jones':      'MikeJones.png',
-  'Dennis':          'Dennis.png',
-  'Pataky':          'Pataky.png',
-  'Puschel':         'Puschel.png',
+  'Dennis':              'Dennis.png',
+  'Pataky':              'Pataky.png',
+  'Puschel':             'Puschel.png',
+  'Francisco':           'Francisco.jpg',
+  "Sean 'Diddler' Combs":'Sean.jpg',
 };
 
 const PLAYER_AVATAR_POS = {
@@ -2167,6 +2169,9 @@ function renderLbBody() {
   const pmVals = Object.values(pmPct).filter(v => v !== null);
   const pmMin = pmVals.length ? Math.min(...pmVals) : 0;
   const pmMax = pmVals.length ? Math.max(...pmVals) : 1;
+  const dildoPid = pmVals.length
+    ? rows.find(r => pmPct[r.player.id] !== null && pmPct[r.player.id] === pmMin)?.player.id
+    : null;
 
   const table = document.createElement('table');
   table.className = 'lb-table';
@@ -2210,8 +2215,11 @@ function renderLbBody() {
       ? `<button class="lb-h2h-btn" data-h2hpid="${row.player.id}" title="Head-to-head vs ${esc(row.player.name)}">⚔</button>`
       : '';
     const natFlags = playerFlagsHtml(row.player.name);
+    const dildoHtml = row.player.id === dildoPid
+      ? '<img src="Dildo.png" style="height:18px;margin-left:4px;vertical-align:middle;opacity:0.95" alt="">'
+      : '';
     let tdHTML = `<td class="rank-num ${rankCls}">${rankIcon}</td>
-      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button>${natFlags}${h2hBtnHtml}</div></td>`;
+      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button>${natFlags}${dildoHtml}${h2hBtnHtml}</div></td>`;
 
     if (state.lbRound === 'all') {
       const maxPossible = row.total.total + row.total.possible;
