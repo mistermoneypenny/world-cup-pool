@@ -2216,10 +2216,10 @@ function renderLbBody() {
       : '';
     const natFlags = playerFlagsHtml(row.player.name);
     const dildoHtml = row.player.id === dildoPid
-      ? '<img src="Dildo.png" style="height:18px;margin-left:4px;vertical-align:middle;opacity:0.95" alt="">'
+      ? '<img src="Dildo.png" style="height:52px;margin-left:6px;vertical-align:middle;opacity:0.95" alt="">'
       : '';
     let tdHTML = `<td class="rank-num ${rankCls}">${rankIcon}</td>
-      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button>${natFlags}${dildoHtml}${h2hBtnHtml}</div></td>`;
+      <td><div class="lb-player-cell">${avatar}<button class="${btnClass}" data-pid="${row.player.id}"${btnTitle}>${esc(row.player.name)}${lockTag}</button>${natFlags}${h2hBtnHtml}${dildoHtml}</div></td>`;
 
     if (state.lbRound === 'all') {
       const maxPossible = row.total.total + row.total.possible;
