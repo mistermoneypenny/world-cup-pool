@@ -2860,7 +2860,7 @@ function renderAnalytics() {
     return b;
   });
 
-  // Consensus: top 8 most contested games (closest to 50/50)
+  // Consensus: all games with picks, sorted by contestedness (closest to 50/50 first)
   const consensusGames = allGames.map(g => {
     let forT1 = 0, total = 0;
     allPlayers.forEach(p => {
@@ -2871,7 +2871,7 @@ function renderAnalytics() {
     const pct = Math.round(forT1 / total * 100);
     const lbl = `${g.t1.name.split(' ')[0].slice(0,7)} vs ${g.t2.name.split(' ')[0].slice(0,7)}`;
     return { lbl, pct1: pct, pct2: 100 - pct };
-  }).filter(Boolean).sort((a, b) => Math.abs(50 - a.pct1) - Math.abs(50 - b.pct1)).slice(0, 8);
+  }).filter(Boolean).sort((a, b) => Math.abs(50 - a.pct1) - Math.abs(50 - b.pct1));
 
   // Short names for agreement matrix
   const shortName = n => n.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase();
