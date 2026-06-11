@@ -3177,7 +3177,32 @@ function renderAnalytics() {
       }
     });
   } else {
-    document.getElementById('wrap-ch-round-breakdown').innerHTML = '<div class="bb-no-data">AWAITING RESULTS</div>';
+    // DUMMY — simulate realistic per-round scores until real results arrive
+    const dRR = allPlayers.map((_, i) => [
+      12 + Math.round(Math.abs(Math.sin(i * 1.7))       * 8),
+       8 + Math.round(Math.abs(Math.sin(i * 2.3 + 1))   * 6),
+       5 + Math.round(Math.abs(Math.sin(i * 1.9 + 2))   * 4),
+       2 + Math.round(Math.abs(Math.sin(i * 2.7 + 3))   * 3),
+       1 + Math.round(Math.abs(Math.sin(i * 3.1 + 4))   * 2),
+           Math.round(Math.abs(Math.sin(i * 2.1 + 5))),
+    ]);
+    const dRRTot = dRR.map(s => s.reduce((a, b) => a + b, 0));
+    const dRROrd = allPlayers.map((_, i) => i).sort((a, b) => dRRTot[b] - dRRTot[a]);
+    mkChart('ch-round-breakdown', {
+      type: 'bar',
+      data: {
+        labels: dRROrd.map(i => allPlayers[i].name),
+        datasets: rrRoundIds.map((r, ri) => ({
+          label: ROUND_CONFIG.find(c => c.id === r).short,
+          data: dRROrd.map(i => dRR[i][ri]),
+          backgroundColor: rrColors[ri], borderWidth: 0, borderRadius: 0,
+        }))
+      },
+      options: {
+        plugins: { legend: leg('bottom'), tooltip: tip },
+        scales: { x: { ...sc.x, stacked: true, ticks: rotX }, y: { ...sc.y, stacked: true, beginAtZero: true } }
+      }
+    });
   }
 
   // 11 ── Most Costly Wrong Picks (LIVE when results exist)
@@ -3220,7 +3245,23 @@ function renderAnalytics() {
       }
     });
   } else {
-    document.getElementById('wrap-ch-costly').innerHTML = '<div class="bb-no-data">AWAITING RESULTS</div>';
+    // DUMMY — use real group game matchups with fake cost values until results arrive
+    const dCostly = allGames.slice(0, 20).map((g, i) => ({
+      lbl: `[GRP] ${g.t1.name.split(' ')[0].slice(0,8)} v ${g.t2.name.split(' ')[0].slice(0,8)}`,
+      cost: Math.round((0.3 + Math.abs(Math.sin(i * 2.1 + 0.7)) * 0.7) * 10) / 10,
+    })).sort((a, b) => b.cost - a.cost);
+    mkChart('ch-costly', {
+      type: 'bar',
+      data: {
+        labels: dCostly.map(g => g.lbl),
+        datasets: [{ label: 'AVG PTS LOST', data: dCostly.map(g => g.cost), backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: tip },
+        scales: { x: { ...sc.x, beginAtZero: true }, y: sc.y }
+      }
+    });
   }
 
   // 12 ── Win Probability (LIVE when scores exist)
@@ -3246,7 +3287,25 @@ function renderAnalytics() {
       }
     });
   } else {
-    document.getElementById('wrap-ch-win-prob').innerHTML = '<div class="bb-no-data">AWAITING RESULTS</div>';
+    // DUMMY — simulate win probabilities until real scores exist
+    const dWP     = allPlayers.map((_, i) => 100 + Math.round(Math.abs(Math.sin(i * 2.7 + 1.1)) * 80));
+    const dWPSum  = dWP.reduce((s, v) => s + v, 0);
+    const dWPOrd  = allPlayers.map((_, i) => i).sort((a, b) => dWP[b] - dWP[a]);
+    mkChart('ch-win-prob', {
+      type: 'bar',
+      data: {
+        labels: dWPOrd.map(i => allPlayers[i].name),
+        datasets: [{ label: 'WIN PROBABILITY', data: dWPOrd.map(i => Math.round(dWP[i] / dWPSum * 100)), backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw}%` } } },
+        scales: {
+          x: { ...sc.x, beginAtZero: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
+          y: sc.y
+        }
+      }
+    });
   }
 }
 
