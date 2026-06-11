@@ -1,5 +1,5 @@
 /* ============================================================
-   WORLD CUP 2026 PICK-BY-ROUND POOL
+   WORLD CUP 2026 PICK-BY-ROUND POOL  (build 2026-06-11)
    ============================================================
    Structure: 48-team tournament — Group Stage + Knockout.
    GROUP_TEAMS: 12 groups (A–L), 4 teams each, 6 round-robin
