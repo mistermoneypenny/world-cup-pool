@@ -767,6 +767,24 @@ let countdownTimer        = null;
 let notifPermission       = 'default';
 let dismissedBroadcastId  = null;
 let deferredInstallPrompt = null;
+function showPickersPopup(anchor, names) {
+  const popup = document.getElementById('pick-pickers-popup');
+  if (!popup) return;
+  const count = names.length;
+  const nameRows = count > 0 ? names.map(n => `<span class="pop-name">${esc(n)}</span>`).join('') : '<span class="pop-empty">—</span>';
+  popup.innerHTML = `<div class="pop-hdr">${count > 0 ? count + ' picker' + (count !== 1 ? 's' : '') : 'No picks'}</div>${nameRows}`;
+  popup.style.left = '0'; popup.style.top = '0'; popup.style.display = 'block';
+  const rect = anchor.getBoundingClientRect();
+  const pw = popup.offsetWidth;
+  const ph = popup.offsetHeight;
+  let left = rect.left;
+  let top  = rect.bottom + 6;
+  if (left + pw > window.innerWidth  - 8) left = window.innerWidth  - pw - 8;
+  if (top  + ph > window.innerHeight - 8) top  = rect.top - ph - 6;
+  popup.style.left = Math.max(8, left) + 'px';
+  popup.style.top  = Math.max(8, top)  + 'px';
+}
+
 function showToast(msg, type = 'info') {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -1695,7 +1713,9 @@ function renderPicksBody() {
       const section = document.createElement('div');
       section.className = 'picks-group-section';
       const groupGamesAll = getGamesForRound('groups').filter(g => g.region === group);
-      const pickedCount = groupGamesAll.filter(g => state.pendingPicks[getPickKey(g)]).length;
+      const pickedCount = (isOpen
+        ? groupGamesAll.filter(g => state.pendingPicks[getPickKey(g)])
+        : groupGamesAll.filter(g => savedPicks[getPickKey(g)])).length;
       const sectionHdr = document.createElement('div');
       sectionHdr.className = 'picks-group-hdr';
       sectionHdr.innerHTML = `Group ${group}<span class="picks-group-progress">${pickedCount}/${groupGamesAll.length}</span>`;
@@ -1960,7 +1980,10 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     if (popData && popData.total > 0) {
       const cnt = popData.counts[optionName] || 0;
       const pct = Math.round((cnt / popData.total) * 100);
-      popHtml = `<span class="pick-o-pop"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${popData.total}</span></span>`;
+      const pickerNames = state.players
+        .filter(p => (state.picks[p.id] || {})[game.round]?.[getPickKey(game)] === optionName)
+        .map(p => p.name).join('||');
+      popHtml = `<span class="pick-o-pop" data-pickers="${esc(pickerNames)}" role="button" tabindex="0"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${popData.total}</span></span>`;
     }
 
     if (isDraw) {
@@ -4251,6 +4274,18 @@ function setupEvents() {
   document.getElementById('install-dismiss-btn')?.addEventListener('click', () => {
     const banner = document.getElementById('install-banner');
     if (banner) banner.style.display = 'none';
+  });
+
+  // Popularity bar popup: show player names when clicked
+  document.addEventListener('click', e => {
+    const pop = e.target.closest('.pick-o-pop[data-pickers]');
+    if (pop) {
+      const names = (pop.dataset.pickers || '').split('||').filter(Boolean);
+      showPickersPopup(pop, names);
+      return;
+    }
+    const popup = document.getElementById('pick-pickers-popup');
+    if (popup && !e.target.closest('#pick-pickers-popup')) popup.style.display = 'none';
   });
 }
 
