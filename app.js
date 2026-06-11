@@ -2835,8 +2835,8 @@ function renderAnalytics() {
     return total ? Math.round(same / total * 100) : null;
   }
 
-  // Upset pick count per player
-  const upsetData = allPlayers.map(p => {
+  // Upset pick count per player — sorted descending (riskiest first)
+  const upsetRaw = allPlayers.map(p => {
     const picks = gPicks(p.id);
     return allGames.reduce((n, g) => {
       const picked = picks[g.key];
@@ -2846,9 +2846,12 @@ function renderAnalytics() {
       return n + (pt.seed > ot.seed ? 1 : 0);
     }, 0);
   });
+  const upsetOrder = allPlayers.map((_, i) => i).sort((a, b) => upsetRaw[b] - upsetRaw[a]);
+  const upsetNames = upsetOrder.map(i => allPlayers[i].name);
+  const upsetData  = upsetOrder.map(i => upsetRaw[i]);
 
-  // Risk buckets (by seed of picked team) per player
-  const riskData = allPlayers.map(p => {
+  // Risk buckets (by seed of picked team) per player — sorted by Pot3+4 picks descending
+  const riskRaw = allPlayers.map(p => {
     const picks = gPicks(p.id);
     const b = {1:0,2:0,3:0,4:0};
     allGames.forEach(g => {
@@ -2859,6 +2862,9 @@ function renderAnalytics() {
     });
     return b;
   });
+  const riskOrder = allPlayers.map((_, i) => i).sort((a, b) => (riskRaw[b][3] + riskRaw[b][4]) - (riskRaw[a][3] + riskRaw[a][4]));
+  const riskNames = riskOrder.map(i => allPlayers[i].name);
+  const riskData  = riskOrder.map(i => riskRaw[i]);
 
   // Consensus: all games with picks, sorted by contestedness (closest to 50/50 first)
   const consensusGames = allGames.map(g => {
@@ -2928,12 +2934,12 @@ function renderAnalytics() {
   const hMtx  = Math.max(300, n * 30 + 60);   // agreement matrix table
   const rotX  = { color: '#777', font: { family: MONO, size: 9 }, maxRotation: 45, minRotation: 45 };
 
-  // 1 ── Upset Index (LIVE)
+  // 1 ── Upset Index (LIVE) — sorted riskiest first
   addCard('ch-upset', 'UPSET INDEX', 'Group stage underdog picks per player — higher = bolder strategy', false, hBar);
   mkChart('ch-upset', {
     type: 'bar',
     data: {
-      labels: names,
+      labels: upsetNames,
       datasets: [{ label: 'UPSET PICKS', data: upsetData,
         backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
     },
@@ -2969,12 +2975,12 @@ function renderAnalytics() {
     document.getElementById('wrap-ch-consensus').innerHTML = '<div class="bb-no-data">NO PICKS DATA YET</div>';
   }
 
-  // 3 ── Risk Profile (LIVE)
+  // 3 ── Risk Profile (LIVE) — sorted by Pot 3+4 picks descending
   addCard('ch-risk', 'RISK PROFILE', 'Pick distribution by pot — Pot 3/4 picks are upsets', false, hVBar);
   mkChart('ch-risk', {
     type: 'bar',
     data: {
-      labels: names,
+      labels: riskNames,
       datasets: [
         { label: 'POT 1 PICKS', data: riskData.map(b => b[1]), backgroundColor: BB,        borderWidth: 0, borderRadius: 0 },
         { label: 'POT 2 PICKS', data: riskData.map(b => b[2]), backgroundColor: '#00CFFF', borderWidth: 0, borderRadius: 0 },
@@ -3058,7 +3064,7 @@ function renderAnalytics() {
       labels: names,
       datasets: [{ label: 'HIT RATE',
         data: allPlayers.map((_, i) => 35 + Math.round(Math.abs(Math.sin(i * 2.7)) * 35)),
-        backgroundColor: allPlayers.map((_, i) => (35 + Math.round(Math.abs(Math.sin(i * 2.7)) * 35)) >= 50 ? BB : '#2a1400'),
+        backgroundColor: BB,
         borderWidth: 0, borderRadius: 0,
       }]
     },
