@@ -2174,7 +2174,7 @@ function renderLbBody() {
   const thead = document.createElement('thead');
   let thHTML = '<tr><th>#</th><th>Player</th>';
   if (state.lbRound === 'all') {
-    thHTML += '<th>Score</th><th>Total Possible</th><th class="num lb-pm-th" title="% of group picks on Pot 3/4 (upset) teams">Pussy Meter</th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
+    thHTML += '<th>Score</th><th style="text-align:center">Total Possible</th><th class="num lb-pm-th" title="% of group picks on Pot 3/4 (upset) teams">Pussy Meter<span class="lb-pm-sub">(upset pick %)</span></th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
     ROUND_CONFIG.forEach(cfg => { thHTML += `<th class="num">${cfg.short}</th>`; });
   } else {
     thHTML += '<th class="num">Score</th><th class="num">Total</th>';
@@ -2230,8 +2230,7 @@ function renderLbBody() {
           if (p === null) return '<td class="num lb-pm">—</td>';
           const norm = pmMax > pmMin ? (p - pmMin) / (pmMax - pmMin) : 0.5;
           const hue  = Math.round(norm * 120);
-          const lum  = 50 + Math.round((1 - Math.abs(norm - 0.5) * 2) * 5);
-          return `<td class="num lb-pm" style="color:hsl(${hue},85%,${lum}%);font-weight:600">${Math.round(p * 100)}%</td>`;
+          return `<td class="num lb-pm"><div style="background:hsl(${hue},65%,18%);color:hsl(${hue},90%,75%);font-weight:600;height:100%;display:flex;align-items:center;justify-content:center;padding:10px 0">${Math.round(p * 100)}%</div></td>`;
         })()}
         <td class="num lb-best-finish" title="Best possible finish if all remaining picks win">${bRankIcon}</td>`;
       ROUND_CONFIG.forEach(cfg => {

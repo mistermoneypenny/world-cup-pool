@@ -423,7 +423,10 @@ a { color: var(--accent); }
 .lb-wl-row   { font-size: 0.72rem; color: var(--text-2); }
 .lb-w        { color: var(--green); }
 .lb-l        { color: var(--red); }
-.lb-possible { color: var(--text-2); }
+.lb-possible { color: var(--text-2); text-align: center; }
+.lb-pm-th, .lb-pm { text-align: center !important; }
+.lb-pm { padding: 0 !important; }
+.lb-pm-sub { display: block; font-size: 0.65em; font-weight: 400; opacity: 0.6; line-height: 1.2; }
 .lb-round-score.zero { color: var(--text-3); }
 .pct-bar-wrap { height: 3px; background: var(--surface-3); border-radius: 2px; margin-top: 4px; overflow: hidden; }
 .pct-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
