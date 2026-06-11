@@ -3044,90 +3044,141 @@ function renderAnalytics() {
     }
   });
 
-  // 4 ── Score Over Time (DUMMY — needs results)
-  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday — awaiting results', true, 360);
-  mkChart('ch-score-time', {
-    type: 'line',
-    data: {
-      labels: mdays,
-      datasets: allPlayers.map((p, i) => {
-        let cum = 0;
-        return {
-          label: p.name,
-          data: mdays.map((_, mi) => { cum += 7 + Math.round(Math.sin(i * 1.7 + mi * 2.3) * 5 + 5); return cum; }),
-          borderColor: bbC(i), backgroundColor: 'transparent',
-          borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i), tension: 0,
-        };
-      })
-    },
-    options: { plugins: { legend: leg('bottom'), tooltip: tip }, scales: sc }
-  });
+  // 4 ── Score Over Time (LIVE when results exist)
+  const soRoundIds  = ['groups','r32','r16','qf','sf','final'];
+  const soLabels    = ['GRP','R32','R16','QF','SF','FINAL'];
+  const soHasData   = allPlayers.some(p => soRoundIds.some(r => getPlayerRoundScore(p.id, r).score > 0));
+  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by round', true, 360);
+  if (soHasData) {
+    mkChart('ch-score-time', {
+      type: 'line',
+      data: {
+        labels: soLabels,
+        datasets: allPlayers.map((p, i) => {
+          let cum = 0;
+          return {
+            label: p.name,
+            data: soRoundIds.map(r => { cum += getPlayerRoundScore(p.id, r).score; return cum; }),
+            borderColor: bbC(i), backgroundColor: 'transparent',
+            borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i), tension: 0,
+          };
+        })
+      },
+      options: { plugins: { legend: leg('bottom'), tooltip: tip }, scales: sc }
+    });
+  } else {
+    document.getElementById('wrap-ch-score-time').innerHTML = '<div class="bb-no-data">NO RESULTS YET — SCORES APPEAR AS GAMES COMPLETE</div>';
+  }
 
-  // 6 ── Score Ceiling (DUMMY — needs results)
-  addCard('ch-ceiling', 'SCORE CEILING', 'Maximum possible score remaining per player — awaiting results', true, 360);
+  // 6 ── Score Ceiling (LIVE — real data always available from picks)
+  const ceilData = allPlayers.map(p => { const s = getPlayerTotalScore(p.id); return s.total + (s.possible || 0); });
+  const ceilOrd  = allPlayers.map((_, i) => i).sort((a, b) => ceilData[b] - ceilData[a]);
+  addCard('ch-ceiling', 'SCORE CEILING', 'Maximum possible score per player if all remaining picks win', false, hBar);
   mkChart('ch-ceiling', {
-    type: 'line',
-    data: {
-      labels: mdays,
-      datasets: allPlayers.map((p, i) => {
-        let cur = 95 + Math.round(Math.sin(i * 2.3) * 8);
-        return {
-          label: p.name,
-          data: mdays.map((_, mi) => { cur -= 5 + Math.round(Math.abs(Math.sin(i * 1.3 + mi * 3.1)) * 4); return Math.max(cur, 15); }),
-          borderColor: bbC(i), backgroundColor: 'transparent',
-          borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i), tension: 0,
-        };
-      })
-    },
-    options: { plugins: { legend: leg('bottom'), tooltip: tip }, scales: sc }
-  });
-
-  // 7 ── Accuracy by Group (DUMMY — needs results)
-  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group per player — awaiting results', false, 300);
-  mkChart('ch-group-acc', {
-    type: 'radar',
-    data: {
-      labels: ['A','B','C','D','E','F','G','H','I','J','K','L'],
-      datasets: allPlayers.map((p, i) => ({
-        label: p.name,
-        data: Array.from({length:12}, (_, gi) => Math.max(0, Math.min(100, 55 + Math.round(Math.sin(i * 2.1 + gi * 1.7) * 30)))),
-        borderColor: bbC(i), backgroundColor: bbC(i) + '18',
-        borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i),
-      }))
-    },
-    options: {
-      plugins: { legend: leg('bottom'), tooltip: tip },
-      scales: { r: {
-        grid: { color: '#1a1a1a' }, angleLines: { color: '#1a1a1a' },
-        ticks: { color: '#555', backdropColor: 'transparent', stepSize: 25, font: { family: MONO, size: 8 } },
-        pointLabels: { color: '#888', font: { family: MONO, size: 9 } },
-        suggestedMin: 0, suggestedMax: 100,
-      }}
-    }
-  });
-
-  // 8 ── Upset Hit Rate (DUMMY — needs results)
-  addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct — awaiting results', false, hVBar);
-  const hitRateRaw  = allPlayers.map((_, i) => 35 + Math.round(Math.abs(Math.sin(i * 2.7)) * 35));
-  const hitRateOrd  = allPlayers.map((_, i) => i).sort((a, b) => hitRateRaw[b] - hitRateRaw[a]);
-  mkChart('ch-upset-hit', {
     type: 'bar',
     data: {
-      labels: hitRateOrd.map(i => allPlayers[i].name),
-      datasets: [{ label: 'HIT RATE',
-        data: hitRateOrd.map(i => hitRateRaw[i]),
-        backgroundColor: BB,
-        borderWidth: 0, borderRadius: 0,
-      }]
+      labels: ceilOrd.map(i => allPlayers[i].name),
+      datasets: [{ label: 'MAX POSSIBLE', data: ceilOrd.map(i => ceilData[i]),
+        backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
     },
     options: {
+      indexAxis: 'y',
       plugins: { legend: { display: false }, tooltip: tip },
-      scales: {
-        x: { ...sc.x, ticks: rotX },
-        y: { ...sc.y, beginAtZero: true, max: 100, ticks: { color: '#777', font: { family: MONO, size: 9 }, callback: v => v + '%' } }
-      }
+      scales: { x: { ...sc.x, beginAtZero: true }, y: sc.y }
     }
   });
+
+  // 7 ── Accuracy by Group (LIVE when results exist)
+  const groupLetters = Object.keys(GROUP_TEAMS);
+  const groupAccData = allPlayers.map(p => {
+    const picks = gPicks(p.id);
+    return groupLetters.map(letter => {
+      let correct = 0, total = 0;
+      GROUP_TEAMS[letter] && allGames.filter(g => g.group === letter).forEach(g => {
+        const pick = picks[g.key];
+        const result = Object.values(state.games).find(sg => {
+          const { t1, t2 } = getTeams(sg);
+          return sg.round === 'groups' && ((t1?.name === g.t1.name && t2?.name === g.t2.name) || (t1?.name === g.t2.name && t2?.name === g.t1.name));
+        });
+        if (!pick || !result || state.results[result?.id] === undefined) return;
+        total++;
+        const res = state.results[result.id];
+        const normalised = res === 'Draw' ? 'Draw' : res;
+        if (pick === normalised) correct++;
+      });
+      return total ? Math.round(correct / total * 100) : null;
+    });
+  });
+  const hasGroupAcc = groupAccData.some(row => row.some(v => v !== null));
+  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group per player', false, 300);
+  if (hasGroupAcc) {
+    mkChart('ch-group-acc', {
+      type: 'radar',
+      data: {
+        labels: groupLetters,
+        datasets: allPlayers.map((p, i) => ({
+          label: p.name,
+          data: groupAccData[allPlayers.indexOf(p)].map(v => v ?? 0),
+          borderColor: bbC(i), backgroundColor: bbC(i) + '18',
+          borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i),
+        }))
+      },
+      options: {
+        plugins: { legend: leg('bottom'), tooltip: tip },
+        scales: { r: {
+          grid: { color: '#1a1a1a' }, angleLines: { color: '#1a1a1a' },
+          ticks: { color: '#555', backdropColor: 'transparent', stepSize: 25, font: { family: MONO, size: 8 } },
+          pointLabels: { color: '#888', font: { family: MONO, size: 9 } },
+          suggestedMin: 0, suggestedMax: 100,
+        }}
+      }
+    });
+  } else {
+    document.getElementById('wrap-ch-group-acc').innerHTML = '<div class="bb-no-data">NO RESULTS YET — ACCURACY APPEARS AS GAMES COMPLETE</div>';
+  }
+
+  // 8 ── Upset Hit Rate (LIVE when results exist)
+  const uhrData = allPlayers.map(p => {
+    const picks = gPicks(p.id);
+    let correct = 0, total = 0;
+    allGames.forEach(g => {
+      const pick = picks[g.key];
+      if (!pick || pick === 'Draw') return;
+      const pt = pick === g.t1.name ? g.t1 : g.t2;
+      const ot = pt === g.t1 ? g.t2 : g.t1;
+      if (pt.seed <= ot.seed) return; // not an upset pick
+      const sg = Object.values(state.games).find(s => {
+        const { t1, t2 } = getTeams(s);
+        return s.round === 'groups' && ((t1?.name === g.t1.name && t2?.name === g.t2.name) || (t1?.name === g.t2.name && t2?.name === g.t1.name));
+      });
+      if (!sg || state.results[sg.id] === undefined) return;
+      total++;
+      if (state.results[sg.id] === pick) correct++;
+    });
+    return { total, rate: total ? Math.round(correct / total * 100) : null };
+  });
+  const hasUHR = uhrData.some(d => d.total > 0);
+  addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct', false, hVBar);
+  if (hasUHR) {
+    const uhrOrd = allPlayers.map((_, i) => i).filter(i => uhrData[i].total > 0).sort((a, b) => (uhrData[b].rate ?? -1) - (uhrData[a].rate ?? -1));
+    mkChart('ch-upset-hit', {
+      type: 'bar',
+      data: {
+        labels: uhrOrd.map(i => allPlayers[i].name),
+        datasets: [{ label: 'HIT RATE', data: uhrOrd.map(i => uhrData[i].rate),
+          backgroundColor: BB, borderWidth: 0, borderRadius: 0 }]
+      },
+      options: {
+        plugins: { legend: { display: false }, tooltip: tip },
+        scales: {
+          x: { ...sc.x, ticks: rotX },
+          y: { ...sc.y, beginAtZero: true, max: 100, ticks: { color: '#777', font: { family: MONO, size: 9 }, callback: v => v + '%' } }
+        }
+      }
+    });
+  } else {
+    document.getElementById('wrap-ch-upset-hit').innerHTML = '<div class="bb-no-data">NO RESULTS YET — HIT RATE APPEARS AS GAMES COMPLETE</div>';
+  }
 
   // 8 ── Agreement Matrix (LIVE)
   addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)', false, hMtx);
@@ -3178,32 +3229,7 @@ function renderAnalytics() {
       }
     });
   } else {
-    // DUMMY — simulate realistic per-round scores until real results arrive
-    const dRR = allPlayers.map((_, i) => [
-      12 + Math.round(Math.abs(Math.sin(i * 1.7))       * 8),
-       8 + Math.round(Math.abs(Math.sin(i * 2.3 + 1))   * 6),
-       5 + Math.round(Math.abs(Math.sin(i * 1.9 + 2))   * 4),
-       2 + Math.round(Math.abs(Math.sin(i * 2.7 + 3))   * 3),
-       1 + Math.round(Math.abs(Math.sin(i * 3.1 + 4))   * 2),
-           Math.round(Math.abs(Math.sin(i * 2.1 + 5))),
-    ]);
-    const dRRTot = dRR.map(s => s.reduce((a, b) => a + b, 0));
-    const dRROrd = allPlayers.map((_, i) => i).sort((a, b) => dRRTot[b] - dRRTot[a]);
-    mkChart('ch-round-breakdown', {
-      type: 'bar',
-      data: {
-        labels: dRROrd.map(i => allPlayers[i].name),
-        datasets: rrRoundIds.map((r, ri) => ({
-          label: ROUND_CONFIG.find(c => c.id === r).short,
-          data: dRROrd.map(i => dRR[i][ri]),
-          backgroundColor: rrColors[ri], borderWidth: 0, borderRadius: 0,
-        }))
-      },
-      options: {
-        plugins: { legend: leg('bottom'), tooltip: tip },
-        scales: { x: { ...sc.x, stacked: true, ticks: rotX }, y: { ...sc.y, stacked: true, beginAtZero: true } }
-      }
-    });
+    document.getElementById('wrap-ch-round-breakdown').innerHTML = '<div class="bb-no-data">NO RESULTS YET — SCORES APPEAR AS GAMES COMPLETE</div>';
   }
 
   // 11 ── Most Costly Wrong Picks (LIVE when results exist)
@@ -3246,31 +3272,14 @@ function renderAnalytics() {
       }
     });
   } else {
-    // DUMMY — use real group game matchups with fake cost values until results arrive
-    const dCostly = allGames.slice(0, 20).map((g, i) => ({
-      lbl: `[GRP] ${g.t1.name.split(' ')[0].slice(0,8)} v ${g.t2.name.split(' ')[0].slice(0,8)}`,
-      cost: Math.round((0.3 + Math.abs(Math.sin(i * 2.1 + 0.7)) * 0.7) * 10) / 10,
-    })).sort((a, b) => b.cost - a.cost);
-    mkChart('ch-costly', {
-      type: 'bar',
-      data: {
-        labels: dCostly.map(g => g.lbl),
-        datasets: [{ label: 'AVG PTS LOST', data: dCostly.map(g => g.cost), backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
-      },
-      options: {
-        indexAxis: 'y',
-        plugins: { legend: { display: false }, tooltip: tip },
-        scales: { x: { ...sc.x, beginAtZero: true }, y: sc.y }
-      }
-    });
+    document.getElementById('wrap-ch-costly').innerHTML = '<div class="bb-no-data">NO RESULTS YET — COSTLY MISSES APPEAR AS GAMES COMPLETE</div>';
   }
 
   // 12 ── Win Probability (LIVE when scores exist)
-  const wpRaw = allPlayers.map(p => { const s = getPlayerTotalScore(p.id); return { name: p.name, score: s.total, effective: s.total + (s.possible || 0) * 0.5 }; });
+  const wpRaw   = allPlayers.map(p => { const s = getPlayerTotalScore(p.id); return { name: p.name, effective: s.total + (s.possible || 0) * 0.5 }; });
   const wpTotal = wpRaw.reduce((sum, d) => sum + d.effective, 0);
-  const hasWPData = wpRaw.some(d => d.score > 0);
   addCard('ch-win-prob', 'WIN PROBABILITY', 'Estimated win chance: current score + 50% of max remaining — sorted highest first', false, hBar);
-  if (hasWPData && wpTotal > 0) {
+  if (wpTotal > 0) {
     const wpOrder = wpRaw.map((_, i) => i).sort((a, b) => wpRaw[b].effective - wpRaw[a].effective);
     mkChart('ch-win-prob', {
       type: 'bar',
@@ -3288,25 +3297,7 @@ function renderAnalytics() {
       }
     });
   } else {
-    // DUMMY — simulate win probabilities until real scores exist
-    const dWP     = allPlayers.map((_, i) => 100 + Math.round(Math.abs(Math.sin(i * 2.7 + 1.1)) * 80));
-    const dWPSum  = dWP.reduce((s, v) => s + v, 0);
-    const dWPOrd  = allPlayers.map((_, i) => i).sort((a, b) => dWP[b] - dWP[a]);
-    mkChart('ch-win-prob', {
-      type: 'bar',
-      data: {
-        labels: dWPOrd.map(i => allPlayers[i].name),
-        datasets: [{ label: 'WIN PROBABILITY', data: dWPOrd.map(i => Math.round(dWP[i] / dWPSum * 100)), backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
-      },
-      options: {
-        indexAxis: 'y',
-        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw}%` } } },
-        scales: {
-          x: { ...sc.x, beginAtZero: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
-          y: sc.y
-        }
-      }
-    });
+    document.getElementById('wrap-ch-win-prob').innerHTML = '<div class="bb-no-data">NO PICKS DATA YET</div>';
   }
 
   // 13 ── Knockout Bracket Similarity Matrix (LIVE; dummy until KO picks submitted) — bottom-right
@@ -3349,11 +3340,7 @@ function renderAnalytics() {
       return total ? Math.round(same / total * 100) : null;
     });
   } else {
-    // DUMMY — simulate knockout agreement until KO picks are submitted
-    wrapKO.innerHTML = buildKOTable((i, j) => {
-      if (i === j) return 100;
-      return 40 + Math.round(Math.abs(Math.sin(i * 2.3 + j * 1.7)) * 45);
-    });
+    wrapKO.innerHTML = '<div class="bb-no-data">NO KNOCKOUT PICKS YET — MATRIX APPEARS AFTER KO PICKS SUBMITTED</div>';
   }
 }
 
