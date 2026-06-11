@@ -3110,6 +3110,144 @@ function renderAnalytics() {
   });
   tbl += '</tbody></table></div>';
   wrap4.innerHTML = tbl;
+
+  // 9 ── Knockout Bracket Similarity Matrix (LIVE)
+  addCard('ch-ko-sim', 'KNOCKOUT BRACKET SIMILARITY', 'How often any two players picked the same team in knockout rounds (%)', false, hMtx);
+  const wrapKO = document.getElementById('wrap-ch-ko-sim');
+  wrapKO.innerHTML = '';
+  const koRounds = ['r32', 'r16', 'qf', 'sf', 'final'];
+  let hasKOPicks = false;
+  allPlayers.forEach(p => koRounds.forEach(r => { if (Object.keys((state.picks[p.id] || {})[r] || {}).length) hasKOPicks = true; }));
+  if (!hasKOPicks) {
+    wrapKO.innerHTML = '<div class="bb-no-data">NO KNOCKOUT PICKS YET</div>';
+  } else {
+    function koAgreePct(pid1, pid2) {
+      let same = 0, total = 0;
+      koRounds.forEach(r => {
+        const p1 = (state.picks[pid1] || {})[r] || {};
+        const p2 = (state.picks[pid2] || {})[r] || {};
+        new Set([...Object.keys(p1), ...Object.keys(p2)]).forEach(k => {
+          if (p1[k] && p2[k]) { total++; if (p1[k] === p2[k]) same++; }
+        });
+      });
+      return total ? Math.round(same / total * 100) : null;
+    }
+    let koTbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
+      shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
+    allPlayers.forEach((p1, i) => {
+      koTbl += `<tr><th>${shorts[i]}</th>`;
+      allPlayers.forEach((p2, j) => {
+        const v = koAgreePct(p1.id, p2.id);
+        const display = i === j ? '100%' : (v === null ? '—' : v + '%');
+        const pct = v === null ? 0 : (v - 30) / 70;
+        const r = Math.round(255 * pct + 10 * (1 - pct));
+        const g2 = Math.round(102 * pct + 10 * (1 - pct));
+        const bg = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
+        const fg = (pct > 0.4 || i === j) ? '#FFF' : '#444';
+        koTbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
+      });
+      koTbl += '</tr>';
+    });
+    koTbl += '</tbody></table></div>';
+    wrapKO.innerHTML = koTbl;
+  }
+
+  // 10 ── Round-by-Round Score Breakdown (LIVE when results exist)
+  const rrRoundIds = ['groups', 'r32', 'r16', 'qf', 'sf', 'final'];
+  const rrColors   = [BB, '#00CFFF', '#FFFF00', '#FF3D6B', '#00FF99', '#FF8800'];
+  const rrScores   = allPlayers.map(p => rrRoundIds.map(r => getPlayerRoundScore(p.id, r).score));
+  const rrTotals   = rrScores.map(s => s.reduce((a, b) => a + b, 0));
+  const hasRRData  = rrTotals.some(t => t > 0);
+  addCard('ch-round-breakdown', 'ROUND-BY-ROUND SCORE BREAKDOWN', 'Points earned per round per player — sorted by total score', true, Math.max(320, n * 26 + 100));
+  if (hasRRData) {
+    const rrOrder = allPlayers.map((_, i) => i).sort((a, b) => rrTotals[b] - rrTotals[a]);
+    mkChart('ch-round-breakdown', {
+      type: 'bar',
+      data: {
+        labels: rrOrder.map(i => allPlayers[i].name),
+        datasets: rrRoundIds.map((r, ri) => ({
+          label: ROUND_CONFIG.find(c => c.id === r).short,
+          data: rrOrder.map(i => rrScores[i][ri]),
+          backgroundColor: rrColors[ri], borderWidth: 0, borderRadius: 0,
+        }))
+      },
+      options: {
+        plugins: { legend: leg('bottom'), tooltip: tip },
+        scales: { x: { ...sc.x, stacked: true, ticks: rotX }, y: { ...sc.y, stacked: true, beginAtZero: true } }
+      }
+    });
+  } else {
+    document.getElementById('wrap-ch-round-breakdown').innerHTML = '<div class="bb-no-data">AWAITING RESULTS</div>';
+  }
+
+  // 11 ── Most Costly Wrong Picks (LIVE when results exist)
+  const costlyGames = [];
+  ROUND_CONFIG.forEach(cfg => {
+    getGamesForRound(cfg.id).forEach(game => {
+      const result = state.results[game.id];
+      if (!result || result === 'Draw') return;
+      const { t1, t2 } = getTeams(game);
+      if (!t1 || !t2) return;
+      const pickKey = getPickKey(game);
+      let wrong = 0, total = 0;
+      allPlayers.forEach(p => {
+        const pick = ((state.picks[p.id] || {})[cfg.id] || {})[pickKey];
+        if (pick) { total++; if (pick !== result) wrong++; }
+      });
+      if (!total || !wrong) return;
+      const pctWrong = wrong / total;
+      costlyGames.push({
+        lbl: `[${cfg.short}] ${t1.name.split(' ')[0].slice(0,8)} v ${t2.name.split(' ')[0].slice(0,8)}`,
+        cost: Math.round(pctWrong * cfg.pts * 10) / 10,
+        pct: Math.round(pctWrong * 100),
+      });
+    });
+  });
+  costlyGames.sort((a, b) => b.cost - a.cost);
+  const topCostly = costlyGames.slice(0, 20);
+  addCard('ch-costly', 'MOST COSTLY WRONG PICKS', 'Avg points lost per player per game (% wrong × round value) — sorted by pain', false, Math.max(320, topCostly.length * 34));
+  if (topCostly.length) {
+    mkChart('ch-costly', {
+      type: 'bar',
+      data: {
+        labels: topCostly.map(g => g.lbl),
+        datasets: [{ label: 'AVG PTS LOST', data: topCostly.map(g => g.cost), backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: tip },
+        scales: { x: { ...sc.x, beginAtZero: true }, y: sc.y }
+      }
+    });
+  } else {
+    document.getElementById('wrap-ch-costly').innerHTML = '<div class="bb-no-data">AWAITING RESULTS</div>';
+  }
+
+  // 12 ── Win Probability (LIVE when scores exist)
+  const wpRaw = allPlayers.map(p => { const s = getPlayerTotalScore(p.id); return { name: p.name, score: s.total, effective: s.total + (s.possible || 0) * 0.5 }; });
+  const wpTotal = wpRaw.reduce((sum, d) => sum + d.effective, 0);
+  const hasWPData = wpRaw.some(d => d.score > 0);
+  addCard('ch-win-prob', 'WIN PROBABILITY', 'Estimated win chance: current score + 50% of max remaining — sorted highest first', false, hBar);
+  if (hasWPData && wpTotal > 0) {
+    const wpOrder = wpRaw.map((_, i) => i).sort((a, b) => wpRaw[b].effective - wpRaw[a].effective);
+    mkChart('ch-win-prob', {
+      type: 'bar',
+      data: {
+        labels: wpOrder.map(i => wpRaw[i].name),
+        datasets: [{ label: 'WIN PROBABILITY', data: wpOrder.map(i => Math.round(wpRaw[i].effective / wpTotal * 100)), backgroundColor: BB, hoverBackgroundColor: '#FF8833', borderWidth: 0, borderRadius: 0 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw}%` } } },
+        scales: {
+          x: { ...sc.x, beginAtZero: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
+          y: sc.y
+        }
+      }
+    });
+  } else {
+    document.getElementById('wrap-ch-win-prob').innerHTML = '<div class="bb-no-data">AWAITING RESULTS</div>';
+  }
 }
 
 // ── ADMIN RENDERING ───────────────────────────────────────────
