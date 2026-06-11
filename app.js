@@ -186,24 +186,25 @@ function flag(name) {
 const PLAYER_FLAGS = {
   'Aapo':                 ['fi'],
   'Bergman':              ['us'],
-  'Cole':                 ['ca', 'gb'],
-  'Commish':              ['us', 'de', 'gb'],
+  'Cole':                 ['ca', 'gb-eng'],
+  'Commish':              ['us', 'de', 'gb-eng'],
   'Dennis':               ['de'],
   'Diego':                ['es', 'ar'],
   'Francisco':            ['es', 'ar'],
   'Jeremy':               ['us'],
   'Jose':                 ['pt'],
   'Josh':                 ['us'],
-  'Late Night Lang':      ['gb'],
+  'Late Night Lang':      ['gb-eng'],
   'Lorenz':               ['de'],
   'Matthias':             ['at'],
-  'Mike Jones':           ['gb'],
+  'Mike Jones':           ['gb-eng'],
   'Pataky':               ['us'],
   'Puschel':              ['de'],
   'Rafa':                 ['es'],
   'Ricky':                ['pt'],
   'Santiago':             ['co'],
-  "Sean 'Diddler' Combs": ['gb', 'nz'],
+  "Sean 'Diddler' Combs": ['gb-eng', 'nz'],
+  'Callum':               ['gb-eng'],
 };
 function playerFlagsHtml(name) {
   return (PLAYER_FLAGS[name] || [])
@@ -296,6 +297,7 @@ const PLAYER_AVATARS = {
   'Puschel':             'Puschel.png',
   'Francisco':           'Francisco.png',
   "Sean 'Diddler' Combs":'Sean.png',
+  'Callum':              'Callum.png',
 };
 
 const PLAYER_AVATAR_POS = {
