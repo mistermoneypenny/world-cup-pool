@@ -873,6 +873,7 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 @keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
 /* ── ANALYTICS — BLOOMBERG TERMINAL STYLE ────────────────────── */
+#view-analytics { margin: -1.25rem; }
 #analytics-body {
   padding: 0;
   background: #000;
@@ -936,6 +937,12 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 }
 .analytics-card.bb-fullscreen .analytics-chart-wrap {
   height: calc(100vh - 148px) !important;
+}
+.bb-no-data {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; color: #333;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em;
 }
 .analytics-card-title {
   font-size: 0.68rem; font-weight: 700;
