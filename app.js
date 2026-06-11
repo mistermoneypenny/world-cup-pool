@@ -2987,13 +2987,14 @@ function renderAnalytics() {
   grid.className = 'analytics-grid';
   body.appendChild(grid);
 
-  function addCard(id, title, desc, wide) {
+  function addCard(id, title, desc, wide, height) {
     const card = document.createElement('div');
     card.className = 'analytics-card' + (wide ? ' analytics-card-wide' : '');
+    const hStyle = height ? ` style="height:${height}px"` : '';
     card.innerHTML =
       `<div class="bb-card-header"><span class="analytics-card-title">${title}</span><button class="bb-fs-btn" onclick="bbToggleFullscreen(this)" title="Fullscreen">⊞</button></div>` +
       `<p class="analytics-card-desc">${desc}</p>` +
-      `<div class="analytics-chart-wrap" id="wrap-${id}"><canvas id="${id}"></canvas></div>`;
+      `<div class="analytics-chart-wrap" id="wrap-${id}"${hStyle}><canvas id="${id}"></canvas></div>`;
     grid.appendChild(card);
   }
 
@@ -3006,8 +3007,14 @@ function renderAnalytics() {
   const names = allPlayers.map(p => p.name);
   const mdays = ['MD1','MD2','MD3','R32','R16','QF','SF','FINAL'];
 
+  const n     = allPlayers.length;
+  const hBar  = Math.max(320, n * 34);        // horizontal bar (y-axis = player names)
+  const hVBar = Math.max(320, n * 26 + 100);  // vertical bar  (x-axis = player names)
+  const hMtx  = Math.max(300, n * 30 + 60);   // agreement matrix table
+  const rotX  = { color: '#777', font: { family: MONO, size: 9 }, maxRotation: 45, minRotation: 45 };
+
   // 1 ── Upset Index (LIVE)
-  addCard('ch-upset', 'UPSET INDEX', 'Group stage underdog picks per player — higher = bolder strategy');
+  addCard('ch-upset', 'UPSET INDEX', 'Group stage underdog picks per player — higher = bolder strategy', false, hBar);
   mkChart('ch-upset', {
     type: 'bar',
     data: {
@@ -3023,7 +3030,7 @@ function renderAnalytics() {
   });
 
   // 2 ── Pick Consensus (LIVE)
-  addCard('ch-consensus', 'PICK CONSENSUS', 'Most contested matchups — 50% = perfectly split pool');
+  addCard('ch-consensus', 'PICK CONSENSUS', 'Most contested matchups — 50% = perfectly split pool', false, Math.max(280, consensusGames.length * 36));
   if (consensusGames.length > 0) {
     mkChart('ch-consensus', {
       type: 'bar',
@@ -3048,7 +3055,7 @@ function renderAnalytics() {
   }
 
   // 3 ── Risk Profile (LIVE)
-  addCard('ch-risk', 'RISK PROFILE', 'Pick distribution by pot — Pot 3/4 picks are upsets');
+  addCard('ch-risk', 'RISK PROFILE', 'Pick distribution by pot — Pot 3/4 picks are upsets', false, hVBar);
   mkChart('ch-risk', {
     type: 'bar',
     data: {
@@ -3062,12 +3069,12 @@ function renderAnalytics() {
     },
     options: {
       plugins: { legend: leg('bottom'), tooltip: tip },
-      scales: { x: { ...sc.x, stacked: true }, y: { ...sc.y, stacked: true } }
+      scales: { x: { ...sc.x, stacked: true, ticks: rotX }, y: { ...sc.y, stacked: true } }
     }
   });
 
   // 4 ── Score Over Time (DUMMY — needs results)
-  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday — awaiting results', true);
+  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday — awaiting results', true, 360);
   mkChart('ch-score-time', {
     type: 'line',
     data: {
@@ -3086,7 +3093,7 @@ function renderAnalytics() {
   });
 
   // 6 ── Score Ceiling (DUMMY — needs results)
-  addCard('ch-ceiling', 'SCORE CEILING', 'Maximum possible score remaining per player — awaiting results', true);
+  addCard('ch-ceiling', 'SCORE CEILING', 'Maximum possible score remaining per player — awaiting results', true, 360);
   mkChart('ch-ceiling', {
     type: 'line',
     data: {
@@ -3105,7 +3112,7 @@ function renderAnalytics() {
   });
 
   // 7 ── Accuracy by Group (DUMMY — needs results)
-  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group — top 5 players — awaiting results');
+  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group — top 5 players — awaiting results', false, 300);
   mkChart('ch-group-acc', {
     type: 'radar',
     data: {
@@ -3129,7 +3136,7 @@ function renderAnalytics() {
   });
 
   // 8 ── Upset Hit Rate (DUMMY — needs results)
-  addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct — awaiting results');
+  addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct — awaiting results', false, hVBar);
   mkChart('ch-upset-hit', {
     type: 'bar',
     data: {
@@ -3143,14 +3150,14 @@ function renderAnalytics() {
     options: {
       plugins: { legend: { display: false }, tooltip: tip },
       scales: {
-        x: sc.x,
+        x: { ...sc.x, ticks: rotX },
         y: { ...sc.y, beginAtZero: true, max: 100, ticks: { color: '#777', font: { family: MONO, size: 9 }, callback: v => v + '%' } }
       }
     }
   });
 
   // 8 ── Agreement Matrix (LIVE)
-  addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)');
+  addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)', false, hMtx);
   const wrap4 = document.getElementById('wrap-ch-agreement');
   wrap4.innerHTML = '';
   const shorts = allPlayers.map(p => shortName(p.name));
