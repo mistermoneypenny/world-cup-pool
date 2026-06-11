@@ -2079,6 +2079,16 @@ function savePicks() {
   if (!pid) return;
   if (!state.picks[pid]) state.picks[pid] = {};
   state.picks[pid][rid] = { ...state.pendingPicks };
+  // Re-sync any multi-bonus whose sourceRound is this round
+  if (!state.bonusPicks[pid]) state.bonusPicks[pid] = {};
+  Object.values(BONUS_CONFIG).forEach(bonuses => {
+    bonuses.forEach(b => {
+      if (b.type === 'multi' && (b.sourceRound || 'qf') === rid) {
+        const srcGames = getGamesForRound(rid);
+        state.bonusPicks[pid][b.id] = srcGames.map(g => (state.picks[pid][rid] || {})[getPickKey(g)] || '');
+      }
+    });
+  });
   if (!state.pickSavedAt)       state.pickSavedAt       = {};
   if (!state.pickSavedAt[pid])  state.pickSavedAt[pid]  = {};
   state.pickSavedAt[pid][rid] = new Date().toISOString();
@@ -2609,171 +2619,70 @@ function generateRandomPicks() {
 // ── DEMO DATA ─────────────────────────────────────────────────
 
 function loadDemoData() {
-  // Simulated World Cup 2026 results: Group Stage through Final.
-  // Notable upsets: USA beats England (group), Colombia tops Group A,
-  // Argentina beats France (QF), England beats Brazil (QF),
-  // Argentina beats England (SF) — Argentina vs Portugal Final.
-  state.results = {
-    // ── GROUP STAGE ───────────────────────────────────────────
-    // Pairs per group: [0]t1vt2 [1]t3vt4 [2]t1vt3 [3]t2vt4 [4]t1vt4 [5]t2vt3
-    // Group A: Argentina 1st, Colombia 2nd. Draws: Arg-Col MD1, Ser-CRI MD3
-    'groups-a-0': 'Draw',      'groups-a-1': 'Costa Rica', // MD1: Arg=Draw, CRI beats SRB
-    'groups-a-2': 'Argentina', 'groups-a-3': 'Colombia',   // MD2
-    'groups-a-4': 'Argentina', 'groups-a-5': 'Draw',       // MD3: Arg beats CRI, Col draws SRB
-    // Group B: France 1st, Morocco 2nd. Draw: Fra-Mor MD1
-    'groups-b-0': 'Draw',      'groups-b-1': 'Austria',    // MD1: Draw, AUT beats HON
-    'groups-b-2': 'France',    'groups-b-3': 'Morocco',    // MD2
-    'groups-b-4': 'France',    'groups-b-5': 'Morocco',    // MD3
-    // Group C: USA beats England (upset!), USA 1st, England 2nd
-    'groups-c-0': 'USA',       'groups-c-1': 'Turkey',     // MD1: USA beats ENG, TUR beats PAN
-    'groups-c-2': 'Draw',      'groups-c-3': 'Draw',       // MD2: both draws
-    'groups-c-4': 'England',   'groups-c-5': 'USA',        // MD3
-    // Group D: Spain 1st, Mexico 2nd. Draw: Spa-NZL MD3, Mex-POL MD3
-    // MD1: Spa vs Mex, Pol vs NZL | MD2: Spa vs Pol, Mex vs NZL | MD3: Spa vs NZL, Mex vs Pol
-    'groups-d-0': 'Spain',     'groups-d-1': 'Poland',     // MD1: Spain beats Mexico, Poland beats NZL
-    'groups-d-2': 'Spain',     'groups-d-3': 'Mexico',     // MD2
-    'groups-d-4': 'Draw',      'groups-d-5': 'Draw',       // MD3: both draw
-    // Group E: Brazil 1st, Denmark 2nd. Draw: Bra-Den MD1
-    'groups-e-0': 'Draw',      'groups-e-1': 'Canada',     // MD1: Bra-Den draw, CAN beats RSA
-    'groups-e-2': 'Brazil',    'groups-e-3': 'Denmark',    // MD2
-    'groups-e-4': 'Brazil',    'groups-e-5': 'Denmark',    // MD3
-    // Group F: Portugal 1st, Switzerland 2nd
-    // MD1: Por vs Sui, CIV vs GHA | MD2: Por vs CIV, Sui vs GHA | MD3: Por vs GHA, Sui vs CIV
-    'groups-f-0': 'Portugal',  'groups-f-1': 'Ghana',      // MD1: Portugal beats SUI, Ghana beats CIV
-    'groups-f-2': 'Portugal',  'groups-f-3': 'Draw',       // MD2: Por wins, SUI-GHA draw
-    'groups-f-4': 'Portugal',  'groups-f-5': 'Switzerland',// MD3
-    // Group G: Netherlands 1st, Japan 2nd (upset)
-    // MD1: Ned vs Jap, Ven vs Tun | MD2: Ned vs Ven, Jap vs Tun | MD3: Ned vs Tun, Jap vs Ven
-    'groups-g-0': 'Netherlands','groups-g-1': 'Venezuela',   // MD1: Ned beats Jap, Ven beats Tun (upset)
-    'groups-g-2': 'Draw',      'groups-g-3': 'Japan',        // MD2: Ned-Ven draw, Japan beats Tun
-    'groups-g-4': 'Netherlands','groups-g-5': 'Japan',        // MD3
-    // Group H: Belgium 1st, Senegal 2nd
-    // MD1: Bel vs Sen, Nig vs Uzb | MD2: Bel vs Nig, Sen vs Uzb | MD3: Bel vs Uzb, Sen vs Nig
-    'groups-h-0': 'Belgium',   'groups-h-1': 'Nigeria',    // MD1: Belgium beats Sen, Nigeria beats Uzb
-    'groups-h-2': 'Belgium',   'groups-h-3': 'Draw',       // MD2: Bel wins, Sen-Uzb draw
-    'groups-h-4': 'Belgium',   'groups-h-5': 'Senegal',    // MD3
-    // Group I: Italy 1st, South Korea 2nd. Draw: Ita-Kor MD1
-    // MD1: Ita vs Kor, Egy vs Irq | MD2: Ita vs Egy, Kor vs Irq | MD3: Ita vs Irq, Kor vs Egy
-    'groups-i-0': 'Draw',      'groups-i-1': 'Egypt',      // MD1: Ita-Kor draw, Egypt beats Iraq
-    'groups-i-2': 'Italy',     'groups-i-3': 'Draw',       // MD2: Ita wins, Kor-Irq draw
-    'groups-i-4': 'Italy',     'groups-i-5': 'South Korea',// MD3
-    // Group J: Germany 1st, Ecuador 2nd. Draw: Ger-Ecu MD1
-    // MD1: Ger vs Ecu, KSA vs Jor | MD2: Ger vs KSA, Ecu vs Jor | MD3: Ger vs Jor, Ecu vs KSA
-    'groups-j-0': 'Draw',      'groups-j-1': 'Saudi Arabia',// MD1: Ger-Ecu draw, KSA beats Jor
-    'groups-j-2': 'Germany',   'groups-j-3': 'Draw',        // MD2: Ger wins, Ecu-Jor draw
-    'groups-j-4': 'Germany',   'groups-j-5': 'Ecuador',     // MD3
-    // Group K: teams[0]=Croatia [1]=Iran [2]=Cameroon [3]=Bolivia
-    // Pairs: k0=CROvIRN k1=CAMvBOL k2=CROvCAM k3=IRNvBOL k4=CROvBOL k5=IRNvCAM
-    // Croatia 1st (7pts), Iran 2nd (6pts)
-    'groups-k-0': 'Croatia',   'groups-k-1': 'Cameroon',  // MD1: CRO beats IRN, CAM beats BOL
-    'groups-k-2': 'Croatia',   'groups-k-3': 'Iran',      // MD2: CRO beats CAM, IRN beats BOL
-    'groups-k-4': 'Draw',      'groups-k-5': 'Iran',      // MD3: CRO-BOL draw, IRN beats CAM
-    // Group L: teams[0]=Uruguay [1]=Australia [2]=Algeria [3]=Jamaica
-    // Pairs: l0=URUvAUS l1=ALGvJAM l2=URUvALG l3=AUSvJAM l4=URUvJAM l5=ALGvAUS
-    // Uruguay 1st (7pts), Algeria 2nd (6pts, upset)
-    'groups-l-0': 'Draw',      'groups-l-1': 'Algeria',   // MD1: URU-AUS draw, ALG beats JAM
-    'groups-l-2': 'Uruguay',   'groups-l-3': 'Australia', // MD2: URU beats ALG, AUS beats JAM
-    'groups-l-4': 'Uruguay',   'groups-l-5': 'Algeria',   // MD3: URU beats JAM, ALG beats AUS
+  // Build group stage results dynamically from GROUP_TEAMS so team names are always valid.
+  // Lower-seeded (better pot) team wins; equal seeds → Draw.
+  // Knockout uses real teams from the same GROUP_TEAMS pool.
+  state.results = {};
+  state.scores  = {};
 
-    // ── QUADRANT A ────────────────────────────────────────────
-    // R32: France✓  Colombia(13)>Netherlands(7)  Morocco✓  Argentina✓
-    'r32-a-0': 'France',      'r32-a-1': 'Colombia',
-    'r32-a-2': 'Morocco',     'r32-a-3': 'Argentina',
-    // R16: France beats Colombia  Argentina beats Morocco
-    'r16-a-0': 'France',      'r16-a-1': 'Argentina',
-    // QF: Argentina(1) beats France(2) — MAJOR UPSET
-    'qf-a-0':  'Argentina',
+  for (const [letter, teams] of Object.entries(GROUP_TEAMS)) {
+    const grp = letter.toLowerCase();
+    GROUP_PAIRS.forEach(([i, j], pairIdx) => {
+      const t1 = teams[i], t2 = teams[j];
+      const id = `groups-${grp}-${pairIdx}`;
+      if (t1.seed < t2.seed) {
+        state.results[id] = t1.name;
+        state.scores[id]  = {t1:2, t2:0};
+      } else if (t2.seed < t1.seed) {
+        state.results[id] = t2.name;
+        state.scores[id]  = {t1:0, t2:2};
+      } else {
+        state.results[id] = 'Draw';
+        state.scores[id]  = {t1:1, t2:1};
+      }
+    });
+  }
 
-    // ── QUADRANT B ────────────────────────────────────────────
-    // R32: England✓  USA(15)>Germany(10)  Belgium✓  Brazil✓
-    'r32-b-0': 'England',     'r32-b-1': 'USA',
-    'r32-b-2': 'Belgium',     'r32-b-3': 'Brazil',
-    // R16: England beats USA  Brazil beats Belgium
-    'r16-b-0': 'England',     'r16-b-1': 'Brazil',
-    // QF: England(3) beats Brazil(5) — UPSET
-    'qf-b-0':  'England',
-
-    // ── QUADRANT C ────────────────────────────────────────────
-    // R32: Spain✓  Portugal✓  Japan(19)>Algeria(36)  Italy✓
-    'r32-c-0': 'Spain',       'r32-c-1': 'Portugal',
-    'r32-c-2': 'Japan',       'r32-c-3': 'Italy',
-    // R16: Portugal(6) beats Spain(4) — UPSET  Italy beats Japan
-    'r16-c-0': 'Portugal',    'r16-c-1': 'Italy',
-    // QF: Portugal beats Italy
-    'qf-c-0':  'Portugal',
-
-    // ── QUADRANT D ────────────────────────────────────────────
-    // R32: Uruguay✓  Croatia✓  Denmark✓  Switzerland✓
+  // ── KNOCKOUT ──────────────────────────────────────────────
+  // All team names verified against GROUP_TEAMS.
+  // Narrative: Argentina beats Germany in the final.
+  Object.assign(state.results, {
+    // R32 — 16 games, 4 per quadrant
+    'r32-a-0': 'France',      'r32-a-1': 'Argentina',
+    'r32-a-2': 'Brazil',      'r32-a-3': 'Germany',
+    'r32-b-0': 'England',     'r32-b-1': 'Netherlands',
+    'r32-b-2': 'Spain',       'r32-b-3': 'Portugal',
+    'r32-c-0': 'Mexico',      'r32-c-1': 'Colombia',
+    'r32-c-2': 'Belgium',     'r32-c-3': 'Japan',
     'r32-d-0': 'Uruguay',     'r32-d-1': 'Croatia',
-    'r32-d-2': 'Denmark',     'r32-d-3': 'Switzerland',
-    // R16: Uruguay beats Croatia  Switzerland beats Denmark
-    'r16-d-0': 'Uruguay',     'r16-d-1': 'Switzerland',
-    // QF: Switzerland(18) beats Uruguay(12) — UPSET
-    'qf-d-0':  'Switzerland',
-
-    // ── SEMIFINALS ────────────────────────────────────────────
+    'r32-d-2': 'Morocco',     'r32-d-3': 'Senegal',
+    // R16
+    'r16-a-0': 'Argentina',   'r16-a-1': 'Germany',
+    'r16-b-0': 'England',     'r16-b-1': 'Portugal',
+    'r16-c-0': 'Colombia',    'r16-c-1': 'Japan',
+    'r16-d-0': 'Croatia',     'r16-d-1': 'Morocco',
+    // QF
+    'qf-a-0':  'Argentina',
+    'qf-b-0':  'Germany',
+    'qf-c-0':  'Japan',
+    'qf-d-0':  'Morocco',
+    // SF: Argentina beats Japan (upset), Germany beats Morocco
     'sf-0': 'Argentina',
-    'sf-1': 'Portugal',
-
-    // ── FINAL ─────────────────────────────────────────────────
+    'sf-1': 'Germany',
+    // Final: Argentina beats Germany
     'final-0': 'Argentina',
-  };
-
-  // ── SCORES ────────────────────────────────────────────────
-  state.scores = {
-    // Group A
-    'groups-a-0': {t1:1,t2:1}, 'groups-a-1': {t1:1,t2:2}, 'groups-a-2': {t1:3,t2:0},
-    'groups-a-3': {t1:2,t2:0}, 'groups-a-4': {t1:2,t2:0}, 'groups-a-5': {t1:1,t2:1},
-    // Group B
-    'groups-b-0': {t1:1,t2:1}, 'groups-b-1': {t1:2,t2:0}, 'groups-b-2': {t1:2,t2:0},
-    'groups-b-3': {t1:2,t2:0}, 'groups-b-4': {t1:1,t2:0}, 'groups-b-5': {t1:1,t2:0},
-    // Group C
-    'groups-c-0': {t1:1,t2:2}, 'groups-c-1': {t1:2,t2:0}, 'groups-c-2': {t1:1,t2:1},
-    'groups-c-3': {t1:1,t2:1}, 'groups-c-4': {t1:2,t2:0}, 'groups-c-5': {t1:2,t2:1},
-    // Group D
-    'groups-d-0': {t1:3,t2:0}, 'groups-d-1': {t1:2,t2:0}, 'groups-d-2': {t1:2,t2:0},
-    'groups-d-3': {t1:3,t2:0}, 'groups-d-4': {t1:1,t2:1}, 'groups-d-5': {t1:1,t2:1},
-    // Group E
-    'groups-e-0': {t1:1,t2:1}, 'groups-e-1': {t1:2,t2:0}, 'groups-e-2': {t1:2,t2:0},
-    'groups-e-3': {t1:2,t2:1}, 'groups-e-4': {t1:1,t2:0}, 'groups-e-5': {t1:1,t2:0},
-    // Group F
-    'groups-f-0': {t1:2,t2:0}, 'groups-f-1': {t1:0,t2:1}, 'groups-f-2': {t1:3,t2:0},
-    'groups-f-3': {t1:1,t2:1}, 'groups-f-4': {t1:2,t2:0}, 'groups-f-5': {t1:2,t2:0},
-    // Group G
-    'groups-g-0': {t1:2,t2:1}, 'groups-g-1': {t1:2,t2:0}, 'groups-g-2': {t1:1,t2:1},
-    'groups-g-3': {t1:2,t2:0}, 'groups-g-4': {t1:2,t2:0}, 'groups-g-5': {t1:2,t2:1},
-    // Group H
-    'groups-h-0': {t1:2,t2:0}, 'groups-h-1': {t1:2,t2:0}, 'groups-h-2': {t1:1,t2:0},
-    'groups-h-3': {t1:1,t2:1}, 'groups-h-4': {t1:2,t2:0}, 'groups-h-5': {t1:1,t2:0},
-    // Group I
-    'groups-i-0': {t1:1,t2:1}, 'groups-i-1': {t1:1,t2:0}, 'groups-i-2': {t1:2,t2:0},
-    'groups-i-3': {t1:1,t2:1}, 'groups-i-4': {t1:1,t2:0}, 'groups-i-5': {t1:2,t2:0},
-    // Group J
-    'groups-j-0': {t1:1,t2:1}, 'groups-j-1': {t1:2,t2:0}, 'groups-j-2': {t1:2,t2:0},
-    'groups-j-3': {t1:1,t2:1}, 'groups-j-4': {t1:2,t2:0}, 'groups-j-5': {t1:2,t2:0},
-    // Group K
-    'groups-k-0': {t1:2,t2:0}, 'groups-k-1': {t1:2,t2:0}, 'groups-k-2': {t1:2,t2:1},
-    'groups-k-3': {t1:1,t2:0}, 'groups-k-4': {t1:1,t2:1}, 'groups-k-5': {t1:1,t2:0},
-    // Group L
-    'groups-l-0': {t1:1,t2:1}, 'groups-l-1': {t1:2,t2:0}, 'groups-l-2': {t1:2,t2:0},
-    'groups-l-3': {t1:1,t2:0}, 'groups-l-4': {t1:2,t2:0}, 'groups-l-5': {t1:2,t2:1},
-    // Knockout — scores always reflect actual winner (winner must have more goals)
-    // r32-a: France(t1)✓ Colombia(t2)✓ Morocco(t1)✓ Argentina(t1)✓
-    'r32-a-0': {t1:2,t2:0}, 'r32-a-1': {t1:0,t2:2}, 'r32-a-2': {t1:1,t2:0}, 'r32-a-3': {t1:2,t2:0},
-    // r32-b: England(t1)✓ USA(t2)✓ Belgium(t1)✓ Brazil(t1)✓
-    'r32-b-0': {t1:2,t2:1}, 'r32-b-1': {t1:0,t2:2}, 'r32-b-2': {t1:2,t2:1}, 'r32-b-3': {t1:2,t2:1},
-    // r32-c: Spain(t1)✓ Portugal(t1)✓ Japan(t1)✓ Italy(t1)✓
-    'r32-c-0': {t1:2,t2:0}, 'r32-c-1': {t1:2,t2:0}, 'r32-c-2': {t1:2,t2:1}, 'r32-c-3': {t1:1,t2:0},
-    // r32-d: Uruguay(t1)✓ Croatia(t1)✓ Denmark(t1)✓ Switzerland(t1)✓
-    'r32-d-0': {t1:1,t2:0}, 'r32-d-1': {t1:2,t2:1}, 'r32-d-2': {t1:2,t2:1}, 'r32-d-3': {t1:2,t2:0},
-    // r16: France✓ Argentina(t2)✓ England✓ Brazil(t2)✓ Portugal(t2)✓ Italy(t2)✓ Uruguay✓ Switzerland(t2)✓
-    'r16-a-0': {t1:2,t2:1}, 'r16-a-1': {t1:0,t2:3}, 'r16-b-0': {t1:2,t2:0}, 'r16-b-1': {t1:1,t2:2},
-    'r16-c-0': {t1:1,t2:2}, 'r16-c-1': {t1:0,t2:2}, 'r16-d-0': {t1:1,t2:0}, 'r16-d-1': {t1:0,t2:2},
-    // qf: Argentina(t2)✓ England(t1)✓ Portugal(t1)✓ Switzerland(t2)✓
-    'qf-a-0':  {t1:2,t2:3}, 'qf-b-0':  {t1:2,t2:1}, 'qf-c-0':  {t1:2,t2:1}, 'qf-d-0':  {t1:1,t2:2},
-    'sf-0':    {t1:2,t2:1}, 'sf-1':    {t1:3,t2:1},
-    'final-0': {t1:2,t2:1},
-  };
+  });
+  Object.assign(state.scores, {
+    'r32-a-0': {t1:2,t2:0}, 'r32-a-1': {t1:2,t2:1}, 'r32-a-2': {t1:2,t2:0}, 'r32-a-3': {t1:2,t2:1},
+    'r32-b-0': {t1:2,t2:1}, 'r32-b-1': {t1:2,t2:0}, 'r32-b-2': {t1:1,t2:0}, 'r32-b-3': {t1:2,t2:0},
+    'r32-c-0': {t1:2,t2:1}, 'r32-c-1': {t1:0,t2:2}, 'r32-c-2': {t1:2,t2:0}, 'r32-c-3': {t1:1,t2:0},
+    'r32-d-0': {t1:1,t2:0}, 'r32-d-1': {t1:2,t2:1}, 'r32-d-2': {t1:2,t2:0}, 'r32-d-3': {t1:1,t2:0},
+    'r16-a-0': {t1:3,t2:1}, 'r16-a-1': {t1:0,t2:2}, 'r16-b-0': {t1:2,t2:0}, 'r16-b-1': {t1:0,t2:2},
+    'r16-c-0': {t1:1,t2:2}, 'r16-c-1': {t1:0,t2:1}, 'r16-d-0': {t1:2,t2:1}, 'r16-d-1': {t1:0,t2:1},
+    'qf-a-0':  {t1:2,t2:1}, 'qf-b-0':  {t1:2,t2:0}, 'qf-c-0':  {t1:2,t2:1}, 'qf-d-0':  {t1:2,t2:0},
+    'sf-0':    {t1:2,t2:1}, 'sf-1':    {t1:2,t2:0},
+    'final-0': {t1:3,t2:2},
+  });
 
   state.currentRound = 'final';
   state.roundStatus  = 'closed';
@@ -3402,6 +3311,7 @@ function buildResultGameCard(game) {
     teamsRow.className = 'result-teams';
 
     const setResult = (resultName) => {
+      if (resultName === 'Draw' && game.round !== 'groups') return;
       if (state.results[game.id] === resultName) { delete state.results[game.id]; }
       else { state.results[game.id] = resultName; }
       const fixed = fixInvalidPicks();
@@ -3799,7 +3709,8 @@ function renderDeadlineAdmin() {
   const refresh = () => {
     const dl = (state.roundDeadlines || {})[roundSel.value];
     if (dl) {
-      input.value = new Date(dl).toISOString().slice(0, 16);
+      const _d = new Date(dl);
+      input.value = new Date(_d.getTime() - _d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
       currentDiv.textContent = `Set: ${new Date(dl).toLocaleString()}`;
     } else {
       input.value = '';
