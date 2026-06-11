@@ -600,9 +600,13 @@ function getPlayerRoundScore(playerId, roundId) {
 }
 
 function isPickStillAlive(teamName, roundId, game) {
+  // Group stage is round-robin: every team plays all 3 games regardless of prior results
+  if (roundId === 'groups') return true;
+  // For knockout picks, only losing a knockout game eliminates a team.
+  // A group-stage loss doesn't prevent a team from qualifying and appearing in R32+.
   for (const gid of Object.keys(state.results)) {
     const g = state.games[gid];
-    if (!g) continue;
+    if (!g || g.round === 'groups') continue;
     const winner = getWinner(gid);
     if (!winner) continue;
     const { t1, t2 } = getTeams(g);
