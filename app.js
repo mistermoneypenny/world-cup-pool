@@ -1986,10 +1986,11 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
       popHtml = `<span class="pick-o-pop" data-pickers="${esc(pickerNames)}" role="button" tabindex="0"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${popData.total}</span></span>`;
     }
 
+    const yourPickBadge = (isPicked && !isOpen) ? '<span class="your-pick-badge">✓</span>' : '';
     if (isDraw) {
-      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw</span><span class="pick-o-score"></span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
+      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw${yourPickBadge}</span><span class="pick-o-score"></span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     } else {
-      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span><span class="pick-o-name">${flag(team.name)}${esc(team.name)}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
+      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span><span class="pick-o-name">${flag(team.name)}${esc(team.name)}${yourPickBadge}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     }
     row.insertBefore(radio, row.firstChild);
 

@@ -355,7 +355,7 @@ a { color: var(--accent); }
 .pick-tbd  { padding: 0.5rem 0.6rem; font-size: 0.75rem; color: var(--text-3); font-style: italic; }
 .pick-option { display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); font-size: 0.78rem; cursor: pointer; transition: background 0.1s; border-left: 3px solid transparent; }
 .pick-option:last-child { border-bottom: none; }
-.pick-option.selected  { background: rgba(0,166,81,0.22); border-left-color: var(--accent); }
+.pick-option.selected  { background: rgba(0,166,81,0.30); border-left: 4px solid var(--accent); }
 .pick-option.disabled  { cursor: default; }
 .pick-option:hover:not(.disabled) { background: var(--surface-2); }
 .pick-option.result-correct { background: rgba(46,204,113,0.1); }
@@ -643,6 +643,7 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .team-slot.winner .t-score { color: var(--green); }
 .team-slot.loser  .t-score { color: var(--text-3); }
 .pick-card-score { font-size: 0.72rem; font-weight: 700; color: var(--text-2); background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px; margin-right: 0.25rem; letter-spacing: 0.02em; }
+.pick-card-score.live { color: #4ade80; background: rgba(74,222,128,0.12); }
 .result-score-badge { font-size: 0.72rem; font-weight: 700; color: var(--accent); background: rgba(0,166,81,0.12); padding: 1px 5px; border-radius: 3px; margin-left: 0.3rem; }
 
 .lb-round-score.round-best { color: var(--green); font-weight: 700; background: rgba(46,204,113,0.1); border-radius: 3px; }
@@ -660,6 +661,9 @@ td.round-best { background: rgba(46,204,113,0.07); border-radius: 3px; }
 .pick-pop-txt { font-size: 0.62rem; color: var(--text-3); white-space: nowrap; min-width: 24px; }
 .pick-option.result-correct .pick-pop-fill { background: var(--green); }
 .pick-option.result-wrong   .pick-pop-fill { background: var(--text-3); }
+
+/* ── YOUR PICK BADGE ────────────────────────────────────────── */
+.your-pick-badge { font-size: 0.65rem; font-weight: 900; color: var(--accent); margin-left: 5px; letter-spacing: 0; }
 
 /* ── PICKERS POPUP ──────────────────────────────────────────── */
 #pick-pickers-popup { display: none; position: fixed; z-index: 2000; background: #142238; border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px; font-size: 0.78rem; color: var(--text); max-width: 200px; box-shadow: 0 6px 20px rgba(0,0,0,0.7); }
