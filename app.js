@@ -3043,12 +3043,12 @@ function renderAnalytics() {
   });
 
   // 7 ── Accuracy by Group (DUMMY — needs results)
-  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group — top 5 players — awaiting results', false, 300);
+  addCard('ch-group-acc', 'ACCURACY BY GROUP', 'Correct pick % per group per player — awaiting results', false, 300);
   mkChart('ch-group-acc', {
     type: 'radar',
     data: {
       labels: ['A','B','C','D','E','F','G','H','I','J','K','L'],
-      datasets: allPlayers.slice(0, 5).map((p, i) => ({
+      datasets: allPlayers.map((p, i) => ({
         label: p.name,
         data: Array.from({length:12}, (_, gi) => Math.max(0, Math.min(100, 55 + Math.round(Math.sin(i * 2.1 + gi * 1.7) * 30)))),
         borderColor: bbC(i), backgroundColor: bbC(i) + '18',
