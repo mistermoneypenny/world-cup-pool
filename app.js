@@ -2243,12 +2243,10 @@ function renderLbBody() {
     const rankIcon = rank === 1 ? '&#127942;' : rank === 2 ? '&#129352;' : rank === 3 ? '&#129353;' : rank;
 
     const isOwnRow   = row.player.id === (state.sessionPlayer || state.currentPlayer);
-    const cantPeek   = !isAdmin() && !isOwnRow;
-    const linkLocked = cantPeek || (!picksVisible && !isOwnRow);
+    const linkLocked = !isOwnRow && !picksVisible;
     const lockTag    = linkLocked ? ' <span class="lb-lock-icon">&#128274;</span>' : '';
     const btnClass   = linkLocked ? 'lb-player-link picks-locked' : 'lb-player-link';
-    const btnTitle   = cantPeek ? ' title="You can only view your own picks"'
-      : linkLocked ? ' title="Picks revealed when the round is closed"' : '';
+    const btnTitle   = linkLocked ? ' title="Picks revealed when the round is locked"' : '';
 
     const avatar   = playerAvatarHtml(row.player.name, 64);
     const canH2H   = !isMe && picksVisible && !linkLocked;
@@ -2328,10 +2326,7 @@ function renderLbBody() {
     if (!btn) return;
     const pid = btn.dataset.pid;
     if (btn.classList.contains('picks-locked')) {
-      const isOwnPid = pid === (state.sessionPlayer || state.currentPlayer);
-      showToast(!isAdmin() && !isOwnPid
-        ? 'You can only view your own picks'
-        : 'Picks are revealed once the Admin closes this round', 'info');
+      showToast('Picks are revealed once the Admin locks this round', 'info');
       return;
     }
     const roundId  = state.lbRound === 'all' ? state.currentRound : state.lbRound;
