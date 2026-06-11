@@ -2862,7 +2862,8 @@ function renderAnalytics() {
     });
     return b;
   });
-  const riskOrder = allPlayers.map((_, i) => i).sort((a, b) => (riskRaw[b][3] + riskRaw[b][4]) - (riskRaw[a][3] + riskRaw[a][4]));
+  const riskPct = i => { const b = riskRaw[i]; const tot = b[1]+b[2]+b[3]+b[4]; return tot ? (b[3]+b[4])/tot : 0; };
+  const riskOrder = allPlayers.map((_, i) => i).sort((a, b) => riskPct(b) - riskPct(a));
   const riskNames = riskOrder.map(i => allPlayers[i].name);
   const riskData  = riskOrder.map(i => riskRaw[i]);
 
@@ -3068,12 +3069,14 @@ function renderAnalytics() {
 
   // 8 ── Upset Hit Rate (DUMMY — needs results)
   addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct — awaiting results', false, hVBar);
+  const hitRateRaw  = allPlayers.map((_, i) => 35 + Math.round(Math.abs(Math.sin(i * 2.7)) * 35));
+  const hitRateOrd  = allPlayers.map((_, i) => i).sort((a, b) => hitRateRaw[b] - hitRateRaw[a]);
   mkChart('ch-upset-hit', {
     type: 'bar',
     data: {
-      labels: names,
+      labels: hitRateOrd.map(i => allPlayers[i].name),
       datasets: [{ label: 'HIT RATE',
-        data: allPlayers.map((_, i) => 35 + Math.round(Math.abs(Math.sin(i * 2.7)) * 35)),
+        data: hitRateOrd.map(i => hitRateRaw[i]),
         backgroundColor: BB,
         borderWidth: 0, borderRadius: 0,
       }]
