@@ -769,6 +769,11 @@ function showToast(msg, type = 'info') {
 
 // ── VIEW SWITCHING ────────────────────────────────────────────
 
+function syncHeaderHeight() {
+  const h = document.querySelector('.header').offsetHeight;
+  document.documentElement.style.setProperty('--header-h', h + 'px');
+}
+
 function switchView(view) {
   // Warn if leaving picks view with unsaved changes
   if (state.currentView === 'picks' && view !== 'picks') {
@@ -785,6 +790,7 @@ function switchView(view) {
   document.querySelector(`[data-view="${view}"]`).classList.add('active');
   // Show/hide the bracket sticky nav (lives outside .main to allow position:sticky)
   document.getElementById('bracket-nav').style.display = view === 'bracket' ? '' : 'none';
+  syncHeaderHeight();
   renderCurrentView();
 }
 
@@ -4033,6 +4039,10 @@ async function init() {
   } else {
     renderLoginOverlay();
   }
+
+  // Keep --header-h in sync so #bracket-nav stacks correctly below a potentially-wrapping header
+  syncHeaderHeight();
+  new ResizeObserver(syncHeaderHeight).observe(document.querySelector('.header'));
 
   startPolling();
   startScoresPolling();

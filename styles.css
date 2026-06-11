@@ -189,10 +189,15 @@ a { color: var(--accent); }
 /* ── BRACKET VIEW ───────────────────────────────────────────── */
 #bracket-nav {
   position: sticky;
-  top: 60px;   /* stacks just below the sticky header (60px tall) */
+  top: var(--header-h, 62px);  /* updated dynamically via JS to match actual header height */
   z-index: 90;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+}
+
+/* Tighten nav buttons so all 6 fit on one row at 1366px */
+@media (max-width: 1400px) {
+  .nav-btn { padding: 0.3rem 0.55rem; font-size: 0.75rem; }
 }
 
 .bracket-legend {
