@@ -294,8 +294,8 @@ const PLAYER_AVATARS = {
   'Dennis':              'Dennis.png',
   'Pataky':              'Pataky.png',
   'Puschel':             'Puschel.png',
-  'Francisco':           'Francisco.jpg',
-  "Sean 'Diddler' Combs":'Sean.jpg',
+  'Francisco':           'Francisco.png',
+  "Sean 'Diddler' Combs":'Sean.png',
 };
 
 const PLAYER_AVATAR_POS = {
