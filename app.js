@@ -2976,10 +2976,10 @@ function renderAnalytics() {
     data: {
       labels: names,
       datasets: [
-        { label: 'POT 1 WINS',   data: riskData.map(b => b[1]), backgroundColor: BB,        borderWidth: 0, borderRadius: 0 },
-        { label: 'POT 2 WINS',   data: riskData.map(b => b[2]), backgroundColor: '#00CFFF', borderWidth: 0, borderRadius: 0 },
-        { label: 'POT 3 UPSETS', data: riskData.map(b => b[3]), backgroundColor: '#FFFF00', borderWidth: 0, borderRadius: 0 },
-        { label: 'POT 4 UPSETS', data: riskData.map(b => b[4]), backgroundColor: '#FF3D6B', borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 1 PICKS', data: riskData.map(b => b[1]), backgroundColor: BB,        borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 2 PICKS', data: riskData.map(b => b[2]), backgroundColor: '#00CFFF', borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 3 PICKS', data: riskData.map(b => b[3]), backgroundColor: '#FFFF00', borderWidth: 0, borderRadius: 0 },
+        { label: 'POT 4 PICKS', data: riskData.map(b => b[4]), backgroundColor: '#FF3D6B', borderWidth: 0, borderRadius: 0 },
       ]
     },
     options: {
