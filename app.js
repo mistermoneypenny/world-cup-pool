@@ -2950,9 +2950,19 @@ function renderAnalytics() {
     }
   });
 
-  // 2 ── Pick Consensus (LIVE)
-  addCard('ch-consensus', 'PICK CONSENSUS', 'Most contested matchups — 50% = perfectly split pool', false, Math.max(280, consensusGames.length * 36));
+  // 2 ── Pick Consensus (LIVE) — fixed height matching Upset Index, scrollable
+  const fullConsensusH = Math.max(280, consensusGames.length * 36);
+  addCard('ch-consensus', 'PICK CONSENSUS', 'Most contested matchups — 50% = perfectly split pool', false, hBar);
   if (consensusGames.length > 0) {
+    const wrapC = document.getElementById('wrap-ch-consensus');
+    wrapC.style.overflowY = 'auto';
+    wrapC.style.overflowX = 'hidden';
+    const innerC = document.createElement('div');
+    innerC.style.cssText = `position:relative;height:${fullConsensusH}px`;
+    const canvasC = document.getElementById('ch-consensus');
+    wrapC.removeChild(canvasC);
+    innerC.appendChild(canvasC);
+    wrapC.appendChild(innerC);
     mkChart('ch-consensus', {
       type: 'bar',
       data: {
