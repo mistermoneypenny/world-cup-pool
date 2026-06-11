@@ -828,7 +828,7 @@ function isRoundPicksVisible(roundId) {
   const ri = ROUND_CONFIG.findIndex(r => r.id === roundId);
   const ci = ROUND_CONFIG.findIndex(r => r.id === state.currentRound);
   if (ri < ci) return true;
-  if (ri === ci) return state.roundStatus === 'closed';
+  if (ri === ci) return state.roundStatus === 'locked' || state.roundStatus === 'closed';
   return false;
 }
 
@@ -1634,7 +1634,7 @@ function renderPicksBody() {
     if (!isAdmin() && !isRoundPicksVisible(roundId)) {
       const lockDiv = document.createElement('div');
       lockDiv.className = 'picks-hidden-msg';
-      lockDiv.innerHTML = `&#128274; <strong>${esc(viewName)}</strong>'s picks for this round are hidden until the Admin closes it.`;
+      lockDiv.innerHTML = `&#128274; <strong>${esc(viewName)}</strong>'s picks are hidden until the round is locked.`;
       body.appendChild(lockDiv);
       saveBar.style.display = 'none';
       return;
