@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,11 +16,33 @@ const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
+// Compute a short content hash of app.js + styles.css at startup.
+// This becomes a ?v= query param injected into index.html, busting CDN/browser
+// caches automatically whenever either file changes between deploys.
+function fileHash(file) {
+  try { return crypto.createHash('md5').update(fs.readFileSync(path.join(__dirname, file))).digest('hex').slice(0, 8); }
+  catch { return Date.now().toString(36); }
+}
+const ASSET_VER = fileHash('app.js') + fileHash('styles.css');
+
+// Serve index.html with versioned asset URLs to defeat CDN/browser caching
+const RAW_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const VERSIONED_HTML = RAW_HTML
+  .replace('src="app.js"',         `src="app.js?v=${ASSET_VER}"`)
+  .replace('href="styles.css"',    `href="styles.css?v=${ASSET_VER}"`);
+
 app.use(express.json({ limit: '1mb' }));
 
-// Prevent browsers from caching JS/CSS so code changes always take effect
+// Serve index.html (and /bracket, /picks etc. if needed) with versioned assets
+app.get('/', (_req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.send(VERSIONED_HTML);
+});
+
+// Prevent CDN/browsers from caching JS/CSS (versioned URLs make this belt-and-suspenders)
 app.use((req, res, next) => {
-  if (/\.(js|css)$/.test(req.path)) {
+  if (/\.(js|css)(\?.*)?$/.test(req.path)) {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
