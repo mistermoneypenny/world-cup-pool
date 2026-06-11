@@ -2150,13 +2150,31 @@ function renderLbBody() {
     if (best > 0) roundBest[cfg.id] = best;
   });
 
+  // Pussy Meter: % of group picks on Pot 3/4 teams, normalised for heat-map colouring
+  const pmSeedOf = {};
+  Object.values(GROUP_TEAMS).forEach(ts => ts.forEach(t => { pmSeedOf[t.name] = t.seed; }));
+  const pmPct = {};
+  rows.forEach(row => {
+    const grpPicks = (state.picks?.[row.player.id] || {}).groups || {};
+    let tot = 0, up = 0;
+    Object.values(grpPicks).forEach(v => {
+      if (!v) return;
+      tot++;
+      if (v !== 'Draw') { const s = pmSeedOf[v]; if (s >= 3) up++; }
+    });
+    pmPct[row.player.id] = tot ? up / tot : null;
+  });
+  const pmVals = Object.values(pmPct).filter(v => v !== null);
+  const pmMin = pmVals.length ? Math.min(...pmVals) : 0;
+  const pmMax = pmVals.length ? Math.max(...pmVals) : 1;
+
   const table = document.createElement('table');
   table.className = 'lb-table';
 
   const thead = document.createElement('thead');
   let thHTML = '<tr><th>#</th><th>Player</th>';
   if (state.lbRound === 'all') {
-    thHTML += '<th>Score</th><th>Total Possible</th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
+    thHTML += '<th>Score</th><th>Total Possible</th><th class="num lb-pm-th" title="% of group picks on Pot 3/4 (upset) teams">Pussy Meter</th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
     ROUND_CONFIG.forEach(cfg => { thHTML += `<th class="num">${cfg.short}</th>`; });
   } else {
     thHTML += '<th class="num">Score</th><th class="num">Total</th>';
@@ -2207,6 +2225,14 @@ function renderLbBody() {
       tdHTML += `<td><span class="lb-total">${fmtScore(row.total.total)}</span>${wl}
           <div class="pct-bar-wrap"><div class="pct-bar" style="width:${pctW}%"></div></div></td>
         <td class="lb-possible">${fmtScore(maxPossible)}</td>
+        ${(() => {
+          const p = pmPct[row.player.id];
+          if (p === null) return '<td class="num lb-pm">—</td>';
+          const norm = pmMax > pmMin ? (p - pmMin) / (pmMax - pmMin) : 0.5;
+          const hue  = Math.round(norm * 120);
+          const lum  = 50 + Math.round((1 - Math.abs(norm - 0.5) * 2) * 5);
+          return `<td class="num lb-pm" style="color:hsl(${hue},85%,${lum}%);font-weight:600">${Math.round(p * 100)}%</td>`;
+        })()}
         <td class="num lb-best-finish" title="Best possible finish if all remaining picks win">${bRankIcon}</td>`;
       ROUND_CONFIG.forEach(cfg => {
         const s = row.byRound[cfg.id];
