@@ -272,13 +272,15 @@ app.post('/api/state', async (req, res) => {
         }
       }
 
-      if (incoming.picks && (admin || !sender)) {
-        // Admin or senderless save: replace all picks wholesale
-        existing.picks = incoming.picks;
-      } else if (incoming.picks && sender) {
-        // Regular player: only save their own picks
+      if (incoming.picks) {
         if (!existing.picks) existing.picks = {};
-        existing.picks[sender] = incoming.picks[sender] || {};
+        if (sender) {
+          // Always merge per-sender — even admin only writes their own picks.
+          // Bulk restore uses /api/picks-restore instead.
+          existing.picks[sender] = incoming.picks[sender] || {};
+        } else {
+          existing.picks = incoming.picks; // senderless legacy path
+        }
       }
 
       if (incoming.bonusPicks && sender) {
@@ -299,10 +301,10 @@ app.post('/api/state', async (req, res) => {
       // pickSavedAt: each player writes only their own entry
       if (incoming.pickSavedAt) {
         if (!existing.pickSavedAt) existing.pickSavedAt = {};
-        if (admin || !sender) {
-          existing.pickSavedAt = incoming.pickSavedAt;
-        } else if (sender && incoming.pickSavedAt[sender]) {
+        if (sender && incoming.pickSavedAt[sender]) {
           existing.pickSavedAt[sender] = incoming.pickSavedAt[sender];
+        } else if (!sender) {
+          existing.pickSavedAt = incoming.pickSavedAt;
         }
       }
 
