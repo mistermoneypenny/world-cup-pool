@@ -764,6 +764,7 @@ function applyLoadedState(saved) {
 
 let toastTimer;
 let countdownTimer        = null;
+let _autoSaveTimer        = null;
 let notifPermission       = 'default';
 let dismissedBroadcastId  = null;
 let deferredInstallPrompt = null;
@@ -2005,7 +2006,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
             if (el.querySelector(`[value="${CSS.escape(optionName)}"]`)) el.classList.add('selected');
           }
         });
-        updateSaveStatus();
+        scheduleAutoSave();
       });
     }
     card.appendChild(row);
@@ -2123,7 +2124,44 @@ function updateSaveStatus() {
   }
 }
 
+function scheduleAutoSave() {
+  updateSaveStatus();
+  const statusEl = document.getElementById('save-status');
+  if (statusEl) statusEl.textContent += '  — saving…';
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(doAutoSave, 1200);
+}
+
+function doAutoSave() {
+  _autoSaveTimer = null;
+  const pid = state.currentPlayer;
+  const rid = state.activePicksRound;
+  if (!pid) return;
+  if (!state.picks[pid]) state.picks[pid] = {};
+  state.picks[pid][rid] = { ...state.pendingPicks };
+  if (!state.bonusPicks[pid]) state.bonusPicks[pid] = {};
+  Object.values(BONUS_CONFIG).forEach(bonuses => {
+    bonuses.forEach(b => {
+      if (b.type === 'multi' && (b.sourceRound || 'qf') === rid) {
+        const srcGames = getGamesForRound(rid);
+        state.bonusPicks[pid][b.id] = srcGames.map(g => (state.picks[pid][rid] || {})[getPickKey(g)] || '');
+      }
+    });
+  });
+  if (!state.pickSavedAt)      state.pickSavedAt      = {};
+  if (!state.pickSavedAt[pid]) state.pickSavedAt[pid] = {};
+  state.pickSavedAt[pid][rid] = new Date().toISOString();
+  saveState();
+  const statusEl = document.getElementById('save-status');
+  if (statusEl) {
+    updateSaveStatus();
+    statusEl.textContent += '  ✓ Saved';
+  }
+}
+
 function savePicks() {
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = null;
   const pid = state.currentPlayer;
   const rid = state.activePicksRound;
   if (!pid) return;
