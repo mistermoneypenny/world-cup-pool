@@ -2140,18 +2140,30 @@ function doAutoSave() {
   if (!state.picks[pid]) state.picks[pid] = {};
   state.picks[pid][rid] = { ...state.pendingPicks };
   if (!state.bonusPicks[pid]) state.bonusPicks[pid] = {};
+  const bonusForRound = {};
   Object.values(BONUS_CONFIG).forEach(bonuses => {
     bonuses.forEach(b => {
       if (b.type === 'multi' && (b.sourceRound || 'qf') === rid) {
         const srcGames = getGamesForRound(rid);
         state.bonusPicks[pid][b.id] = srcGames.map(g => (state.picks[pid][rid] || {})[getPickKey(g)] || '');
+        bonusForRound[b.id] = state.bonusPicks[pid][b.id];
       }
     });
   });
   if (!state.pickSavedAt)      state.pickSavedAt      = {};
   if (!state.pickSavedAt[pid]) state.pickSavedAt[pid] = {};
   state.pickSavedAt[pid][rid] = new Date().toISOString();
-  saveState();
+  fetch(`/api/picks/${pid}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      roundId: rid,
+      picks: state.picks[pid][rid],
+      bonusPicks: Object.keys(bonusForRound).length ? bonusForRound : undefined,
+      _sender: pid,
+    }),
+  }).catch(() => showToast('Save failed — working offline', 'error'));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ picks: state.picks, bonusPicks: state.bonusPicks })); } catch (e) {}
   const statusEl = document.getElementById('save-status');
   if (statusEl) {
     updateSaveStatus();
@@ -2169,18 +2181,30 @@ function savePicks() {
   state.picks[pid][rid] = { ...state.pendingPicks };
   // Re-sync any multi-bonus whose sourceRound is this round
   if (!state.bonusPicks[pid]) state.bonusPicks[pid] = {};
+  const bonusForRound = {};
   Object.values(BONUS_CONFIG).forEach(bonuses => {
     bonuses.forEach(b => {
       if (b.type === 'multi' && (b.sourceRound || 'qf') === rid) {
         const srcGames = getGamesForRound(rid);
         state.bonusPicks[pid][b.id] = srcGames.map(g => (state.picks[pid][rid] || {})[getPickKey(g)] || '');
+        bonusForRound[b.id] = state.bonusPicks[pid][b.id];
       }
     });
   });
   if (!state.pickSavedAt)       state.pickSavedAt       = {};
   if (!state.pickSavedAt[pid])  state.pickSavedAt[pid]  = {};
   state.pickSavedAt[pid][rid] = new Date().toISOString();
-  saveState();
+  fetch(`/api/picks/${pid}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      roundId: rid,
+      picks: state.picks[pid][rid],
+      bonusPicks: Object.keys(bonusForRound).length ? bonusForRound : undefined,
+      _sender: pid,
+    }),
+  }).catch(() => showToast('Save failed — working offline', 'error'));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ picks: state.picks, bonusPicks: state.bonusPicks })); } catch (e) {}
   showToast('Picks saved!', 'success');
   renderPicks();
 }

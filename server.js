@@ -279,7 +279,9 @@ app.post('/api/state', async (req, res) => {
           // Bulk restore uses /api/picks-restore instead.
           existing.picks[sender] = incoming.picks[sender] || {};
         } else {
-          existing.picks = incoming.picks; // senderless legacy path
+          // Senderless: only allow if DB has no picks yet (initial setup only).
+          const hasExistingPicks = Object.keys(existing.picks).length > 0;
+          if (!hasExistingPicks) existing.picks = incoming.picks;
         }
       }
 
@@ -522,6 +524,57 @@ app.post('/api/picks-restore', async (req, res) => {
     });
     res.json(result);
   } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /api/picks/:playerId ────────────────────────────────
+// Dedicated, player-isolated pick save. Enforces round locking server-side.
+app.post('/api/picks/:playerId', async (req, res) => {
+  try {
+    const { playerId } = req.params;
+    const { roundId, picks, bonusPicks, _sender } = req.body;
+
+    if (!_sender || _sender !== playerId) {
+      return res.status(403).json({ error: 'Sender must match player' });
+    }
+    if (!roundId || typeof picks !== 'object') {
+      return res.status(400).json({ error: 'roundId and picks are required' });
+    }
+
+    const result = await withWriteLock(async () => {
+      const existing = await readState();
+
+      const playerExists = existing.players?.some(p => p.id === playerId);
+      if (!playerExists) return { error: 'Player not found', status: 404 };
+
+      if (roundId === existing.currentRound &&
+          (existing.roundStatus === 'locked' || existing.roundStatus === 'closed')) {
+        return { error: 'Round is locked — picks cannot be changed', status: 403 };
+      }
+
+      if (!existing.picks) existing.picks = {};
+      if (!existing.picks[playerId]) existing.picks[playerId] = {};
+      existing.picks[playerId][roundId] = picks;
+
+      if (bonusPicks && typeof bonusPicks === 'object') {
+        if (!existing.bonusPicks) existing.bonusPicks = {};
+        if (!existing.bonusPicks[playerId]) existing.bonusPicks[playerId] = {};
+        Object.assign(existing.bonusPicks[playerId], bonusPicks);
+      }
+
+      if (!existing.pickSavedAt) existing.pickSavedAt = {};
+      if (!existing.pickSavedAt[playerId]) existing.pickSavedAt[playerId] = {};
+      existing.pickSavedAt[playerId][roundId] = new Date().toISOString();
+
+      await writeState(existing);
+      return { ok: true };
+    });
+
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    res.json(result);
+  } catch (e) {
+    console.error('POST /api/picks error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
