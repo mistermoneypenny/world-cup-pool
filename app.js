@@ -2679,56 +2679,6 @@ function autoFillR32FromGroups() {
 
 // ── RANDOM PICK GENERATOR ─────────────────────────────────────
 
-function generateRandomPicks() {
-  function mkRng(seed) {
-    let s = seed >>> 0;
-    return () => {
-      s = (s + 0x6D2B79F5) >>> 0;
-      let t = Math.imul(s ^ (s >>> 15), 1 | s);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
-  // Boldness: how likely each player is to pick an upset (0 = always pick fav)
-  const BOLDNESS = [0.18, 0.45, 0.12, 0.35, 0.58, 0.28, 0.40, 0.22, 0.52, 0.33, 0.47, 0.30];
-
-  let filled = 0;
-  state.players.forEach((player, pi) => {
-    const boldness = BOLDNESS[Math.min(pi, BOLDNESS.length - 1)];
-    const rng = mkRng(pi * 9973 + 42);
-    if (!state.picks[player.id]) state.picks[player.id] = {};
-
-    ROUND_CONFIG.forEach(cfg => {
-      state.picks[player.id][cfg.id] = {}; // overwrite round entirely
-      getGamesForRound(cfg.id).forEach(game => {
-        const { t1, t2 } = getTeams(game);
-        if (!t1 || !t2) return;
-        const fav = t1.seed <= t2.seed ? t1 : t2;
-        const dog = fav === t1 ? t2 : t1;
-        const upsetProb = boldness * (dog.seed - fav.seed) / 7;
-
-        let pick;
-        if (cfg.id === 'groups') {
-          // Group stage: allow Draw (~10–18% based on boldness)
-          const drawProb = 0.10 + boldness * 0.12;
-          const r = rng();
-          if (r < drawProb)                                    pick = 'Draw';
-          else if (r < drawProb + upsetProb * (1 - drawProb)) pick = dog.name;
-          else                                                 pick = fav.name;
-        } else {
-          // Knockout rounds: ~50/50 split so picks are a realistic mix of
-          // right and wrong. Each player gets a different coin flip per game.
-          pick = rng() < 0.5 ? t1.name : t2.name;
-        }
-        state.picks[player.id][cfg.id][getPickKey(game)] = pick;
-        filled++;
-      });
-    });
-  });
-  saveState();
-  return filled;
-}
 
 // ── DEMO DATA ─────────────────────────────────────────────────
 
@@ -4267,13 +4217,6 @@ function setupEvents() {
     showToast('Demo data loaded!', 'success');
     renderAdmin();
     renderBracket();
-  });
-
-  document.getElementById('gen-picks-btn')?.addEventListener('click', () => {
-    if (!confirm(`Overwrite ALL picks for all ${state.players.length} players with seeded-random selections?`)) return;
-    const n = generateRandomPicks();
-    showToast(`Generated ${n} random picks across ${state.players.length} players`, 'success');
-    renderAdmin();
   });
 
   document.getElementById('backup-download-btn')?.addEventListener('click', downloadStateBackup);
