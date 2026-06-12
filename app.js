@@ -2412,31 +2412,31 @@ function renderLbBody() {
 // ── PICKS AUTO-FIX ────────────────────────────────────────────
 
 function fixInvalidPicks() {
-  let fixed = 0;
-  state.players.forEach(p => {
-    if (!state.picks[p.id]) state.picks[p.id] = {};
-    ROUND_CONFIG.forEach(cfg => {
-      if (!state.picks[p.id][cfg.id]) state.picks[p.id][cfg.id] = {};
-      getGamesForRound(cfg.id).forEach(g => {
-        const { t1, t2 } = getTeams(g);
-        if (!t1 || !t2) return;
-        const key    = getPickKey(g);
-        const stored = state.picks[p.id][cfg.id][key];
-        const validPicks = cfg.id === 'groups'
-          ? [t1.name, t2.name, 'Draw']
-          : [t1.name, t2.name];
-        if (!validPicks.includes(stored)) {
-          const r = Math.random();
-          state.picks[p.id][cfg.id][key] = cfg.id === 'groups'
-            ? (r < 0.4 ? t1.name : r < 0.75 ? t2.name : 'Draw')
-            : (r < 0.5 ? t1.name : t2.name);
-          fixed++;
-        }
-      });
+  const pid = state.currentPlayer;
+  if (!pid) return 0;
+  let cleared = 0;
+  if (!state.picks[pid]) state.picks[pid] = {};
+  ROUND_CONFIG.forEach(cfg => {
+    if (!state.picks[pid][cfg.id]) state.picks[pid][cfg.id] = {};
+    getGamesForRound(cfg.id).forEach(g => {
+      const { t1, t2 } = getTeams(g);
+      if (!t1 || !t2) return;
+      const key    = getPickKey(g);
+      const stored = state.picks[pid][cfg.id][key];
+      if (!stored) return; // no pick yet — nothing to clear
+      const validPicks = cfg.id === 'groups'
+        ? [t1.name, t2.name, 'Draw']
+        : [t1.name, t2.name];
+      if (!validPicks.includes(stored)) {
+        delete state.picks[pid][cfg.id][key];
+        cleared++;
+      }
     });
   });
-  if (fixed > 0) saveState();
-  return fixed;
+  if (cleared > 0) {
+    showToast(`${cleared} of your picks were cleared because those teams are no longer in the bracket — please re-pick.`, 'error');
+  }
+  return cleared;
 }
 
 // ── ADMIN BONUS ANSWERS ───────────────────────────────────────
@@ -2680,9 +2680,9 @@ function saveR32Teams() {
   });
   state.r32Teams = newTeams;
   rebuildGames();
-  const fixed = fixInvalidPicks();
+  fixInvalidPicks();
   saveState();
-  showToast(fixed > 0 ? `R32 bracket saved · ${fixed} pick${fixed !== 1 ? 's' : ''} auto-filled` : 'R32 bracket saved!', 'success');
+  showToast('R32 bracket saved!', 'success');
   renderR32Admin();
 }
 
@@ -2695,9 +2695,9 @@ function autoFillR32FromGroups() {
   }
   state.r32Teams = buildR32FromGroups();
   rebuildGames();
-  const fixed = fixInvalidPicks();
+  fixInvalidPicks();
   saveState();
-  showToast(fixed > 0 ? `R32 auto-filled from group standings · ${fixed} pick${fixed !== 1 ? 's' : ''} updated` : 'R32 auto-filled from group standings!', 'success');
+  showToast('R32 auto-filled from group standings!', 'success');
   renderR32Admin();
 }
 
@@ -3611,10 +3611,10 @@ function buildResultGameCard(game) {
       if (resultName === 'Draw' && game.round !== 'groups') return;
       if (state.results[game.id] === resultName) { delete state.results[game.id]; }
       else { state.results[game.id] = resultName; }
-      const fixed = fixInvalidPicks();
+      fixInvalidPicks();
       saveState();
       const msg = resultName === 'Draw' ? 'Result: Draw' : `Result: ${resultName}`;
-      showToast(fixed > 0 ? `${msg} · ${fixed} pick${fixed !== 1 ? 's' : ''} auto-filled` : msg, 'success');
+      showToast(msg, 'success');
       renderResultsGrid();
       if (state.currentView === 'bracket') renderBracket();
     };
