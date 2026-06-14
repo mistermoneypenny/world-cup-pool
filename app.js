@@ -3255,16 +3255,18 @@ function renderAnalytics() {
     });
     return { total, rate: total ? Math.round(correct / total * 100) : null };
   });
-  const hasUHR = uhrData.some(d => d.total > 0);
+  const hasUHR     = uhrData.some(d => d.total > 0);
+  const allUHRZero = hasUHR && uhrData.every(d => !d.rate);
+  const uhrTotal   = uhrData.reduce((s, d) => s + d.total, 0);
   addCard('ch-upset-hit', 'UPSET HIT RATE', '% of upset picks that were correct', false, hVBar);
-  if (hasUHR) {
+  if (hasUHR && !allUHRZero) {
     const uhrOrd = allPlayers.map((_, i) => i).filter(i => uhrData[i].total > 0).sort((a, b) => (uhrData[b].rate ?? -1) - (uhrData[a].rate ?? -1));
     mkChart('ch-upset-hit', {
       type: 'bar',
       data: {
         labels: uhrOrd.map(i => allPlayers[i].name),
         datasets: [{ label: 'HIT RATE', data: uhrOrd.map(i => uhrData[i].rate),
-          backgroundColor: BB, borderWidth: 0, borderRadius: 0, minBarLength: 4 }]
+          backgroundColor: BB, borderWidth: 0, borderRadius: 0 }]
       },
       options: {
         plugins: { legend: { display: false }, tooltip: tip },
@@ -3274,6 +3276,8 @@ function renderAnalytics() {
         }
       }
     });
+  } else if (allUHRZero) {
+    document.getElementById('wrap-ch-upset-hit').innerHTML = `<div class="bb-no-data">0 FOR ${uhrTotal} — NO UPSETS HAVE LANDED YET</div>`;
   } else {
     document.getElementById('wrap-ch-upset-hit').innerHTML = '<div class="bb-no-data">NO RESULTS YET — HIT RATE APPEARS AS GAMES COMPLETE</div>';
   }
