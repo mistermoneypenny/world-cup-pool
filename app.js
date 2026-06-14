@@ -3070,7 +3070,7 @@ function renderAnalytics() {
         labels: consensusGames.map(g => g.lbl),
         datasets: [
           { label: 'TEAM A %', data: consensusGames.map(g => g.pct1), backgroundColor: BB,        borderWidth: 0, borderRadius: 0 },
-          { label: 'TEAM B %', data: consensusGames.map(g => g.pct2), backgroundColor: '#1a1a1a', borderWidth: 0, borderRadius: 0 },
+          { label: 'TEAM B %', data: consensusGames.map(g => g.pct2), backgroundColor: '#2d2d2d', borderWidth: 1, borderColor: '#444', borderRadius: 0 },
         ]
       },
       options: {
