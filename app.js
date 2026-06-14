@@ -3075,7 +3075,7 @@ function renderAnalytics() {
       },
       options: {
         indexAxis: 'y',
-        plugins: { legend: leg('bottom'), tooltip: { ...tip, mode: 'index', intersect: false, callbacks: { label: ctx => { const g = consensusGames[ctx.dataIndex]; const name = ctx.datasetIndex === 0 ? g.t1name : g.t2name; return `${name}: ${ctx.raw}%`; } } } },
+        plugins: { legend: leg('bottom'), tooltip: { ...tip, callbacks: { label: ctx => { const g = consensusGames[ctx.dataIndex]; const name = ctx.datasetIndex === 0 ? g.t1name : g.t2name; return `${name}: ${ctx.raw}%`; } } } },
         scales: {
           x: { ...sc.x, stacked: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
           y: { ...sc.y, stacked: true },
