@@ -2950,10 +2950,14 @@ function renderAnalytics() {
   const riskData  = riskOrder.map(i => riskRaw[i]);
 
   // Consensus: all games with picks, sorted by upcoming date (soonest first), played games last
-  const CG_MD_IDX = [0, 0, 1, 1, 2, 2];
-  const CG_MON    = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
-  function cgDate(g) {
-    const ds = (MATCHDAY_DATES[g.region] || [])[CG_MD_IDX[g.idx]] || '';
+  // allGames here is the analytics-local array (key/t1/t2/group only), so we look up
+  // the real game object (which has id/idx/region) via getGamesForRound for result & date checks.
+  const CG_MD_IDX  = [0, 0, 1, 1, 2, 2];
+  const CG_MON     = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+  const cgGameMap  = {};
+  getGamesForRound('groups').forEach(g => { cgGameMap[getPickKey(g)] = g; });
+  function cgDateNum(fullGame) {
+    const ds = (MATCHDAY_DATES[fullGame.region] || [])[CG_MD_IDX[fullGame.idx]] || '';
     const [m, d] = ds.split(' ');
     return (CG_MON[m] || 99) * 100 + (parseInt(d, 10) || 99);
   }
@@ -2964,10 +2968,11 @@ function renderAnalytics() {
       if (pick) { total++; if (pick === g.t1.name) forT1++; }
     });
     if (!total) return null;
-    const pct       = Math.round(forT1 / total * 100);
-    const lbl       = `${g.t1.name.split(' ')[0].slice(0,7)} vs ${g.t2.name.split(' ')[0].slice(0,7)}`;
-    const hasResult = state.results[g.id] !== undefined;
-    const dateNum   = cgDate(g);
+    const pct      = Math.round(forT1 / total * 100);
+    const lbl      = `${g.t1.name.split(' ')[0].slice(0,7)} vs ${g.t2.name.split(' ')[0].slice(0,7)}`;
+    const fullGame = cgGameMap[g.key];
+    const hasResult = fullGame ? state.results[fullGame.id] !== undefined : false;
+    const dateNum   = fullGame ? cgDateNum(fullGame) : 99999;
     return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum };
   }).filter(Boolean).sort((a, b) => {
     if (a.hasResult !== b.hasResult) return a.hasResult ? 1 : -1;  // upcoming first, played last
