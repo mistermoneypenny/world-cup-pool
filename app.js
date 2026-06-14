@@ -3121,11 +3121,18 @@ function renderAnalytics() {
     });
     return sc;
   }
+  function mdHasResults(mdIdx) {
+    return getGamesForRound('groups').filter(g => SO_MD_IDX[g.idx] === mdIdx).some(g => state.results[g.id] !== undefined);
+  }
+  function roundHasResults(roundId) {
+    return getGamesForRound(roundId).some(g => state.results[g.id] !== undefined);
+  }
+  const soStarted = [
+    mdHasResults(0), mdHasResults(1), mdHasResults(2),
+    roundHasResults('r32'), roundHasResults('r16'), roundHasResults('qf'), roundHasResults('sf'), roundHasResults('final'),
+  ];
   const soLabels  = ['MD1','MD2','MD3','R32','R16','QF','SF','FINAL'];
-  const soHasData = allPlayers.some(p =>
-    [0,1,2].some(md => getMDScore(p.id, md) > 0) ||
-    ['r32','r16','qf','sf','final'].some(r => getPlayerRoundScore(p.id, r).score > 0)
-  );
+  const soHasData = soStarted.some(Boolean);
   addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday', true, 360);
   if (soHasData) {
     mkChart('ch-score-time', {
@@ -3149,7 +3156,7 @@ function renderAnalytics() {
           let cum = 0;
           return {
             label: p.name,
-            data: steps.map(s => { cum += s; return cum; }),
+            data: steps.map((s, i) => { cum += s; return soStarted[i] ? cum : null; }),
             borderColor: bbC(i), backgroundColor: 'transparent',
             borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i), tension: 0,
           };
