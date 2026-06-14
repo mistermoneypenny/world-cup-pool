@@ -2949,7 +2949,14 @@ function renderAnalytics() {
   const riskNames = riskOrder.map(i => allPlayers[i].name);
   const riskData  = riskOrder.map(i => riskRaw[i]);
 
-  // Consensus: all games with picks, sorted by contestedness (closest to 50/50 first)
+  // Consensus: all games with picks, sorted by upcoming date (soonest first), played games last
+  const CG_MD_IDX = [0, 0, 1, 1, 2, 2];
+  const CG_MON    = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+  function cgDate(g) {
+    const ds = (MATCHDAY_DATES[g.region] || [])[CG_MD_IDX[g.idx]] || '';
+    const [m, d] = ds.split(' ');
+    return (CG_MON[m] || 99) * 100 + (parseInt(d, 10) || 99);
+  }
   const consensusGames = allGames.map(g => {
     let forT1 = 0, total = 0;
     allPlayers.forEach(p => {
@@ -2957,10 +2964,16 @@ function renderAnalytics() {
       if (pick) { total++; if (pick === g.t1.name) forT1++; }
     });
     if (!total) return null;
-    const pct = Math.round(forT1 / total * 100);
-    const lbl = `${g.t1.name.split(' ')[0].slice(0,7)} vs ${g.t2.name.split(' ')[0].slice(0,7)}`;
-    return { lbl, pct1: pct, pct2: 100 - pct };
-  }).filter(Boolean).sort((a, b) => Math.abs(50 - a.pct1) - Math.abs(50 - b.pct1));
+    const pct       = Math.round(forT1 / total * 100);
+    const lbl       = `${g.t1.name.split(' ')[0].slice(0,7)} vs ${g.t2.name.split(' ')[0].slice(0,7)}`;
+    const hasResult = state.results[g.id] !== undefined;
+    const dateNum   = cgDate(g);
+    return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum };
+  }).filter(Boolean).sort((a, b) => {
+    if (a.hasResult !== b.hasResult) return a.hasResult ? 1 : -1;  // upcoming first, played last
+    if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;     // earlier date first
+    return Math.abs(50 - a.pct1) - Math.abs(50 - b.pct1);         // within same date: most contested first
+  });
 
   // Short names for agreement matrix
   const shortName = n => n.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase();
@@ -3035,7 +3048,7 @@ function renderAnalytics() {
 
   // 2 ── Pick Consensus (LIVE) — fixed height matching Upset Index, scrollable
   const fullConsensusH = Math.max(280, consensusGames.length * 36);
-  addCard('ch-consensus', 'PICK CONSENSUS', 'Most contested matchups — 50% = perfectly split pool', false, hBar);
+  addCard('ch-consensus', 'PICK CONSENSUS', 'Upcoming games first — 50% = perfectly split pool', false, hBar);
   if (consensusGames.length > 0) {
     const wrapC = document.getElementById('wrap-ch-consensus');
     wrapC.style.overflowY = 'auto';
