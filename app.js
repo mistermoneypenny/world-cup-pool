@@ -3075,7 +3075,7 @@ function renderAnalytics() {
       },
       options: {
         indexAxis: 'y',
-        interaction: { mode: 'index', intersect: true, axis: 'y' },
+        interaction: { mode: 'index', intersect: false, axis: 'y' },
         plugins: { legend: leg('bottom'), tooltip: { ...tip, callbacks: { label: ctx => { const g = consensusGames[ctx.dataIndex]; const name = ctx.datasetIndex === 0 ? g.t1name : g.t2name; return `${name}: ${ctx.raw}%`; } } } },
         scales: {
           x: { ...sc.x, stacked: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
