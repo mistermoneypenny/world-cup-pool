@@ -2969,7 +2969,7 @@ function renderAnalytics() {
     });
     if (!total) return null;
     const pct      = Math.round(forT1 / total * 100);
-    const lbl      = `${g.t1.name.split(' ')[0].slice(0,7)} vs ${g.t2.name.split(' ')[0].slice(0,7)}`;
+    const lbl      = `${g.t1.name} vs ${g.t2.name}`;
     const fullGame = cgGameMap[g.key];
     const hasResult = fullGame ? state.results[fullGame.id] !== undefined : false;
     const dateNum   = fullGame ? cgDateNum(fullGame) : 99999;
