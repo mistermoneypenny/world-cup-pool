@@ -3264,7 +3264,7 @@ function renderAnalytics() {
       data: {
         labels: uhrOrd.map(i => allPlayers[i].name),
         datasets: [{ label: 'HIT RATE', data: uhrOrd.map(i => uhrData[i].rate),
-          backgroundColor: BB, borderWidth: 0, borderRadius: 0 }]
+          backgroundColor: BB, borderWidth: 0, borderRadius: 0, minBarLength: 4 }]
       },
       options: {
         plugins: { legend: { display: false }, tooltip: tip },
@@ -3277,30 +3277,6 @@ function renderAnalytics() {
   } else {
     document.getElementById('wrap-ch-upset-hit').innerHTML = '<div class="bb-no-data">NO RESULTS YET — HIT RATE APPEARS AS GAMES COMPLETE</div>';
   }
-
-  // 8 ── Agreement Matrix (LIVE)
-  addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)', false, hMtx);
-  const wrap4 = document.getElementById('wrap-ch-agreement');
-  wrap4.innerHTML = '';
-  const shorts = allPlayers.map(p => shortName(p.name));
-  let tbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
-    shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
-  allPlayers.forEach((p1, i) => {
-    tbl += `<tr><th>${shorts[i]}</th>`;
-    allPlayers.forEach((p2, j) => {
-      const v   = agreePct(p1.id, p2.id);
-      const display = i === j ? '100%' : (v === null ? '—' : v + '%');
-      const pct = v === null ? 0 : (v - 30) / 70;
-      const r   = Math.round(255 * pct + 10 * (1 - pct));
-      const g2  = Math.round(102 * pct + 10 * (1 - pct));
-      const bg  = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
-      const fg  = (pct > 0.4 || i === j) ? '#FFF' : '#444';
-      tbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
-    });
-    tbl += '</tr>';
-  });
-  tbl += '</tbody></table></div>';
-  wrap4.innerHTML = tbl;
 
   // 10 ── Round-by-Round Score Breakdown (LIVE when results exist)
   const rrRoundIds = ['groups', 'r32', 'r16', 'qf', 'sf', 'final'];
@@ -3399,6 +3375,7 @@ function renderAnalytics() {
   }
 
   // 13 ── Knockout Bracket Similarity Matrix (LIVE; dummy until KO picks submitted) — bottom-right
+  const shorts = allPlayers.map(p => shortName(p.name));
   const koRounds = ['r32', 'r16', 'qf', 'sf', 'final'];
   let hasKOPicks = false;
   allPlayers.forEach(p => koRounds.forEach(r => { if (Object.keys((state.picks[p.id] || {})[r] || {}).length) hasKOPicks = true; }));
@@ -3440,6 +3417,29 @@ function renderAnalytics() {
   } else {
     wrapKO.innerHTML = '<div class="bb-no-data">NO KNOCKOUT PICKS YET — MATRIX APPEARS AFTER KO PICKS SUBMITTED</div>';
   }
+
+  // 14 ── Agreement Matrix (LIVE) — bottom-right
+  addCard('ch-agreement', 'PLAYER AGREEMENT MATRIX', 'How often any two players picked the same team (%)', false, hMtx);
+  const wrap4 = document.getElementById('wrap-ch-agreement');
+  wrap4.innerHTML = '';
+  let tbl = '<div class="ag-scroll"><table class="ag-table"><thead><tr><th></th>' +
+    shorts.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
+  allPlayers.forEach((p1, i) => {
+    tbl += `<tr><th>${shorts[i]}</th>`;
+    allPlayers.forEach((p2, j) => {
+      const v   = agreePct(p1.id, p2.id);
+      const display = i === j ? '100%' : (v === null ? '—' : v + '%');
+      const pct = v === null ? 0 : (v - 30) / 70;
+      const r   = Math.round(255 * pct + 10 * (1 - pct));
+      const g2  = Math.round(102 * pct + 10 * (1 - pct));
+      const bg  = i === j ? BB : (v === null ? '#0a0a0a' : `rgb(${r},${g2},0)`);
+      const fg  = (pct > 0.4 || i === j) ? '#FFF' : '#444';
+      tbl += `<td style="background:${bg};color:${fg}">${display}</td>`;
+    });
+    tbl += '</tr>';
+  });
+  tbl += '</tbody></table></div>';
+  wrap4.innerHTML = tbl;
 }
 
 // ── ADMIN RENDERING ───────────────────────────────────────────
