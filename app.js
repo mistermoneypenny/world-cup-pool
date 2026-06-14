@@ -3088,20 +3088,50 @@ function renderAnalytics() {
   });
 
   // 4 ── Score Over Time (LIVE when results exist)
-  const soRoundIds  = ['groups','r32','r16','qf','sf','final'];
-  const soLabels    = ['GRP','R32','R16','QF','SF','FINAL'];
-  const soHasData   = allPlayers.some(p => soRoundIds.some(r => getPlayerRoundScore(p.id, r).score > 0));
-  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by round', true, 360);
+  const SO_MD_IDX = [0, 0, 1, 1, 2, 2]; // game.idx → matchday (0/1/2)
+  const soGrpCfg  = ROUND_CONFIG.find(r => r.id === 'groups');
+  function getMDScore(pid, mdIdx) {
+    const picks = (state.picks[pid] || {})['groups'] || {};
+    let sc = 0;
+    getGamesForRound('groups').filter(g => SO_MD_IDX[g.idx] === mdIdx).forEach(g => {
+      const picked = picks[getPickKey(g)];
+      const result = state.results[g.id];
+      if (picked && result !== undefined) {
+        const winner = result === 'Draw' ? 'Draw' : (getWinner(g.id)?.name ?? result);
+        if (winner === picked) sc += calcPickPoints(g, picked, soGrpCfg);
+      }
+    });
+    return sc;
+  }
+  const soLabels  = ['MD1','MD2','MD3','R32','R16','QF','SF','FINAL'];
+  const soHasData = allPlayers.some(p =>
+    [0,1,2].some(md => getMDScore(p.id, md) > 0) ||
+    ['r32','r16','qf','sf','final'].some(r => getPlayerRoundScore(p.id, r).score > 0)
+  );
+  addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday', true, 360);
   if (soHasData) {
     mkChart('ch-score-time', {
       type: 'line',
       data: {
         labels: soLabels,
         datasets: allPlayers.map((p, i) => {
+          const grpTotal = getPlayerRoundScore(p.id, 'groups').score;
+          const md1 = getMDScore(p.id, 0);
+          const md2 = getMDScore(p.id, 1);
+          const steps = [
+            md1,
+            md2,
+            grpTotal - md1 - md2,
+            getPlayerRoundScore(p.id, 'r32').score,
+            getPlayerRoundScore(p.id, 'r16').score,
+            getPlayerRoundScore(p.id, 'qf').score,
+            getPlayerRoundScore(p.id, 'sf').score,
+            getPlayerRoundScore(p.id, 'final').score,
+          ];
           let cum = 0;
           return {
             label: p.name,
-            data: soRoundIds.map(r => { cum += getPlayerRoundScore(p.id, r).score; return cum; }),
+            data: steps.map(s => { cum += s; return cum; }),
             borderColor: bbC(i), backgroundColor: 'transparent',
             borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: bbC(i), tension: 0,
           };
