@@ -2973,7 +2973,7 @@ function renderAnalytics() {
     const fullGame = cgGameMap[g.key];
     const hasResult = fullGame ? state.results[fullGame.id] !== undefined : false;
     const dateNum   = fullGame ? cgDateNum(fullGame) : 99999;
-    return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum };
+    return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum, t1name: g.t1.name, t2name: g.t2.name };
   }).filter(Boolean).sort((a, b) => {
     if (a.hasResult !== b.hasResult) return a.hasResult ? 1 : -1;  // upcoming first, played last
     if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;     // earlier date first
@@ -3075,7 +3075,7 @@ function renderAnalytics() {
       },
       options: {
         indexAxis: 'y',
-        plugins: { legend: leg('bottom'), tooltip: tip },
+        plugins: { legend: leg('bottom'), tooltip: { ...tip, callbacks: { label: ctx => { const g = consensusGames[ctx.dataIndex]; const name = ctx.datasetIndex === 0 ? g.t1name : g.t2name; return `${name}: ${ctx.parsed.x}%`; } } } },
         scales: {
           x: { ...sc.x, stacked: true, max: 100, ticks: { ...sc.x.ticks, callback: v => v + '%' } },
           y: { ...sc.y, stacked: true },
