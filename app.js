@@ -2973,11 +2973,12 @@ function renderAnalytics() {
     const fullGame = cgGameMap[g.key];
     const hasResult = fullGame ? state.results[fullGame.id] !== undefined : false;
     const dateNum   = fullGame ? cgDateNum(fullGame) : 99999;
-    return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum, t1name: g.t1.name, t2name: g.t2.name };
+    const group     = fullGame ? fullGame.region : 'Z';
+    return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum, group, t1name: g.t1.name, t2name: g.t2.name };
   }).filter(Boolean).sort((a, b) => {
     if (a.hasResult !== b.hasResult) return a.hasResult ? 1 : -1;  // upcoming first, played last
     if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;     // earlier date first
-    return Math.abs(50 - a.pct1) - Math.abs(50 - b.pct1);         // within same date: most contested first
+    return a.group < b.group ? -1 : a.group > b.group ? 1 : 0;    // within same date: group A→L order
   });
 
   // Short names for agreement matrix
