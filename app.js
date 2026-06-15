@@ -2954,6 +2954,9 @@ function renderAnalytics() {
   // the real game object (which has id/idx/region) via getGamesForRound for result & date checks.
   const CG_MD_IDX  = [0, 0, 1, 1, 2, 2];
   const CG_MON     = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+  // Within-day kickoff order for groups sharing a date (0 = plays first, 1 = plays second).
+  // Pairs: B/D, E/F, G/H, I/J, K/L. H before G confirmed by fixture schedule (Spain MD1).
+  const CG_DAY_ORDER = { A:0, B:0, C:0, D:1, E:0, F:1, H:0, G:1, I:0, J:1, K:0, L:1 };
   const cgGameMap  = {};
   getGamesForRound('groups').forEach(g => { cgGameMap[getPickKey(g)] = g; });
   function cgDateNum(fullGame) {
@@ -2974,11 +2977,13 @@ function renderAnalytics() {
     const hasResult = fullGame ? state.results[fullGame.id] !== undefined : false;
     const dateNum   = fullGame ? cgDateNum(fullGame) : 99999;
     const group     = fullGame ? fullGame.region : 'Z';
-    return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum, group, t1name: g.t1.name, t2name: g.t2.name };
+    const dayOrder  = CG_DAY_ORDER[group] ?? 0;
+    return { lbl, pct1: pct, pct2: 100 - pct, hasResult, dateNum, group, dayOrder, t1name: g.t1.name, t2name: g.t2.name };
   }).filter(Boolean).sort((a, b) => {
-    if (a.hasResult !== b.hasResult) return a.hasResult ? 1 : -1;  // upcoming first, played last
-    if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;     // earlier date first
-    return a.group < b.group ? -1 : a.group > b.group ? 1 : 0;    // within same date: group A→L order
+    if (a.hasResult !== b.hasResult) return a.hasResult ? 1 : -1;   // upcoming first, played last
+    if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;      // earlier date first
+    if (a.dayOrder !== b.dayOrder) return a.dayOrder - b.dayOrder;  // within same date: actual kickoff order
+    return a.group < b.group ? -1 : a.group > b.group ? 1 : 0;     // tiebreak by group letter
   });
 
   // Short names for agreement matrix
