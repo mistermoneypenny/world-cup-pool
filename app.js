@@ -2246,9 +2246,9 @@ function renderLbBody() {
     const grpPicks = (state.picks?.[row.player.id] || {}).groups || {};
     let tot = 0, up = 0;
     Object.values(grpPicks).forEach(v => {
-      if (!v) return;
+      if (!v || v === 'Draw') return;
       tot++;
-      if (v !== 'Draw') { const s = pmSeedOf[v]; if (s >= 3) up++; }
+      const s = pmSeedOf[v]; if (s >= 3) up++;
     });
     pmPct[row.player.id] = tot ? up / tot : null;
   });
@@ -2904,7 +2904,7 @@ function renderAnalytics() {
     const picks = gPicks(p.id);
     return allGames.reduce((n, g) => {
       const picked = picks[g.key];
-      if (!picked) return n;
+      if (!picked || picked === 'Draw') return n;
       const pt = picked === g.t1.name ? g.t1 : g.t2;
       const ot = picked === g.t1.name ? g.t2 : g.t1;
       return n + (pt.seed > ot.seed ? 1 : 0);
@@ -2920,7 +2920,7 @@ function renderAnalytics() {
     const b = {1:0,2:0,3:0,4:0};
     allGames.forEach(g => {
       const picked = picks[g.key];
-      if (!picked) return;
+      if (!picked || picked === 'Draw') return;
       const pt = picked === g.t1.name ? g.t1 : g.t2;
       b[pt.seed]++;
     });
