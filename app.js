@@ -1881,7 +1881,7 @@ function renderPicksBody() {
 
 function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const card = document.createElement('div');
-  card.className = 'pick-card';
+  card.className = 'pick-card' + (state.results[game.id] !== undefined ? ' pick-card--played' : '');
 
   // Strip "Group X: " prefix for group stage cards (already shown in section header)
   const rawLabel = game.label || (game.region ? `Quadrant ${game.region}` : '');

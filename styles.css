@@ -349,6 +349,7 @@ a { color: var(--accent); }
 .admin-view-close:hover { color: var(--text); }
 .picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.6rem; }
 .pick-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.pick-card--played { opacity: 0.5; }
 .pick-card-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0.3rem 0.6rem; background: var(--surface-2); border-bottom: 1px solid var(--border); }
 .pick-card-hdr-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); }
 .pick-pts  { font-size: 0.65rem; font-weight: 600; color: var(--accent); }
