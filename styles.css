@@ -862,23 +862,6 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
   cursor: pointer; font-size: 0.8rem;
 }
 
-/* ── FEATURE 9: EMOJI REACTIONS ─────────────────────────────── */
-.reaction-bar {
-  display: flex; gap: 0.3rem; padding: 0.4rem 0 0.15rem;
-  border-top: 1px solid var(--border); margin-top: 0.15rem;
-}
-.reaction-btn {
-  display: flex; align-items: center; gap: 0.15rem;
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 2px 7px; font-size: 0.82rem;
-  cursor: pointer; color: var(--text-2);
-  transition: background 0.15s, border-color 0.15s;
-  line-height: 1.4;
-}
-.reaction-btn:hover { background: var(--surface-3); border-color: var(--border-2); }
-.reaction-btn.reacted { background: rgba(0,166,81,0.15); border-color: var(--accent); color: var(--text); }
-.reaction-cnt { font-size: 0.72rem; font-weight: 600; color: var(--text-2); }
-.reaction-btn.reacted .reaction-cnt { color: var(--accent); }
 
 /* ── FEATURE 10: BROADCAST BANNER ───────────────────────────── */
 .broadcast-banner {

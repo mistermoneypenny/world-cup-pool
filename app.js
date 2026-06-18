@@ -2012,24 +2012,6 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     card.appendChild(row);
   });
 
-  // ── Emoji reactions (Feature 9) ─────────────────────────────
-  if (state.results[game.id] !== undefined) {
-    const reactionBar = document.createElement('div');
-    reactionBar.className = 'reaction-bar';
-    const myPid = state.sessionPlayer || state.currentPlayer;
-    ['⚽', '🔥', '😮', '👏'].forEach(emoji => {
-      const cnt    = (state.reactions?.[game.id]?.[emoji] || []).length;
-      const reacted = !!(state.reactions?.[game.id]?.[emoji]?.includes(myPid));
-      const btn = document.createElement('button');
-      btn.className = 'reaction-btn' + (reacted ? ' reacted' : '');
-      btn.innerHTML = cnt ? `${emoji}<span class="reaction-cnt">${cnt}</span>` : emoji;
-      btn.title = emoji;
-      btn.addEventListener('click', ev => { ev.stopPropagation(); toggleReaction(game.id, emoji); });
-      reactionBar.appendChild(btn);
-    });
-    card.appendChild(reactionBar);
-  }
-
   return card;
 }
 
