@@ -4597,70 +4597,106 @@ function renderBonusTracker() {
     return `${Math.floor(diff / 60)}h ago`;
   }
 
+  const bpEntries = Object.entries(state.bonusPicks || {});
+  const totalPickers = bpEntries.length;
+
   function pickDist(id) {
     const counts = {};
-    for (const pp of Object.values(state.bonusPicks || {})) {
-      const p = pp[id];
-      if (!p) continue;
-      const k = Array.isArray(p) ? p.join(', ') : String(p).trim();
+    for (const [, pp] of bpEntries) {
+      const v = pp[id];
+      if (!v) continue;
+      const k = Array.isArray(v) ? v.join(', ') : String(v).trim();
       if (k) counts[k] = (counts[k] || 0) + 1;
     }
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return counts;
   }
 
-  function pickPills(id) {
+  function pickerNamesFor(id, pkArr) {
+    const pkSet = new Set(pkArr);
+    const out = [];
+    for (const [pid, pp] of bpEntries) {
+      const v = pp[id];
+      if (!v) continue;
+      const k = Array.isArray(v) ? v.join(', ') : String(v).trim();
+      if (!pkSet.has(k)) continue;
+      const pl = state.players.find(p => p.id === pid);
+      out.push(pl ? pl.name : pid);
+    }
+    return out;
+  }
+
+  function norm(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+  }
+
+  function findAllPks(label, dist) {
+    const nl = norm(label);
+    return Object.keys(dist).filter(k => {
+      const nk = norm(k);
+      return nk === nl || nk.includes(nl) || nl.includes(nk);
+    });
+  }
+
+  function popEl(id, pks) {
+    if (!pks || !pks.length) return `<span class="bt-zero">0</span>`;
+    const names = pickerNamesFor(id, pks);
+    if (!names.length) return `<span class="bt-zero">0</span>`;
+    const nameStr = esc(names.map(n => n.replace(/\|/g, '/')).join('||'));
+    const pct = totalPickers > 0 ? Math.round(names.length / totalPickers * 100) : 0;
+    return `<span class="pick-o-pop" data-pickers="${nameStr}"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${names.length}</span></span>`;
+  }
+
+  function buildTable(id, rows) {
     const dist = pickDist(id);
-    if (!dist.length) return '<span class="bt-no-picks">No picks recorded</span>';
-    const shown = dist.slice(0, 4);
-    const rest  = dist.slice(4).reduce((s, [, n]) => s + n, 0);
-    let html = shown.map(([k, n]) => `<span class="bt-pill">${esc(k)} ×${n}</span>`).join('');
-    if (rest > 0) html += `<span class="bt-pill bt-pill-muted">+${rest} more</span>`;
-    return html;
+    const used = new Set();
+
+    if (rows === undefined) return `<p class="bt-loading-msg">Loading…</p>`;
+
+    if (rows === null) {
+      // No live ranking — show pick distribution only
+      const entries = Object.entries(dist).sort((a, b) => b[1] - a[1]);
+      if (!entries.length) return `<p class="bt-loading-msg">No picks yet</p>`;
+      return `<table class="bt-table"><tbody>${
+        entries.map(([k]) => `<tr class="bt-tr"><td class="bt-td-name" colspan="2">${esc(k)}</td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`).join('')
+      }</tbody></table>`;
+    }
+
+    let body = rows.map((r, i) => {
+      const pks = 'pk' in r ? (r.pk ? [r.pk] : []) : findAllPks(r.name, dist);
+      pks.forEach(k => used.add(k));
+      const isTop = 'leading' in r ? r.leading : i === 0;
+      return `<tr class="bt-tr${isTop ? ' bt-tr-top' : ''}">
+        <td class="bt-td-rank">${i + 1}</td>
+        <td class="bt-td-name">${esc(r.name)}${r.sub ? `<span class="bt-td-sub">${esc(r.sub)}</span>` : ''}</td>
+        <td class="bt-td-val">${esc(r.val || '')}</td>
+        <td class="bt-td-picks">${popEl(id, pks)}</td>
+      </tr>`;
+    }).join('');
+
+    // Picks that didn't match any live entry (e.g. non-standard spellings not in top-N)
+    const extra = Object.entries(dist).filter(([k]) => !used.has(k));
+    if (extra.length) {
+      body += extra.map(([k]) => `<tr class="bt-tr bt-tr-other">
+        <td class="bt-td-rank">?</td>
+        <td class="bt-td-name">${esc(k)}</td>
+        <td class="bt-td-val"></td>
+        <td class="bt-td-picks">${popEl(id, [k])}</td>
+      </tr>`).join('');
+    }
+
+    return `<table class="bt-table"><tbody>${body}</tbody></table>`;
   }
 
-  function row(label, pts, leaderHtml, id) {
-    return `<div class="bt-row">
-      <div class="bt-q"><span class="bt-q-label">${label}</span><span class="bt-q-pts">${pts}pts</span></div>
-      <div class="bt-detail">
-        <div class="bt-leader-line">${leaderHtml}</div>
-        <div class="bt-pills">${pickPills(id)}</div>
-      </div>
+  function q(id, title, pts, subtitle, rows) {
+    return `<div class="bt-question">
+      <div class="bt-q-hdr"><span class="bt-q-title">${title}</span><span class="bt-q-pts">${pts}pts</span>${subtitle ? `<span class="bt-q-sub">${esc(subtitle)}</span>` : ''}</div>
+      ${buildTable(id, rows)}
     </div>`;
   }
 
-  const loading = '<span class="bt-loading">Loading…</span>';
-  const noData  = '<span class="bt-unknown">No data yet</span>';
-
-  // Golden Boot
-  const boot = stats?.goldenBoot?.[0];
-  const bootHtml = boot
-    ? `<span class="bt-leader-badge">${esc(boot.player)}</span><span class="bt-leader-team">${esc(boot.team)}</span><span class="bt-leader-stat">${boot.goals} goal${boot.goals !== 1 ? 's' : ''}</span>`
-    : (stats ? noData : loading);
-
-  // Possession
-  const poss = stats?.possession?.[0];
-  const possHtml = poss
-    ? `<span class="bt-leader-badge">${esc(poss.team)}</span><span class="bt-leader-stat">${poss.value}%</span>`
-    : (stats ? noData : loading);
-
-  // Most Team Goals
-  const mg = stats?.teamGoals?.[0];
-  const mgHtml = mg
-    ? `<span class="bt-leader-badge">${esc(mg.team)}</span><span class="bt-leader-stat">${mg.value} goals</span>`
-    : (stats ? noData : loading);
-
-  // Confederation Win Rate
-  const wr = stats?.confWinRate?.[0];
-  const wrHtml = wr
-    ? `<span class="bt-leader-badge">${esc(wr.conf)}</span><span class="bt-leader-stat">${wr.rate}% (${wr.wins}W / ${wr.games}G)</span>`
-    : (stats ? noData : loading);
-
-  // Highest Margin
+  const CONF_KEY = { CONMEBOL: 'CONMEBOL (South America)', UEFA: 'UEFA (Europe)', CAF: 'CAF (Africa)', AFC: 'AFC (Asia)', CONCACAF: 'CONCACAF (N./C. America)', OFC: 'OFC (Oceania)' };
   const hm = stats?.highestMargin;
-  const hmHtml = hm
-    ? `<span class="bt-leader-badge">${hm.margin} goal${hm.margin !== 1 ? 's' : ''}</span><span class="bt-leader-desc">${esc(hm.label)}</span>`
-    : (stats ? noData : loading);
-
+  const hmWinner = hm ? (hm.margin >= 6 ? '6+' : String(hm.margin)) : null;
   const updText = stats?.lastUpdated ? `Updated ${timeAgo(stats.lastUpdated)} &middot; as.com / live results` : '';
 
   el.innerHTML = `<div class="bonus-tracker">
@@ -4669,13 +4705,18 @@ function renderBonusTracker() {
       ${updText ? `<span class="bt-upd">${updText}</span>` : ''}
     </div>
     <div class="bt-section-hdr">Tournament-Wide</div>
-    ${row('Golden Boot Winner', 6, bootHtml, 'tw_golden_boot')}
-    ${row('Best Time of Possession %', 6, possHtml, 'tw_possession')}
-    ${row('First Pot 1 Team Eliminated', 6, '<span class="bt-unknown">— Not yet determined</span>', 'tw_pot1_exit')}
+    ${q('tw_golden_boot', 'Golden Boot Winner', 6, null,
+        stats ? (stats.goldenBoot?.slice(0, 8).map(e => ({ name: e.player, sub: e.team, val: `${e.goals} goal${e.goals !== 1 ? 's' : ''}` })) || []) : undefined)}
+    ${q('tw_possession', 'Best Time of Possession %', 6, null,
+        stats ? (stats.possession?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value}%` })) || []) : undefined)}
+    ${q('tw_pot1_exit', 'First Pot 1 Team Eliminated', 6, 'Not yet determined', null)}
     <div class="bt-section-hdr">Group Stage</div>
-    ${row('Team with Most Goals', 5, mgHtml, 'grp_most_goals')}
-    ${row('Confederation Win Rate', 5, wrHtml, 'grp_conf_winrate')}
-    ${row('Highest Winning Margin', 4, hmHtml, 'grp_margin')}
+    ${q('grp_most_goals', 'Team with Most Goals', 5, null,
+        stats ? (stats.teamGoals?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value} goals` })) || []) : undefined)}
+    ${q('grp_conf_winrate', 'Confederation Win Rate', 5, null,
+        stats ? (stats.confWinRate?.map(e => ({ name: e.conf, val: `${e.rate}% (${e.wins}W / ${e.games}G)`, pk: CONF_KEY[e.conf] || e.conf })) || []) : undefined)}
+    ${q('grp_margin', 'Highest Winning Margin', 4, hm ? hm.label : null,
+        stats ? ['6+', '5', '4', '3'].map(opt => ({ name: `${opt} goals`, val: opt === hmWinner && hm ? hm.label : '', pk: opt, leading: opt === hmWinner })) : undefined)}
   </div>`;
 }
 
