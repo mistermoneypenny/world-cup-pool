@@ -4772,7 +4772,7 @@ function renderBonusTracker() {
       const entries = Object.entries(dist).sort((a, b) => b[1] - a[1]);
       if (!entries.length) return html + `<tr class="bt-tr"><td colspan="4" class="bt-loading-cell">No picks yet</td></tr>`;
       return html + entries.map(([k]) =>
-        `<tr class="bt-tr"><td class="bt-td-rank">—</td><td class="bt-td-name">${flag(k)}${esc(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
+        `<tr class="bt-tr"><td class="bt-td-rank">—</td><td class="bt-td-name">${esc(k)}${flag(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
       ).join('');
     }
 
@@ -4782,7 +4782,7 @@ function renderBonusTracker() {
       const isTop = 'leading' in r ? r.leading : i === 0;
       return `<tr class="bt-tr${isTop ? ' bt-tr-top' : ''}">
         <td class="bt-td-rank">${i + 1}</td>
-        <td class="bt-td-name">${flag(r.sub || r.name)}${esc(r.name)}${r.sub ? `<span class="bt-td-sub">${esc(r.sub)}</span>` : ''}</td>
+        <td class="bt-td-name">${esc(r.name)}${flag(r.sub || r.name)}${r.sub ? `<span class="bt-td-sub">${esc(r.sub)}</span>` : ''}</td>
         <td class="bt-td-val">${esc(r.val || '')}</td>
         <td class="bt-td-picks">${popEl(id, pks)}</td>
       </tr>`;
@@ -4791,7 +4791,7 @@ function renderBonusTracker() {
     const extra = Object.entries(dist).filter(([k]) => !used.has(k));
     if (extra.length) {
       html += extra.map(([k]) =>
-        `<tr class="bt-tr bt-tr-other"><td class="bt-td-rank">?</td><td class="bt-td-name">${flag(k)}${esc(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
+        `<tr class="bt-tr bt-tr-other"><td class="bt-td-rank">?</td><td class="bt-td-name">${esc(k)}${flag(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
       ).join('');
     }
     return html;
