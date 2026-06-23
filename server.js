@@ -599,7 +599,14 @@ app.get('/api/live-stats', async (req, res) => {
   if (!liveStatsCache || Date.now() - lastLiveStatsFetch > LIVE_STATS_TTL) {
     await refreshLiveStats();
   }
-  res.json(liveStatsCache || {});
+  if (!liveStatsCache) return res.json({});
+  // confWinRate and highestMargin are cheap to compute from in-memory data — always fresh
+  const fresh = {
+    ...liveStatsCache,
+    confWinRate:   computeConfWinRate((memoryState || {}).results),
+    highestMargin: computeHighestMargin(cachedScores),
+  };
+  res.json(fresh);
 });
 
 // Initial refresh 5s after boot, then every hour
