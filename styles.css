@@ -1067,6 +1067,7 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 /* Fixed column widths — rank/val/picks pinned, name fills the rest */
 .bt-td-rank  { width: 36px; text-align: center; padding: 5px 4px; color: #2E4458; font-size: 0.6rem; vertical-align: middle; }
 .bt-td-name  { padding: 5px 8px 5px 2px; color: #BCCFDF; font-weight: 600; vertical-align: middle; }
+.bt-td-name .team-flag { display: inline; vertical-align: middle; margin-left: 3px; }
 .bt-td-sub   { display: block; font-size: 0.58rem; font-weight: 400; color: #3A5070; margin-top: 1px; }
 .bt-td-val   { width: 155px; padding: 5px 12px; color: #556677; font-size: 0.65rem; text-align: right; white-space: nowrap; vertical-align: middle; }
 .bt-tr-top .bt-td-val { color: #00A651; font-weight: 700; }
