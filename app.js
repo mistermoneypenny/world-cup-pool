@@ -2240,17 +2240,21 @@ function renderLbBody() {
     if (best > 0) roundBest[cfg.id] = best;
   });
 
-  // Pussy Meter: % of group picks on Pot 3/4 teams, normalised for heat-map colouring
+  // Pussy Meter: % of group picks where picked team's seed > opponent's seed (true upsets)
   const pmSeedOf = {};
   Object.values(GROUP_TEAMS).forEach(ts => ts.forEach(t => { pmSeedOf[t.name] = t.seed; }));
   const pmPct = {};
   rows.forEach(row => {
     const grpPicks = (state.picks?.[row.player.id] || {}).groups || {};
     let tot = 0, up = 0;
-    Object.values(grpPicks).forEach(v => {
+    Object.entries(grpPicks).forEach(([key, v]) => {
       if (!v || v === 'Draw') return;
       tot++;
-      const s = pmSeedOf[v]; if (s >= 3) up++;
+      const parts = key.split('|');
+      if (parts.length !== 2) return;
+      const oppName = parts[0] === v ? parts[1] : parts[0];
+      const pSeed = pmSeedOf[v], oSeed = pmSeedOf[oppName];
+      if (pSeed != null && oSeed != null && pSeed > oSeed) up++;
     });
     pmPct[row.player.id] = tot ? up / tot : null;
   });
@@ -2922,10 +2926,11 @@ function renderAnalytics() {
   // Risk buckets (by seed of picked team) per player — sorted by Pot3+4 picks descending
   const riskRaw = allPlayers.map(p => {
     const picks = gPicks(p.id);
-    const b = {1:0,2:0,3:0,4:0};
+    const b = {1:0,2:0,3:0,4:0,D:0};
     allGames.forEach(g => {
       const picked = picks[g.key];
-      if (!picked || picked === 'Draw') return;
+      if (!picked) return;
+      if (picked === 'Draw') { b.D++; return; }
       const pt = picked === g.t1.name ? g.t1 : g.t2;
       b[pt.seed]++;
     });
@@ -3091,6 +3096,7 @@ function renderAnalytics() {
         { label: 'POT 2 PICKS', data: riskData.map(b => b[2]), backgroundColor: '#00CFFF', borderWidth: 0, borderRadius: 0 },
         { label: 'POT 3 PICKS', data: riskData.map(b => b[3]), backgroundColor: '#FFFF00', borderWidth: 0, borderRadius: 0 },
         { label: 'POT 4 PICKS', data: riskData.map(b => b[4]), backgroundColor: '#FF3D6B', borderWidth: 0, borderRadius: 0 },
+        { label: 'DRAW PICKS',  data: riskData.map(b => b.D),  backgroundColor: '#444444', borderWidth: 0, borderRadius: 0 },
       ]
     },
     options: {
