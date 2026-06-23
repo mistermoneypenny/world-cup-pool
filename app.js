@@ -3094,8 +3094,9 @@ function renderAnalytics() {
       ]
     },
     options: {
+      interaction: { mode: 'index', intersect: false },
       plugins: { legend: leg('bottom'), tooltip: tip },
-      scales: { x: { ...sc.x, stacked: true, ticks: rotX }, y: { ...sc.y, stacked: true } }
+      scales: { x: { ...sc.x, stacked: true, ticks: rotX }, y: { ...sc.y, stacked: true, beginAtZero: true } }
     }
   });
 
