@@ -356,6 +356,7 @@ let state = {
   pickSavedAt:    {},
   reactions:      {},
   broadcast:      null,
+  liveStats:      null,
 };
 
 // ── GAME GENERATION ───────────────────────────────────────────
@@ -1012,6 +1013,7 @@ const QUADRANT_NAMES = { A: 'Quadrant A', B: 'Quadrant B', C: 'Quadrant C', D: '
 function renderBracket() {
   const wrapper = document.getElementById('bracket-wrapper');
   wrapper.innerHTML = '';
+  renderBonusTracker();
 
   // Sub-view toggle bar — rendered into sticky nav above the scroll container
   const nav = document.getElementById('bracket-nav');
@@ -4390,6 +4392,7 @@ async function init() {
 
   startPolling();
   startScoresPolling();
+  fetchLiveStats();
 
   // Feature 8: PWA service worker + install prompt
   if ('serviceWorker' in navigator) {
@@ -4567,6 +4570,113 @@ function startScoresPolling() {
   fetchLiveScores();
   if (scoresTimer) clearInterval(scoresTimer);
   scoresTimer = setInterval(fetchLiveScores, 60000);
+}
+
+async function fetchLiveStats() {
+  try {
+    const resp = await fetch('/api/live-stats');
+    if (!resp.ok) return;
+    state.liveStats = await resp.json();
+    renderBonusTracker();
+  } catch (e) { /* ignore */ }
+}
+
+function renderBonusTracker() {
+  const el = document.getElementById('bonus-tracker');
+  if (!el) return;
+  const stats = state.liveStats;
+
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function timeAgo(iso) {
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (diff < 1) return 'just now';
+    if (diff < 60) return `${diff}m ago`;
+    return `${Math.floor(diff / 60)}h ago`;
+  }
+
+  function pickDist(id) {
+    const counts = {};
+    for (const pp of Object.values(state.bonusPicks || {})) {
+      const p = pp[id];
+      if (!p) continue;
+      const k = Array.isArray(p) ? p.join(', ') : String(p).trim();
+      if (k) counts[k] = (counts[k] || 0) + 1;
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }
+
+  function pickPills(id) {
+    const dist = pickDist(id);
+    if (!dist.length) return '<span class="bt-no-picks">No picks recorded</span>';
+    const shown = dist.slice(0, 4);
+    const rest  = dist.slice(4).reduce((s, [, n]) => s + n, 0);
+    let html = shown.map(([k, n]) => `<span class="bt-pill">${esc(k)} ×${n}</span>`).join('');
+    if (rest > 0) html += `<span class="bt-pill bt-pill-muted">+${rest} more</span>`;
+    return html;
+  }
+
+  function row(label, pts, leaderHtml, id) {
+    return `<div class="bt-row">
+      <div class="bt-q"><span class="bt-q-label">${label}</span><span class="bt-q-pts">${pts}pts</span></div>
+      <div class="bt-detail">
+        <div class="bt-leader-line">${leaderHtml}</div>
+        <div class="bt-pills">${pickPills(id)}</div>
+      </div>
+    </div>`;
+  }
+
+  const loading = '<span class="bt-loading">Loading…</span>';
+  const noData  = '<span class="bt-unknown">No data yet</span>';
+
+  // Golden Boot
+  const boot = stats?.goldenBoot?.[0];
+  const bootHtml = boot
+    ? `<span class="bt-leader-badge">${esc(boot.player)}</span><span class="bt-leader-team">${esc(boot.team)}</span><span class="bt-leader-stat">${boot.goals} goal${boot.goals !== 1 ? 's' : ''}</span>`
+    : (stats ? noData : loading);
+
+  // Possession
+  const poss = stats?.possession?.[0];
+  const possHtml = poss
+    ? `<span class="bt-leader-badge">${esc(poss.team)}</span><span class="bt-leader-stat">${poss.value}%</span>`
+    : (stats ? noData : loading);
+
+  // Most Team Goals
+  const mg = stats?.teamGoals?.[0];
+  const mgHtml = mg
+    ? `<span class="bt-leader-badge">${esc(mg.team)}</span><span class="bt-leader-stat">${mg.value} goals</span>`
+    : (stats ? noData : loading);
+
+  // Confederation Win Rate
+  const wr = stats?.confWinRate?.[0];
+  const wrHtml = wr
+    ? `<span class="bt-leader-badge">${esc(wr.conf)}</span><span class="bt-leader-stat">${wr.rate}% (${wr.wins}W / ${wr.games}G)</span>`
+    : (stats ? noData : loading);
+
+  // Highest Margin
+  const hm = stats?.highestMargin;
+  const hmHtml = hm
+    ? `<span class="bt-leader-badge">${hm.margin} goal${hm.margin !== 1 ? 's' : ''}</span><span class="bt-leader-desc">${esc(hm.label)}</span>`
+    : (stats ? noData : loading);
+
+  const updText = stats?.lastUpdated ? `Updated ${timeAgo(stats.lastUpdated)} &middot; as.com / live results` : '';
+
+  el.innerHTML = `<div class="bonus-tracker">
+    <div class="bt-header">
+      <h3 class="bt-title">&#127942; Bonus Tracker</h3>
+      ${updText ? `<span class="bt-upd">${updText}</span>` : ''}
+    </div>
+    <div class="bt-section-hdr">Tournament-Wide</div>
+    ${row('Golden Boot Winner', 6, bootHtml, 'tw_golden_boot')}
+    ${row('Best Time of Possession %', 6, possHtml, 'tw_possession')}
+    ${row('First Pot 1 Team Eliminated', 6, '<span class="bt-unknown">— Not yet determined</span>', 'tw_pot1_exit')}
+    <div class="bt-section-hdr">Group Stage</div>
+    ${row('Team with Most Goals', 5, mgHtml, 'grp_most_goals')}
+    ${row('Confederation Win Rate', 5, wrHtml, 'grp_conf_winrate')}
+    ${row('Highest Winning Margin', 4, hmHtml, 'grp_margin')}
+  </div>`;
 }
 
 document.addEventListener('DOMContentLoaded', init);

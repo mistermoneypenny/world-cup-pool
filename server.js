@@ -466,6 +466,146 @@ app.get('/api/scores', async (req, res) => {
   }
 });
 
+// ── LIVE STATS (Bonus Tracker) ────────────────────────────────
+
+const CONF_MAP = {
+  'Czech Republic':'UEFA','Bosnia':'UEFA','Switzerland':'UEFA','Scotland':'UEFA',
+  'Turkey':'UEFA','Germany':'UEFA','Netherlands':'UEFA','Sweden':'UEFA',
+  'Belgium':'UEFA','Spain':'UEFA','France':'UEFA','Norway':'UEFA',
+  'Austria':'UEFA','Portugal':'UEFA','England':'UEFA','Croatia':'UEFA',
+  'Brazil':'CONMEBOL','Paraguay':'CONMEBOL','Ecuador':'CONMEBOL',
+  'Uruguay':'CONMEBOL','Argentina':'CONMEBOL','Colombia':'CONMEBOL',
+  'South Africa':'CAF','Morocco':'CAF','Ivory Coast':'CAF','Tunisia':'CAF',
+  'Egypt':'CAF','Cape Verde':'CAF','Senegal':'CAF','Algeria':'CAF',
+  'DR Congo':'CAF','Ghana':'CAF',
+  'South Korea':'AFC','Qatar':'AFC','Australia':'AFC','Japan':'AFC',
+  'Iran':'AFC','Saudi Arabia':'AFC','Iraq':'AFC','Jordan':'AFC','Uzbekistan':'AFC',
+  'Mexico':'CONCACAF','Canada':'CONCACAF','Haiti':'CONCACAF',
+  'Curacao':'CONCACAF','USA':'CONCACAF','Panama':'CONCACAF',
+  'New Zealand':'OFC',
+};
+
+let liveStatsCache    = null;
+let lastLiveStatsFetch = 0;
+const LIVE_STATS_TTL  = 60 * 60 * 1000; // 1 hour
+
+const AS_HDRS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml',
+  'Accept-Language': 'en-US,en;q=0.9',
+};
+
+async function fetchAsHtml(path) {
+  const r = await fetch(`https://en.as.com/resultados/futbol/mundial/2026/ranking${path}`, { headers: AS_HDRS });
+  if (!r.ok) throw new Error(`AS.com ${r.status}`);
+  return r.text();
+}
+
+function parseAsTeamTable(html) {
+  const tbody = (html.match(/<tbody>([\s\S]+?)<\/tbody>/) || [])[1] || '';
+  return tbody.split('<tr>').slice(1).map((row, i) => {
+    const team = (row.match(/class="a_tb_tn _hidden-xs">([^<]+)<\/span>/) || [])[1]?.trim();
+    const val  = (row.match(/class="a_tb_rk">([^<]+)<\/td>/)  || [])[1]?.trim();
+    return (team && val) ? { pos: i + 1, team, value: val } : null;
+  }).filter(Boolean);
+}
+
+function parseAsPlayerTable(html) {
+  const tbody = (html.match(/<tbody>([\s\S]+?)<\/tbody>/) || [])[1] || '';
+  return tbody.split('<tr>').slice(1).map((row, i) => {
+    const player = (row.match(/class="player_a"[^>]*>\s*([^<]+?)\s*<\/a>/) || [])[1]?.trim();
+    const team   = (row.match(/<span class="_hidden-xs">([^<]+)<\/span>/) || [])[1]?.trim();
+    const goals  = parseInt((row.match(/class="a_tb_rk">(\d+)<\/td>/) || [])[1] || '0');
+    return (player && team) ? { pos: i + 1, player, team, goals } : null;
+  }).filter(Boolean);
+}
+
+function computeConfWinRate(results) {
+  const conf = {};
+  Object.values(CONF_MAP).forEach(c => { if (!conf[c]) conf[c] = { wins: 0, games: 0 }; });
+
+  for (const [gid, winner] of Object.entries(results || {})) {
+    if (!gid.startsWith('groups-')) continue;
+    const parts = gid.split('-');
+    const grp   = parts[1].toUpperCase();
+    const gi    = parseInt(parts[2]);
+    if (isNaN(gi) || !SRV_PAIRS[gi]) continue;
+    const teams = SRV_GROUP_TEAMS[grp];
+    if (!teams) continue;
+    const [a, b] = SRV_PAIRS[gi];
+    const t1 = teams[a].n, t2 = teams[b].n;
+    const c1 = CONF_MAP[t1], c2 = CONF_MAP[t2];
+
+    if (winner === 'Draw') {
+      if (c1) conf[c1].games++;
+      if (c2) conf[c2].games++;
+    } else {
+      const wc = CONF_MAP[winner];
+      const lc = CONF_MAP[winner === t1 ? t2 : t1];
+      if (wc) { conf[wc].wins++; conf[wc].games++; }
+      if (lc) conf[lc].games++;
+    }
+  }
+
+  return Object.entries(conf)
+    .filter(([, d]) => d.games > 0)
+    .map(([name, d]) => ({ conf: name, wins: d.wins, games: d.games, rate: Math.round(d.wins / d.games * 1000) / 10 }))
+    .sort((a, b) => b.rate - a.rate || b.wins - a.wins);
+}
+
+function computeHighestMargin(scores) {
+  let best = { margin: 0, label: null };
+  for (const sc of Object.values(scores || {})) {
+    if (sc.status !== 'post') continue;
+    const margin = Math.abs(sc.t1.score - sc.t2.score);
+    if (margin > best.margin) {
+      const w = sc.t1.score >= sc.t2.score ? sc.t1 : sc.t2;
+      const l = sc.t1.score >= sc.t2.score ? sc.t2 : sc.t1;
+      best = { margin, label: `${w.name} ${Math.max(sc.t1.score, sc.t2.score)}-${Math.min(sc.t1.score, sc.t2.score)} ${l.name}` };
+    }
+  }
+  return best.margin > 0 ? best : null;
+}
+
+async function refreshLiveStats() {
+  try {
+    const [possRes, bootRes, goalsRes] = await Promise.allSettled([
+      fetchAsHtml('/equipos/porcentaje-de-posesion/'),
+      fetchAsHtml('/jugadores/goles/'),
+      fetchAsHtml('/equipos/goles/'),
+    ]);
+
+    const possession = possRes.status === 'fulfilled' ? parseAsTeamTable(possRes.value).slice(0, 25) : null;
+    const goldenBoot = bootRes.status === 'fulfilled' ? parseAsPlayerTable(bootRes.value).slice(0, 20) : null;
+    const teamGoals  = goalsRes.status === 'fulfilled' ? parseAsTeamTable(goalsRes.value) : null;
+
+    const confWinRate = computeConfWinRate((memoryState || {}).results);
+
+    let highestMargin = null;
+    try {
+      const espnScores = await fetchESPNScores();
+      highestMargin = computeHighestMargin(espnScores);
+    } catch (_) { /* ignore */ }
+
+    liveStatsCache = { possession, goldenBoot, teamGoals, confWinRate, highestMargin, lastUpdated: new Date().toISOString() };
+    lastLiveStatsFetch = Date.now();
+    console.log('Live stats refreshed ok');
+  } catch (e) {
+    console.warn('Live stats refresh error:', e.message);
+  }
+}
+
+app.get('/api/live-stats', async (req, res) => {
+  if (!liveStatsCache || Date.now() - lastLiveStatsFetch > LIVE_STATS_TTL) {
+    await refreshLiveStats();
+  }
+  res.json(liveStatsCache || {});
+});
+
+// Initial refresh 5s after boot, then every hour
+setTimeout(() => refreshLiveStats(), 5000);
+setInterval(() => refreshLiveStats(), LIVE_STATS_TTL);
+
 // ── PICKS BACKUP ENDPOINTS ────────────────────────────────────
 
 // List available backup files
