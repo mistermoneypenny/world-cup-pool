@@ -1009,6 +1009,9 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 .bt-upd   { font-size: 0.62rem; color: #3A5070; font-style: italic; }
 /* Single unified table — all questions share one column grid */
 .bt-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; table-layout: fixed; }
+.bt-col-rank  { width: 36px; }
+.bt-col-val   { width: 155px; }
+.bt-col-picks { width: 72px; }
 /* Section header rows */
 .bt-sec-row td {
   padding: 0.28rem 1rem;

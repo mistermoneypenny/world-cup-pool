@@ -4699,7 +4699,7 @@ function renderBonusTracker() {
       <h3 class="bt-title">&#127942; Bonus Tracker</h3>
       ${updText ? `<span class="bt-upd">${updText}</span>` : ''}
     </div>
-    <table class="bt-table"><tbody>
+    <table class="bt-table"><colgroup><col class="bt-col-rank"><col><col class="bt-col-val"><col class="bt-col-picks"></colgroup><tbody>
       ${secRow('Tournament-Wide')}
       ${qRows('tw_golden_boot', 'Golden Boot Winner', 6, null,
           stats ? (stats.goldenBoot?.slice(0, 8).map(e => ({ name: e.player, sub: e.team, val: `${e.goals} goal${e.goals !== 1 ? 's' : ''}` })) || []) : undefined)}
