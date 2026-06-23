@@ -1007,31 +1007,35 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 }
 .bt-title { margin: 0; font-size: 0.78rem; font-weight: 700; color: #00A651; text-transform: uppercase; letter-spacing: 0.08em; }
 .bt-upd   { font-size: 0.62rem; color: #3A5070; font-style: italic; }
-.bt-section-hdr {
-  padding: 0.25rem 1rem;
+/* Single unified table — all questions share one column grid */
+.bt-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; table-layout: fixed; }
+/* Section header rows */
+.bt-sec-row td {
+  padding: 0.28rem 1rem;
   background: #0A1828;
   color: #3A6090;
   font-size: 0.58rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.1em;
   border-top: 1px solid #1A3050; border-bottom: 1px solid #1A3050;
 }
-.bt-question { padding: 0.5rem 1rem 0.55rem; border-bottom: 1px solid #0B1A28; }
-.bt-question:last-child { border-bottom: none; }
-.bt-q-hdr { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
+.bt-table tbody tr:first-child.bt-sec-row td { border-top: none; }
+/* Question header rows */
+.bt-q-row td { padding: 0.65rem 1rem 0.2rem; background: #07111F; }
+.bt-sec-row + .bt-q-row td { padding-top: 0.35rem; }
 .bt-q-title { font-size: 0.7rem; font-weight: 700; color: #AABBCC; }
-.bt-q-pts   { font-size: 0.58rem; color: #FFCC44; }
-.bt-q-sub   { font-size: 0.6rem; color: #3A5060; font-style: italic; }
-.bt-loading-msg { font-size: 0.65rem; color: #3A5060; font-style: italic; margin: 0.1rem 0; }
-.bt-table { width: auto; border-collapse: collapse; font-size: 0.68rem; }
-.bt-tr { border-bottom: 1px solid rgba(26,48,80,0.4); }
-.bt-tr:last-child { border-bottom: none; }
-.bt-tr-top { background: rgba(0,166,81,0.06); }
+.bt-q-pts   { font-size: 0.58rem; color: #FFCC44; margin-left: 0.4rem; }
+.bt-q-sub   { font-size: 0.6rem; color: #3A5060; font-style: italic; margin-left: 0.45rem; }
+.bt-loading-cell { padding: 0.25rem 1rem 0.5rem; font-size: 0.65rem; color: #3A5060; font-style: italic; }
+/* Data rows */
+.bt-tr { border-bottom: 1px solid rgba(26,48,80,0.35); }
+.bt-tr-top { background: rgba(0,166,81,0.05); }
 .bt-tr-other { opacity: 0.5; }
-.bt-td-rank { width: 24px; text-align: center; color: #2E4458; padding: 4px 2px; font-size: 0.6rem; vertical-align: middle; }
-.bt-td-name { padding: 4px 6px 4px 2px; color: #BCCFDF; font-weight: 600; vertical-align: middle; }
-.bt-td-sub  { display: block; font-size: 0.58rem; font-weight: 400; color: #3A5070; margin-top: 1px; }
-.bt-td-val  { padding: 4px 8px; color: #556677; font-size: 0.65rem; text-align: right; white-space: nowrap; vertical-align: middle; }
+/* Fixed column widths — rank/val/picks pinned, name fills the rest */
+.bt-td-rank  { width: 36px; text-align: center; padding: 5px 4px; color: #2E4458; font-size: 0.6rem; vertical-align: middle; }
+.bt-td-name  { padding: 5px 8px 5px 2px; color: #BCCFDF; font-weight: 600; vertical-align: middle; }
+.bt-td-sub   { display: block; font-size: 0.58rem; font-weight: 400; color: #3A5070; margin-top: 1px; }
+.bt-td-val   { width: 155px; padding: 5px 12px; color: #556677; font-size: 0.65rem; text-align: right; white-space: nowrap; vertical-align: middle; }
 .bt-tr-top .bt-td-val { color: #00A651; font-weight: 700; }
-.bt-td-picks { padding: 4px 0 4px 6px; text-align: right; white-space: nowrap; vertical-align: middle; }
+.bt-td-picks { width: 72px; padding: 5px 10px 5px 6px; text-align: right; white-space: nowrap; vertical-align: middle; }
 .bt-zero { font-size: 0.62rem; color: #253545; }
 @media (max-width: 600px) { .bt-td-val { display: none; } }

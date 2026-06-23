@@ -4647,22 +4647,28 @@ function renderBonusTracker() {
     return `<span class="pick-o-pop" data-pickers="${nameStr}"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${names.length}/${denom}</span></span>`;
   }
 
-  function buildTable(id, rows) {
+  function secRow(label) {
+    return `<tr class="bt-sec-row"><td colspan="4">${label}</td></tr>`;
+  }
+
+  function qRows(id, title, pts, subtitle, rows) {
     const dist = pickDist(id);
     const used = new Set();
+    let html = `<tr class="bt-q-row"><td colspan="4"><span class="bt-q-title">${title}</span><span class="bt-q-pts">${pts}pts</span>${subtitle ? `<span class="bt-q-sub">${esc(subtitle)}</span>` : ''}</td></tr>`;
 
-    if (rows === undefined) return `<p class="bt-loading-msg">Loading…</p>`;
-
-    if (rows === null) {
-      // No live ranking — show pick distribution only
-      const entries = Object.entries(dist).sort((a, b) => b[1] - a[1]);
-      if (!entries.length) return `<p class="bt-loading-msg">No picks yet</p>`;
-      return `<table class="bt-table"><tbody>${
-        entries.map(([k]) => `<tr class="bt-tr"><td class="bt-td-name" colspan="2">${esc(k)}</td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`).join('')
-      }</tbody></table>`;
+    if (rows === undefined) {
+      return html + `<tr class="bt-tr"><td colspan="4" class="bt-loading-cell">Loading…</td></tr>`;
     }
 
-    let body = rows.map((r, i) => {
+    if (rows === null) {
+      const entries = Object.entries(dist).sort((a, b) => b[1] - a[1]);
+      if (!entries.length) return html + `<tr class="bt-tr"><td colspan="4" class="bt-loading-cell">No picks yet</td></tr>`;
+      return html + entries.map(([k]) =>
+        `<tr class="bt-tr"><td class="bt-td-rank">—</td><td class="bt-td-name">${esc(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
+      ).join('');
+    }
+
+    html += rows.map((r, i) => {
       const pks = 'pk' in r ? (r.pk ? [r.pk] : []) : findAllPks(r.name, dist);
       pks.forEach(k => used.add(k));
       const isTop = 'leading' in r ? r.leading : i === 0;
@@ -4674,25 +4680,13 @@ function renderBonusTracker() {
       </tr>`;
     }).join('');
 
-    // Picks that didn't match any live entry (e.g. non-standard spellings not in top-N)
     const extra = Object.entries(dist).filter(([k]) => !used.has(k));
     if (extra.length) {
-      body += extra.map(([k]) => `<tr class="bt-tr bt-tr-other">
-        <td class="bt-td-rank">?</td>
-        <td class="bt-td-name">${esc(k)}</td>
-        <td class="bt-td-val"></td>
-        <td class="bt-td-picks">${popEl(id, [k])}</td>
-      </tr>`).join('');
+      html += extra.map(([k]) =>
+        `<tr class="bt-tr bt-tr-other"><td class="bt-td-rank">?</td><td class="bt-td-name">${esc(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
+      ).join('');
     }
-
-    return `<table class="bt-table"><tbody>${body}</tbody></table>`;
-  }
-
-  function q(id, title, pts, subtitle, rows) {
-    return `<div class="bt-question">
-      <div class="bt-q-hdr"><span class="bt-q-title">${title}</span><span class="bt-q-pts">${pts}pts</span>${subtitle ? `<span class="bt-q-sub">${esc(subtitle)}</span>` : ''}</div>
-      ${buildTable(id, rows)}
-    </div>`;
+    return html;
   }
 
   const CONF_KEY = { CONMEBOL: 'CONMEBOL (South America)', UEFA: 'UEFA (Europe)', CAF: 'CAF (Africa)', AFC: 'AFC (Asia)', CONCACAF: 'CONCACAF (N./C. America)', OFC: 'OFC (Oceania)' };
@@ -4705,19 +4699,21 @@ function renderBonusTracker() {
       <h3 class="bt-title">&#127942; Bonus Tracker</h3>
       ${updText ? `<span class="bt-upd">${updText}</span>` : ''}
     </div>
-    <div class="bt-section-hdr">Tournament-Wide</div>
-    ${q('tw_golden_boot', 'Golden Boot Winner', 6, null,
-        stats ? (stats.goldenBoot?.slice(0, 8).map(e => ({ name: e.player, sub: e.team, val: `${e.goals} goal${e.goals !== 1 ? 's' : ''}` })) || []) : undefined)}
-    ${q('tw_possession', 'Best Time of Possession %', 6, null,
-        stats ? (stats.possession?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value}%` })) || []) : undefined)}
-    ${q('tw_pot1_exit', 'First Pot 1 Team Eliminated', 6, 'Not yet determined', null)}
-    <div class="bt-section-hdr">Group Stage</div>
-    ${q('grp_most_goals', 'Team with Most Goals', 5, null,
-        stats ? (stats.teamGoals?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value} goals` })) || []) : undefined)}
-    ${q('grp_conf_winrate', 'Confederation Win Rate', 5, null,
-        stats ? (stats.confWinRate?.map(e => ({ name: e.conf, val: `${e.rate}% (${e.wins}W / ${e.games}G)`, pk: CONF_KEY[e.conf] || e.conf })) || []) : undefined)}
-    ${q('grp_margin', 'Highest Winning Margin', 4, hm ? hm.label : null,
-        stats ? ['6+', '5', '4', '3'].map(opt => ({ name: `${opt} goals`, val: opt === hmWinner && hm ? hm.label : '', pk: opt, leading: opt === hmWinner })) : undefined)}
+    <table class="bt-table"><tbody>
+      ${secRow('Tournament-Wide')}
+      ${qRows('tw_golden_boot', 'Golden Boot Winner', 6, null,
+          stats ? (stats.goldenBoot?.slice(0, 8).map(e => ({ name: e.player, sub: e.team, val: `${e.goals} goal${e.goals !== 1 ? 's' : ''}` })) || []) : undefined)}
+      ${qRows('tw_possession', 'Best Time of Possession %', 6, null,
+          stats ? (stats.possession?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value}%` })) || []) : undefined)}
+      ${qRows('tw_pot1_exit', 'First Pot 1 Team Eliminated', 6, 'Not yet determined', null)}
+      ${secRow('Group Stage')}
+      ${qRows('grp_most_goals', 'Team with Most Goals', 5, null,
+          stats ? (stats.teamGoals?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value} goals` })) || []) : undefined)}
+      ${qRows('grp_conf_winrate', 'Confederation Win Rate', 5, null,
+          stats ? (stats.confWinRate?.map(e => ({ name: e.conf, val: `${e.rate}% (${e.wins}W / ${e.games}G)`, pk: CONF_KEY[e.conf] || e.conf })) || []) : undefined)}
+      ${qRows('grp_margin', 'Highest Winning Margin', 4, hm ? hm.label : null,
+          stats ? ['6+', '5', '4', '3'].map(opt => ({ name: `${opt} goals`, val: opt === hmWinner && hm ? hm.label : '', pk: opt, leading: opt === hmWinner })) : undefined)}
+    </tbody></table>
   </div>`;
 }
 
