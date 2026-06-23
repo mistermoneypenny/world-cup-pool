@@ -991,7 +991,7 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 }
 
 /* ── BONUS TRACKER ──────────────────────────────────────────── */
-#bonus-tracker { margin: 1rem 0.5rem 0.5rem; }
+#bonus-tracker { margin: 1rem 0.5rem 0.5rem; max-width: 620px; }
 .bonus-tracker {
   background: #07111F;
   border: 1px solid #1A3050;
