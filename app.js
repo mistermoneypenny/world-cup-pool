@@ -4598,7 +4598,7 @@ function renderBonusTracker() {
   }
 
   const bpEntries = Object.entries(state.bonusPicks || {});
-  const totalPickers = bpEntries.length;
+  const totalPickers = state.players.length || bpEntries.length;
 
   function pickDist(id) {
     const counts = {};
@@ -4638,12 +4638,13 @@ function renderBonusTracker() {
   }
 
   function popEl(id, pks) {
-    if (!pks || !pks.length) return `<span class="bt-zero">0</span>`;
+    const denom = totalPickers;
+    if (!pks || !pks.length) return `<span class="bt-zero">0/${denom}</span>`;
     const names = pickerNamesFor(id, pks);
-    if (!names.length) return `<span class="bt-zero">0</span>`;
+    if (!names.length) return `<span class="bt-zero">0/${denom}</span>`;
     const nameStr = esc(names.map(n => n.replace(/\|/g, '/')).join('||'));
-    const pct = totalPickers > 0 ? Math.round(names.length / totalPickers * 100) : 0;
-    return `<span class="pick-o-pop" data-pickers="${nameStr}"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${names.length}</span></span>`;
+    const pct = denom > 0 ? Math.round(names.length / denom * 100) : 0;
+    return `<span class="pick-o-pop" data-pickers="${nameStr}"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${names.length}/${denom}</span></span>`;
   }
 
   function buildTable(id, rows) {

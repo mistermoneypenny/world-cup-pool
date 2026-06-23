@@ -1022,7 +1022,7 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
 .bt-q-pts   { font-size: 0.58rem; color: #FFCC44; }
 .bt-q-sub   { font-size: 0.6rem; color: #3A5060; font-style: italic; }
 .bt-loading-msg { font-size: 0.65rem; color: #3A5060; font-style: italic; margin: 0.1rem 0; }
-.bt-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
+.bt-table { width: auto; border-collapse: collapse; font-size: 0.68rem; }
 .bt-tr { border-bottom: 1px solid rgba(26,48,80,0.4); }
 .bt-tr:last-child { border-bottom: none; }
 .bt-tr-top { background: rgba(0,166,81,0.06); }
