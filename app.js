@@ -1225,7 +1225,7 @@ function renderGroupStageBracket(wrapper) {
 }
 
 function buildRegionBlock(region, side, showHeader = true) {
-  const rounds = ['r32', 'r16', 'qf'];
+  const rounds = side === 'right' ? ['qf', 'r16', 'r32'] : ['r32', 'r16', 'qf'];
 
   const block = document.createElement('div');
   block.className = 'region-block';
