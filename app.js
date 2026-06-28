@@ -656,7 +656,11 @@ function getBonusScore(playerId, roundId) {
       const normC = correctAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
       if (normP.length === normC.length && normP.every((v, i) => v === normC[i])) score += b.points;
     } else {
-      if (playerAns.trim().toLowerCase() === correctAns.trim().toLowerCase()) score += b.points;
+      const ans = playerAns.trim().toLowerCase();
+      const correct = Array.isArray(correctAns)
+        ? correctAns.map(s => s.trim().toLowerCase()).includes(ans)
+        : ans === correctAns.trim().toLowerCase();
+      if (correct) score += b.points;
     }
   });
   return score;
@@ -677,7 +681,10 @@ function getPlayerBonusDetails(playerId, roundId) {
           isCorrect = np.length === nc.length && np.every((v, i) => v === nc[i]);
         }
       } else {
-        isCorrect = playerAns.trim().toLowerCase() === correctAns.trim().toLowerCase();
+        const ans = playerAns.trim().toLowerCase();
+        isCorrect = Array.isArray(correctAns)
+          ? correctAns.map(s => s.trim().toLowerCase()).includes(ans)
+          : ans === correctAns.trim().toLowerCase();
       }
       status = isCorrect ? 'correct' : 'wrong';
       earned = isCorrect ? b.points : 0;
@@ -2511,7 +2518,7 @@ function renderBonusAdmin() {
         const o = document.createElement('option');
         o.value = optText;
         o.textContent = optText;
-        if (correctAns === optText) o.selected = true;
+        if (Array.isArray(correctAns) ? correctAns.includes(optText) : correctAns === optText) o.selected = true;
         sel.appendChild(o);
       });
       row.appendChild(sel);

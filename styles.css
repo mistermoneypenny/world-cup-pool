@@ -248,7 +248,7 @@ a { color: var(--accent); }
   margin-bottom: 0.35rem;
 }
 .bracket-hdr-cell {
-  width: 130px;
+  width: 155px;
   font-size: 0.65rem;
   font-weight: 700;
   text-align: center;
@@ -274,7 +274,7 @@ a { color: var(--accent); }
 
 /* Round columns */
 .round-col {
-  width: 130px;
+  width: 155px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -337,7 +337,7 @@ a { color: var(--accent); }
 .third-place-sep { width: 80%; border-top: 1px solid var(--border); margin: 0.25rem auto 0; }
 .third-place-label { font-size: 0.72rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.15rem; }
 .t-seed { font-size: 0.65rem; font-weight: 700; color: var(--text-3); min-width: 14px; flex-shrink: 0; }
-.t-name { flex: 1; display: flex; align-items: center; gap: 0.2rem; min-width: 0; flex-wrap: wrap; }
+.t-name { flex: 1; display: flex; align-items: center; gap: 0.2rem; min-width: 0; overflow: hidden; }
 .team-slot.winner .t-seed { color: var(--green); }
 
 /* PICKS VIEW */
@@ -362,7 +362,7 @@ a { color: var(--accent); }
 .pick-option.result-correct { background: rgba(46,204,113,0.1); }
 .pick-option.result-wrong   { background: rgba(231,76,60,0.07); }
 .pick-o-seed  { font-size: 0.65rem; font-weight: 700; color: var(--text-3); width: 16px; min-width: 16px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
-.pick-o-name  { flex: 1; display: flex; align-items: center; gap: 0.2rem; min-width: 0; flex-wrap: wrap; }
+.pick-o-name  { flex: 1; display: flex; align-items: center; gap: 0.2rem; min-width: 0; overflow: hidden; }
 .pick-o-score { font-size: 0.78rem; font-weight: 700; color: var(--text-2); width: 18px; text-align: center; flex-shrink: 0; }
 .pick-o-pts   { font-size: 0.7rem; color: var(--text-2); white-space: nowrap; flex-shrink: 0; text-align: left; width: 44px; }
 .pick-o-result { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; flex-shrink: 0; width: 46px; text-align: center; }
