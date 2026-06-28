@@ -2542,10 +2542,16 @@ function saveBonusAnswers() {
 // Within each quadrant: 3 winners + 3 runners-up (cross-paired to avoid rematches)
 // + 2 best 3rd-place teams (sorted globally, 2 per quadrant in rank order).
 function buildR32FromGroups() {
-  // Assign 3 consecutive groups to each knockout quadrant
-  const QUADRANT_GROUPS = { A: ['A','B','C'], B: ['D','E','F'], C: ['G','H','I'], D: ['J','K','L'] };
+  // Official FIFA 2026 structure: Groups A-F and G-L create two bracket halves
+  // Each quadrant pairs winners + runners-up from adjacent groups (avoiding same-group rematches)
+  const QUADRANT_GROUPS = {
+    A: [['A','B'], ['C','D']],  // Quadrant A: (A1 vs B2, B1 vs A2) + (C1 vs D2, D1 vs C2)
+    B: [['E','F']],             // Quadrant B: (E1 vs F2, F1 vs E2) + best third-place teams
+    C: [['G','H'], ['I','J']],  // Quadrant C: (G1 vs H2, H1 vs G2) + (I1 vs J2, J1 vs I2)
+    D: [['K','L']],             // Quadrant D: (K1 vs L2, L1 vs K2) + best third-place teams
+  };
 
-  // Compute all 12 third-place finishers, pick best 8 by pts → wins → seed
+  // Get all third-place finishers, ranked by points/wins/seed
   const thirdPlace = GROUP_LETTERS.map(grp => {
     const s = getGroupStandings(grp);
     return s[2] ? { team: s[2].team, pts: s[2].pts, w: s[2].w, group: grp } : null;
@@ -2554,28 +2560,35 @@ function buildR32FromGroups() {
   const best8 = thirdPlace.slice(0, 8).map(e => ({ name: e.team.name, seed: e.team.seed }));
 
   const cur = state.r32Teams || INITIAL_TEAMS;
-  const getTeamAt = (standings, rank, fallback) => {
-    const e = standings[rank];
+  const getTeamAt = (groupLetter, rank, fallback) => {
+    const s = getGroupStandings(groupLetter);
+    const e = s[rank];
     return e ? { name: e.team.name, seed: e.team.seed } : fallback;
   };
 
   const result = {};
+  const thirdPlaceIdx = [0, 0, 0, 0]; // Track which third-place team goes to each quadrant
+
   REGIONS.forEach((region, qi) => {
-    const [g1, g2, g3] = QUADRANT_GROUPS[region];
-    const s1 = getGroupStandings(g1), s2 = getGroupStandings(g2), s3 = getGroupStandings(g3);
     const fb = cur[region];
-    // Matchups avoid same-group rematches:
-    // Game 0: g1-winner vs g2-runner-up
-    // Game 1: g2-winner vs g3-runner-up
-    // Game 2: g3-winner vs g1-runner-up
-    // Game 3: best-3rd vs 2nd-best-3rd (for this quadrant)
-    result[region] = [
-      getTeamAt(s1, 0, fb[0]), getTeamAt(s2, 1, fb[1]),
-      getTeamAt(s2, 0, fb[2]), getTeamAt(s3, 1, fb[3]),
-      getTeamAt(s3, 0, fb[4]), getTeamAt(s1, 1, fb[5]),
-      best8[qi * 2]     || fb[6],
-      best8[qi * 2 + 1] || fb[7],
-    ];
+    const teams = [];
+
+    // Add paired matchups from defined group pairs
+    for (const [g1, g2] of QUADRANT_GROUPS[region]) {
+      // Game: g1 winner vs g2 runner-up
+      teams.push(getTeamAt(g1, 0, fb[teams.length]));
+      teams.push(getTeamAt(g2, 1, fb[teams.length]));
+      // Game: g2 winner vs g1 runner-up
+      teams.push(getTeamAt(g2, 0, fb[teams.length]));
+      teams.push(getTeamAt(g1, 1, fb[teams.length]));
+    }
+
+    // Fill remaining slots with best third-place finishers
+    while (teams.length < 8) {
+      teams.push(best8[thirdPlaceIdx[qi]++] || fb[teams.length]);
+    }
+
+    result[region] = teams;
   });
   return result;
 }
