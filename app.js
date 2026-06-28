@@ -1223,7 +1223,6 @@ function renderGroupStageBracket(wrapper) {
 
 function buildRegionBlock(region, side, showHeader = true) {
   const rounds = ['r32', 'r16', 'qf'];
-  const orderedRounds = side === 'right' ? [...rounds].reverse() : rounds;
 
   const block = document.createElement('div');
   block.className = 'region-block';
@@ -1231,7 +1230,7 @@ function buildRegionBlock(region, side, showHeader = true) {
   if (showHeader) {
     const hdrRow = document.createElement('div');
     hdrRow.className = 'bracket-hdr-row';
-    orderedRounds.forEach(roundId => {
+    rounds.forEach(roundId => {
       const cell = document.createElement('div');
       cell.className = 'bracket-hdr-cell';
       cell.innerHTML = `<strong>${ROUND_LABELS[roundId]}</strong>`;
@@ -1247,7 +1246,7 @@ function buildRegionBlock(region, side, showHeader = true) {
 
   const roundsRow = document.createElement('div');
   roundsRow.className = 'region-rounds';
-  orderedRounds.forEach(roundId => {
+  rounds.forEach(roundId => {
     roundsRow.appendChild(buildRoundCol(region, roundId));
   });
   block.appendChild(roundsRow);
