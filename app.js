@@ -1293,12 +1293,21 @@ function buildMatchup(game) {
   const sc = state.scores[game.id];
   const liveSc = findGameScore(t1?.name, t2?.name);
   const isLive = !sc && liveSc && liveSc.status === 'in';
+  const isPre  = !sc && !isLive && liveSc?.status === 'pre' && liveSc?.scheduledDate;
   if (isLive) {
     const badge = liveSc.link ? document.createElement('a') : document.createElement('div');
     if (liveSc.link) { badge.href = liveSc.link; badge.target = '_blank'; badge.rel = 'noopener noreferrer'; }
     badge.className = 'live-badge';
     badge.textContent = liveSc.statusDetail || 'LIVE';
     card.appendChild(badge);
+  } else if (isPre) {
+    const d = new Date(liveSc.scheduledDate);
+    const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    const kickoff = document.createElement('div');
+    kickoff.className = 'game-kickoff';
+    kickoff.textContent = `${dateStr} · ${timeStr}`;
+    card.appendChild(kickoff);
   } else if (liveSc?.link) {
     const espn = document.createElement('a');
     espn.href = liveSc.link;
@@ -1324,7 +1333,9 @@ function buildMatchup(game) {
       if (pickedThis && isWinner) row.classList.add('pick-correct');
       if (pickedThis && isLoser)  row.classList.add('pick-wrong');
       const displaySc = sc ?? liveSc;
-      const goals = displaySc != null ? `<span class="t-score${isLive ? ' live' : ''}">${idx === 0 ? displaySc.t1 : displaySc.t2}</span>` : '';
+      const rawVal = displaySc != null ? (idx === 0 ? displaySc.t1 : displaySc.t2) : null;
+      const scoreNum = rawVal == null ? '' : (typeof rawVal === 'object' ? rawVal.score : rawVal);
+      const goals = rawVal != null ? `<span class="t-score${isLive ? ' live' : ''}">${scoreNum}</span>` : '';
       row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${flag(team.name)}${esc(team.name)}</span>${goals}`;
     }
     card.appendChild(row);

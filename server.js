@@ -362,9 +362,11 @@ async function fetchESPNScores() {
   const now = Date.now();
   if (now - lastScoresFetch < SCORES_CACHE_MS) return cachedScores;
 
-  const tomorrow = new Date(now + 86400000);
-  const tomorrowStr = tomorrow.toISOString().slice(0, 10).replace(/-/g, '');
-  const datesToFetch = WC_DATES.filter(d => d <= tomorrowStr);
+  const todayStr   = new Date(now).toISOString().slice(0, 10).replace(/-/g, '');
+  const tomorrowStr = new Date(now + 86400000).toISOString().slice(0, 10).replace(/-/g, '');
+  const weekAhead   = new Date(now + 7 * 86400000).toISOString().slice(0, 10).replace(/-/g, '');
+  // Past + today + tomorrow for live/results; up to 7 days ahead for scheduled kickoff times
+  const datesToFetch = WC_DATES.filter(d => d <= tomorrowStr || d <= weekAhead);
   if (!datesToFetch.length) return cachedScores;
 
   const scores = {};
@@ -383,7 +385,6 @@ async function fetchESPNScores() {
       const comp = event.competitions?.[0];
       if (!comp) continue;
       const status = comp.status?.type?.state || 'pre';
-      if (status === 'pre') continue;
       const teams = comp.competitors || [];
       if (teams.length < 2) continue;
       const home = teams.find(t => t.homeAway === 'home') || teams[0];
@@ -391,6 +392,17 @@ async function fetchESPNScores() {
       const key = `${home.team?.displayName} vs ${away.team?.displayName}`;
       const link = event.links?.find(l => l.rel?.includes('clubhouse'))?.href
         || `https://www.espn.com/soccer/match/_/gameId/${event.id}`;
+      if (status === 'pre') {
+        scores[key] = {
+          t1: { name: home.team?.displayName || '', score: null },
+          t2: { name: away.team?.displayName || '', score: null },
+          status: 'pre',
+          statusDetail: comp.status?.type?.shortDetail || '',
+          scheduledDate: event.date || null,
+          link,
+        };
+        continue;
+      }
       scores[key] = {
         t1: { name: home.team?.displayName || '', score: parseInt(home.score) || 0 },
         t2: { name: away.team?.displayName || '', score: parseInt(away.score) || 0 },
