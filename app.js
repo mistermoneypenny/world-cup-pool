@@ -4353,12 +4353,13 @@ function setupEvents() {
 
   document.getElementById('set-round-btn')?.addEventListener('click', () => {
     const roundSel  = document.getElementById('admin-round-sel');
-    const statusSel = document.getElementById('admin-status-sel');
     state.currentRound = roundSel.value;
-    state.roundStatus  = statusSel.value;
+    state.roundStatus  = 'open'; // advancing to a new round always opens picks; use Set Status to close
+    const statusSel = document.getElementById('admin-status-sel');
+    if (statusSel) statusSel.value = 'open';
     saveState();
     updateRoundStatus();
-    showToast(`Round set to ${ROUND_CONFIG.find(r => r.id === state.currentRound)?.label}`, 'success');
+    showToast(`Round set to ${ROUND_CONFIG.find(r => r.id === state.currentRound)?.label} — picks are open`, 'success');
   });
 
   document.getElementById('set-status-btn')?.addEventListener('click', () => {
