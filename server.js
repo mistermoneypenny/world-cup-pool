@@ -256,7 +256,15 @@ app.post('/api/state', async (req, res) => {
                              'defaultPlayersKey', 'bonusAnswers', 'r32Teams',
                              'roundDeadlines', 'broadcast'];
         adminFields.forEach(field => {
-          if (incoming[field] !== undefined) existing[field] = incoming[field];
+          if (incoming[field] === undefined) return;
+          // bonusAnswers: merge so a stale empty client state can't wipe set answers
+          if (field === 'bonusAnswers') {
+            if (incoming[field] && Object.keys(incoming[field]).length > 0) {
+              existing[field] = { ...(existing[field] || {}), ...incoming[field] };
+            }
+          } else {
+            existing[field] = incoming[field];
+          }
         });
 
         if (incoming.players !== undefined) {
