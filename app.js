@@ -336,7 +336,7 @@ let state = {
   activePicksRound: 'groups',
   lbRound: 'all',
   resultsRound: 'groups',
-  bracketSubView: 'groups',
+  bracketSubView: 'knockout',
   players: [],
   currentPlayer: null,
   results: {},
