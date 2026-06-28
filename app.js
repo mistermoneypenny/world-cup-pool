@@ -397,10 +397,13 @@ function buildGames() {
     });
   });
 
-  // R32: 4 games per quadrant — only populated once admin sets r32Teams after group stage.
-  // Until then all R32 slots show TBD. INITIAL_TEAMS is kept for the admin autofill tool only.
-  const r32Source = (state.r32Teams && !Array.isArray(state.r32Teams) && Object.keys(state.r32Teams).length)
-    ? state.r32Teams : null;
+  // R32: 4 games per quadrant. Uses saved r32Teams if set; otherwise auto-computes from group
+  // standings when all 12 groups are complete; otherwise TBD.
+  const hasR32Teams = state.r32Teams && !Array.isArray(state.r32Teams) && Object.keys(state.r32Teams).length;
+  const allGroupsDone = state.games && GROUP_LETTERS.every(grp =>
+    GROUP_PAIRS.every((_, idx) => state.results[gameId('groups', grp, idx)])
+  );
+  const r32Source = hasR32Teams ? state.r32Teams : (allGroupsDone ? buildR32FromGroups() : null);
   REGIONS.forEach(region => {
     const teams = r32Source ? r32Source[region] : null;
     for (let i = 0; i < 4; i++) {
@@ -2538,59 +2541,46 @@ function saveBonusAnswers() {
 // ── R32 ADMIN ─────────────────────────────────────────────────
 
 // Returns { A: [...8], B: [...8], C: [...8], D: [...8] } built from group standings.
-// Groups A-C → Quadrant A, D-F → B, G-I → C, J-L → D.
-// Within each quadrant: 3 winners + 3 runners-up (cross-paired to avoid rematches)
-// + 2 best 3rd-place teams (sorted globally, 2 per quadrant in rank order).
+// Implements the official FIFA World Cup 2026 R32 bracket structure exactly as published.
+// R32 → R16 bracket pairings (slots [0,1] winner meets slots [2,3] winner in R16, etc.):
+//   Quadrant A: (A2 vs B2) vs (E1 vs D3) | (C1 vs F2) vs (E2 vs I2)
+//   Quadrant B: (F1 vs C2) vs (I1 vs F3) | (A1 vs E3) vs (L1 vs K3)
+//   Quadrant C: (H1 vs J2) vs (K2 vs L2) | (G1 vs I3) vs (D1 vs B3)
+//   Quadrant D: (D2 vs G2) vs (K1 vs L3) | (B1 vs J3) vs (J1 vs H2)
 function buildR32FromGroups() {
-  // Official FIFA 2026 structure: Groups A-F and G-L create two bracket halves
-  // Each quadrant pairs winners + runners-up from adjacent groups (avoiding same-group rematches)
-  const QUADRANT_GROUPS = {
-    A: [['A','B'], ['C','D']],  // Quadrant A: (A1 vs B2, B1 vs A2) + (C1 vs D2, D1 vs C2)
-    B: [['E','F']],             // Quadrant B: (E1 vs F2, F1 vs E2) + best third-place teams
-    C: [['G','H'], ['I','J']],  // Quadrant C: (G1 vs H2, H1 vs G2) + (I1 vs J2, J1 vs I2)
-    D: [['K','L']],             // Quadrant D: (K1 vs L2, L1 vs K2) + best third-place teams
+  const gt = (grp, rank, fb) => {
+    const e = getGroupStandings(grp)[rank];
+    return e ? { name: e.team.name, seed: e.team.seed } : fb;
   };
-
-  // Get all third-place finishers, ranked by points/wins/seed
-  const thirdPlace = GROUP_LETTERS.map(grp => {
-    const s = getGroupStandings(grp);
-    return s[2] ? { team: s[2].team, pts: s[2].pts, w: s[2].w, group: grp } : null;
-  }).filter(Boolean);
-  thirdPlace.sort((a, b) => b.pts !== a.pts ? b.pts - a.pts : b.w !== a.w ? b.w - a.w : a.team.seed - b.team.seed);
-  const best8 = thirdPlace.slice(0, 8).map(e => ({ name: e.team.name, seed: e.team.seed }));
 
   const cur = state.r32Teams || INITIAL_TEAMS;
-  const getTeamAt = (groupLetter, rank, fallback) => {
-    const s = getGroupStandings(groupLetter);
-    const e = s[rank];
-    return e ? { name: e.team.name, seed: e.team.seed } : fallback;
+
+  return {
+    A: [
+      gt('A', 1, cur.A[0]), gt('B', 1, cur.A[1]),  // A2 vs B2  (South Africa vs Canada)
+      gt('E', 0, cur.A[2]), gt('D', 2, cur.A[3]),  // E1 vs D3  (Germany vs Paraguay)
+      gt('C', 0, cur.A[4]), gt('F', 1, cur.A[5]),  // C1 vs F2  (Brazil vs Japan)
+      gt('E', 1, cur.A[6]), gt('I', 1, cur.A[7]),  // E2 vs I2  (Ivory Coast vs Norway)
+    ],
+    B: [
+      gt('F', 0, cur.B[0]), gt('C', 1, cur.B[1]),  // F1 vs C2  (Netherlands vs Morocco)
+      gt('I', 0, cur.B[2]), gt('F', 2, cur.B[3]),  // I1 vs F3  (France vs Sweden)
+      gt('A', 0, cur.B[4]), gt('E', 2, cur.B[5]),  // A1 vs E3  (Mexico vs Ecuador)
+      gt('L', 0, cur.B[6]), gt('K', 2, cur.B[7]),  // L1 vs K3  (England vs DR Congo)
+    ],
+    C: [
+      gt('H', 0, cur.C[0]), gt('J', 1, cur.C[1]),  // H1 vs J2  (Spain vs Austria)
+      gt('K', 1, cur.C[2]), gt('L', 1, cur.C[3]),  // K2 vs L2  (Portugal vs Croatia)
+      gt('G', 0, cur.C[4]), gt('I', 2, cur.C[5]),  // G1 vs I3  (Belgium vs Senegal)
+      gt('D', 0, cur.C[6]), gt('B', 2, cur.C[7]),  // D1 vs B3  (USA vs Bosnia)
+    ],
+    D: [
+      gt('D', 1, cur.D[0]), gt('G', 1, cur.D[1]),  // D2 vs G2  (Australia vs Egypt)
+      gt('K', 0, cur.D[2]), gt('L', 2, cur.D[3]),  // K1 vs L3  (Colombia vs Ghana)
+      gt('B', 0, cur.D[4]), gt('J', 2, cur.D[5]),  // B1 vs J3  (Switzerland vs Algeria)
+      gt('J', 0, cur.D[6]), gt('H', 1, cur.D[7]),  // J1 vs H2  (Argentina vs Cape Verde)
+    ],
   };
-
-  const result = {};
-  const thirdPlaceIdx = [0, 0, 0, 0]; // Track which third-place team goes to each quadrant
-
-  REGIONS.forEach((region, qi) => {
-    const fb = cur[region];
-    const teams = [];
-
-    // Add paired matchups from defined group pairs
-    for (const [g1, g2] of QUADRANT_GROUPS[region]) {
-      // Game: g1 winner vs g2 runner-up
-      teams.push(getTeamAt(g1, 0, fb[teams.length]));
-      teams.push(getTeamAt(g2, 1, fb[teams.length]));
-      // Game: g2 winner vs g1 runner-up
-      teams.push(getTeamAt(g2, 0, fb[teams.length]));
-      teams.push(getTeamAt(g1, 1, fb[teams.length]));
-    }
-
-    // Fill remaining slots with best third-place finishers
-    while (teams.length < 8) {
-      teams.push(best8[thirdPlaceIdx[qi]++] || fb[teams.length]);
-    }
-
-    result[region] = teams;
-  });
-  return result;
 }
 
 function renderR32Admin() {
@@ -3682,6 +3672,7 @@ function buildResultGameCard(game) {
       if (resultName === 'Draw' && game.round !== 'groups') return;
       if (state.results[game.id] === resultName) { delete state.results[game.id]; }
       else { state.results[game.id] = resultName; }
+      rebuildGames();
       fixInvalidPicks();
       saveState();
       const msg = resultName === 'Draw' ? 'Result: Draw' : `Result: ${resultName}`;
@@ -3736,6 +3727,7 @@ function buildResultGameCard(game) {
         } else {
           delete state.scores[game.id];
         }
+        rebuildGames();
         saveState();
       };
 
@@ -4471,8 +4463,8 @@ function setupEvents() {
 async function init() {
   state.games = buildGames();
   await loadState();
-  // Rebuild games with any saved r32Teams now that state is loaded
-  if (state.r32Teams) rebuildGames();
+  // Rebuild games so r32Teams (or auto-computed group standings) populate the bracket
+  rebuildGames();
 
   if (!state.players.length) {
     // Fresh install — seed default players only (no demo data)
