@@ -747,8 +747,8 @@ function applyLoadedState(saved) {
     if (migratePicksToMatchupKeys(state.picks)) setTimeout(() => saveState(), 500);
   }
   if (saved.currentRound) {
-    if (saved.currentRound !== state.currentRound) state.activePicksRound = saved.currentRound;
-    state.currentRound = saved.currentRound;
+    state.currentRound     = saved.currentRound;
+    state.activePicksRound = saved.currentRound;
   }
   if (saved.roundStatus)      state.roundStatus  = saved.roundStatus;
   if (saved.rulesText !== undefined) state.rulesText = saved.rulesText;
@@ -1898,20 +1898,29 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const sc = state.scores[game.id];
   const liveSc = findGameScore(t1?.name, t2?.name);
   const isLive = !sc && liveSc && liveSc.status === 'in';
+  const isPre  = !sc && !isLive && liveSc?.status === 'pre' && liveSc?.scheduledDate;
+  // Only show score when there are actual values (not null pre-game placeholders)
   const scoreHtml = sc !== undefined
     ? `<span class="pick-card-score">${sc.t1}–${sc.t2}</span>`
-    : liveSc
-      ? `<span class="pick-card-score${isLive ? ' live' : ''}">${liveSc.t1}–${liveSc.t2}</span>`
+    : isLive && liveSc.t1 != null
+      ? `<span class="pick-card-score live">${liveSc.t1}–${liveSc.t2}</span>`
       : '';
   const liveBadgeHtml = isLive
     ? (liveSc.link
         ? `<a href="${esc(liveSc.link)}" target="_blank" rel="noopener noreferrer" class="live-badge-inline">${esc(liveSc.statusDetail || 'LIVE')}</a>`
         : `<span class="live-badge-inline">${esc(liveSc.statusDetail || 'LIVE')}</span>`)
     : '';
+  let kickoffHtml = '';
+  if (isPre) {
+    const d = new Date(liveSc.scheduledDate);
+    const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    kickoffHtml = `<span class="pick-card-kickoff">${dateStr} · ${timeStr}</span>`;
+  }
   const hdr = document.createElement('div');
   hdr.className = 'pick-card-hdr';
   hdr.innerHTML = `<span class="pick-card-hdr-label">${esc(regionLabel)}</span>
-    ${liveBadgeHtml}${scoreHtml}
+    ${kickoffHtml}${liveBadgeHtml}${scoreHtml}
     <span class="pick-pts">${cfg.pts} pt${cfg.pts > 1 ? 's' : ''}</span>`;
   card.appendChild(hdr);
 
@@ -4695,8 +4704,8 @@ function findGameScore(t1Name, t2Name) {
     if (!fwd && !rev) continue;
     // Normalise so t1 always corresponds to our t1
     return fwd
-      ? { t1: sc.t1.score, t2: sc.t2.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link }
-      : { t1: sc.t2.score, t2: sc.t1.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link };
+      ? { t1: sc.t1.score, t2: sc.t2.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate }
+      : { t1: sc.t2.score, t2: sc.t1.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate };
   }
   return null;
 }
