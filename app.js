@@ -746,7 +746,10 @@ function applyLoadedState(saved) {
     // Silently migrate any old game-ID picks to matchup keys and re-save
     if (migratePicksToMatchupKeys(state.picks)) setTimeout(() => saveState(), 500);
   }
-  if (saved.currentRound)     state.currentRound = saved.currentRound;
+  if (saved.currentRound) {
+    if (saved.currentRound !== state.currentRound) state.activePicksRound = saved.currentRound;
+    state.currentRound = saved.currentRound;
+  }
   if (saved.roundStatus)      state.roundStatus  = saved.roundStatus;
   if (saved.rulesText !== undefined) state.rulesText = saved.rulesText;
   if (saved.bonusPicks)   state.bonusPicks   = saved.bonusPicks;
@@ -4468,6 +4471,8 @@ async function init() {
   await loadState();
   // Rebuild games so r32Teams (or auto-computed group standings) populate the bracket
   rebuildGames();
+  // Default picks tab to the actual current round, not the hardcoded 'groups' initial value
+  state.activePicksRound = state.currentRound;
 
   if (!state.players.length) {
     // Fresh install — seed default players only (no demo data)
