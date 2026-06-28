@@ -555,8 +555,8 @@ function getGamesForRound(roundId) {
 // ── SCORING ───────────────────────────────────────────────────
 
 // Favorites (or equal-pot) earn flat cfg.pts.
-// Underdogs earn: cfg.pts + (dogSeed - favSeed) * cfg.multiplier.
-// Draws earn:     cfg.pts + (pot differential / 2) * cfg.multiplier.
+// Underdogs earn: cfg.pts + (dogSeed - favSeed) * cfg.pts  [multiplier = base pts for the round]
+// Draws earn:     cfg.pts + (pot differential / 2) * cfg.multiplier  [unchanged]
 function calcPickPoints(game, pickedName, cfg) {
   if (pickedName === 'Draw') {
     const { t1, t2 } = getTeams(game);
@@ -570,7 +570,7 @@ function calcPickPoints(game, pickedName, cfg) {
   const dog = fav === t1 ? t2 : t1;
   if (dog.seed === fav.seed) return cfg.pts;
   if (pickedName === dog.name) {
-    return Math.round((cfg.pts + (dog.seed - fav.seed) * cfg.multiplier) * 10) / 10;
+    return cfg.pts + (dog.seed - fav.seed) * cfg.pts;
   }
   return cfg.pts;
 }
@@ -1472,21 +1472,20 @@ Every correct pick earns base points, regardless of which team wins:
 ——————————————————————————
 
 UPSET BONUS — PICKING A WINNER
-Teams are seeded by FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). If you pick a higher-pot team to beat a lower-pot team, you earn base points plus an upset bonus:
+Teams are seeded by FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). If you pick a higher-pot team to beat a lower-pot team, you earn base points plus an upset bonus. The upset multiplier equals the base points for that round — so upsets become proportionally more rewarding as the tournament progresses:
 
-  Total = Base pts + (Underdog pot − Favourite pot) × Round multiplier
+  Total = Base pts + (Underdog pot − Favourite pot) × Base pts
+        = Base pts × (1 + Pot differential)
 
-Round multipliers:
-  Group Stage ×1.0  ·  R32 ×1.2  ·  R16 ×1.3
-  QF ×1.6  ·  SF ×2.0  ·  3rd Place ×2.0  ·  Final ×3.0
-
-If there is no pot differential (equal-pot teams, or favourite wins), you earn base points only — no multiplier applied.
+If there is no pot differential (equal-pot teams, or favourite wins), you earn base points only.
 
 Examples:
-  Pot 4 beats Pot 1 in the Group Stage → 1 + (3 × 1.0) = 4 pts
-  Pot 3 beats Pot 1 in the Round of 32 → 2 + (2 × 1.2) = 4.4 pts
-  Pot 2 beats Pot 1 in the Quarterfinals → 5 + (1 × 1.6) = 6.6 pts
-  Pot 4 beats Pot 1 in the Final → 15 + (3 × 3.0) = 24 pts
+  Pot 4 beats Pot 2 in the Round of 32  → 2 + (2 × 2)   = 6 pts
+  Pot 4 beats Pot 1 in the Round of 32  → 2 + (3 × 2)   = 8 pts
+  Pot 4 beats Pot 1 in the Round of 16  → 3 + (3 × 3)   = 12 pts
+  Pot 4 beats Pot 1 in the Quarterfinals → 5 + (3 × 5)  = 20 pts
+  Pot 4 beats Pot 1 in the Semifinals   → 8 + (3 × 8)   = 32 pts
+  Pot 4 beats Pot 1 in the Final        → 15 + (3 × 15) = 60 pts
 
 ——————————————————————————
 
