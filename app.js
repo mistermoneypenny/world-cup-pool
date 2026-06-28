@@ -1308,14 +1308,6 @@ function buildMatchup(game) {
     kickoff.className = 'game-kickoff';
     kickoff.textContent = `${dateStr} · ${timeStr}`;
     card.appendChild(kickoff);
-  } else if (liveSc?.link) {
-    const espn = document.createElement('a');
-    espn.href = liveSc.link;
-    espn.target = '_blank';
-    espn.rel = 'noopener noreferrer';
-    espn.className = 'espn-link-badge';
-    espn.textContent = 'ESPN ↗';
-    card.appendChild(espn);
   }
   [{ team: t1 }, { team: t2 }].forEach(({ team }, idx) => {
     const row = document.createElement('div');
