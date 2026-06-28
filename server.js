@@ -261,7 +261,24 @@ app.post('/api/state', async (req, res) => {
           // stale client state wiping server values set via direct POST
           if (field === 'bonusAnswers') {
             if (incoming[field] && Object.keys(incoming[field]).length > 0) {
-              existing[field] = { ...(existing[field] || {}), ...incoming[field] };
+              // Protect correct answers from being overwritten by stale or downgraded admin saves:
+              // 1. Skip empty strings (unset admin panel selects)
+              // 2. Skip string values that are already in the existing array
+              //    (admin panel can only show one option of a tied answer — don't downgrade)
+              const toMerge = {};
+              const existingAnswers = existing[field] || {};
+              for (const [k, v] of Object.entries(incoming[field])) {
+                const isEmpty = v === '' || v == null ||
+                  (Array.isArray(v) && (v.length === 0 || v.every(x => !x)));
+                if (isEmpty) continue;
+                const existingVal = existingAnswers[k];
+                // Don't downgrade an array answer to a single string if the string is in the array
+                if (Array.isArray(existingVal) && !Array.isArray(v) && existingVal.includes(v)) continue;
+                toMerge[k] = v;
+              }
+              if (Object.keys(toMerge).length > 0) {
+                existing[field] = { ...existingAnswers, ...toMerge };
+              }
             }
           } else if (field === 'r32Teams') {
             if (incoming[field] && typeof incoming[field] === 'object' &&
