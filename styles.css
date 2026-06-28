@@ -362,7 +362,8 @@ a { color: var(--accent); }
 .pick-option.result-correct { background: rgba(46,204,113,0.1); }
 .pick-option.result-wrong   { background: rgba(231,76,60,0.07); }
 .pick-o-seed  { font-size: 0.65rem; font-weight: 700; color: var(--text-3); width: 16px; min-width: 16px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
-.pick-o-name  { flex: 1; display: flex; align-items: center; gap: 0.2rem; min-width: 0; overflow: hidden; }
+.pick-o-name  { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pick-option > img { flex-shrink: 0; }
 .pick-o-score { font-size: 0.78rem; font-weight: 700; color: var(--text-2); width: 18px; text-align: center; flex-shrink: 0; }
 .pick-o-pts   { font-size: 0.7rem; color: var(--text-2); white-space: nowrap; flex-shrink: 0; text-align: left; width: 44px; }
 .pick-o-result { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; flex-shrink: 0; width: 46px; text-align: center; }

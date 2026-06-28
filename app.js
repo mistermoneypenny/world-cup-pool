@@ -695,7 +695,7 @@ function getPlayerBonusDetails(playerId, roundId) {
 
 // ── PERSISTENCE ───────────────────────────────────────────────
 
-function saveState() {
+function saveState(extra = {}) {
   const payload = {
     currentRound: state.currentRound,
     roundStatus:  state.roundStatus,
@@ -714,6 +714,7 @@ function saveState() {
     reactions:      state.reactions,
     broadcast:      state.broadcast,
     _sender: state.sessionPlayer || state.currentPlayer,
+    ...extra,
   };
   fetch('/api/state', {
     method: 'POST',
@@ -1905,13 +1906,16 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const sc = state.scores[game.id];
   const liveSc = findGameScore(t1?.name, t2?.name);
   const isLive = !sc && liveSc && liveSc.status === 'in';
-  const isPre  = !sc && !isLive && liveSc?.status === 'pre' && liveSc?.scheduledDate;
+  const isPost = !sc && liveSc && liveSc.status === 'post' && liveSc.t1 != null;
+  const isPre  = !sc && !isLive && !isPost && liveSc?.status === 'pre' && liveSc?.scheduledDate;
   // Only show score when there are actual values (not null pre-game placeholders)
   const scoreHtml = sc !== undefined
     ? `<span class="pick-card-score">${sc.t1}–${sc.t2}</span>`
     : isLive && liveSc.t1 != null
       ? `<span class="pick-card-score live">${liveSc.t1}–${liveSc.t2}</span>`
-      : '';
+      : isPost
+        ? `<span class="pick-card-score">${liveSc.t1}–${liveSc.t2}</span>`
+        : '';
   const liveBadgeHtml = isLive
     ? (liveSc.link
         ? `<a href="${esc(liveSc.link)}" target="_blank" rel="noopener noreferrer" class="live-badge-inline">${esc(liveSc.statusDetail || 'LIVE')}</a>`
@@ -2016,7 +2020,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     if (isDraw) {
       row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw${yourPickBadge}</span><span class="pick-o-score"></span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     } else {
-      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span><span class="pick-o-name">${flag(team.name)}${esc(team.name)}${yourPickBadge}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
+      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span>${flag(team.name)}<span class="pick-o-name">${esc(team.name)}${yourPickBadge}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     }
     row.insertBefore(radio, row.firstChild);
 
@@ -4376,7 +4380,7 @@ function setupEvents() {
     state.roundStatus  = 'open'; // advancing to a new round always opens picks; use Set Status to close
     const statusSel = document.getElementById('admin-status-sel');
     if (statusSel) statusSel.value = 'open';
-    saveState();
+    saveState({ _setRound: true }); // flag allows server round ratchet to accept any direction
     updateRoundStatus();
     showToast(`Round set to ${ROUND_CONFIG.find(r => r.id === state.currentRound)?.label} — picks are open`, 'success');
   });

@@ -268,6 +268,14 @@ app.post('/api/state', async (req, res) => {
                 !Array.isArray(incoming[field]) && Object.keys(incoming[field]).length > 0) {
               existing[field] = incoming[field];
             }
+          } else if (field === 'currentRound') {
+            // Round ratchet: only advance or stay the same unless _setRound flag is present
+            const ORDER = ['groups','r32','r16','qf','sf','third','final'];
+            const exIdx = ORDER.indexOf(existing.currentRound || 'groups');
+            const inIdx = ORDER.indexOf(incoming.currentRound || 'groups');
+            if (incoming._setRound || inIdx >= exIdx) {
+              existing[field] = incoming[field];
+            }
           } else {
             existing[field] = incoming[field];
           }
