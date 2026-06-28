@@ -4597,11 +4597,20 @@ async function pollServer() {
     const oldResultCount = Object.keys(state.results).length;
 
     const hadR32 = JSON.stringify(state.r32Teams);
+    const pid = state.sessionPlayer || state.currentPlayer;
 
-    // Snapshot in-progress picks before the server state overwrites them.
-    // When another player saves, everyone's poll fires and re-renders — wiping
-    // pending (unsaved) picks from the page. We restore them afterward so users
-    // don't lose work mid-session just because someone else saved.
+    // ── Protect the current user's picks from being overwritten by stale server data ──
+    //
+    // Two scenarios that can wipe picks:
+    // 1. Mid-selection (unsaved): another player saves → poll triggers re-render → pendingPicks reset
+    // 2. Just saved but save POST hasn't landed: poll fires while save is in flight → picks replaced
+    //    with old server copy
+    //
+    // Fix for (1): snapshot pendingPicks while on the picks page and restore after re-render.
+    // Fix for (2): compare pickSavedAt timestamps — if local is newer, the save is still in flight,
+    //              so keep the local copy regardless of which view the user is on.
+
+    // Snapshot unsaved in-progress picks (fix for scenario 1)
     const pendingRoundId = state.activePicksRound;
     const pendingSnapshot = (
       state.currentView === 'picks' &&
@@ -4609,13 +4618,31 @@ async function pollServer() {
       Object.keys(state.pendingPicks || {}).length > 0
     ) ? { ...state.pendingPicks } : null;
 
+    // Snapshot saved-but-not-yet-confirmed picks (fix for scenario 2)
+    const localPicksSnap    = pid ? JSON.parse(JSON.stringify(state.picks[pid]    || {})) : null;
+    const localSavedAtSnap  = pid ? JSON.parse(JSON.stringify((state.pickSavedAt || {})[pid] || {})) : null;
+
     applyLoadedState(saved);
     if (JSON.stringify(state.r32Teams) !== hadR32) rebuildGames();
 
-    // Restore pending picks (only if the round is still open after sync)
-    if (pendingSnapshot && saved.roundStatus === 'open' && saved.currentRound === pendingRoundId) {
-      const pid = state.sessionPlayer || state.currentPlayer;
-      if (pid) {
+    if (pid) {
+      // Scenario 2: restore rounds where local timestamp is newer than server's
+      if (localPicksSnap && localSavedAtSnap) {
+        for (const roundId of Object.keys(localSavedAtSnap)) {
+          const localTs  = localSavedAtSnap[roundId] || '';
+          const serverTs = (saved.pickSavedAt?.[pid]?.[roundId]) || '';
+          if (localTs > serverTs && Object.keys(localPicksSnap[roundId] || {}).length > 0) {
+            if (!state.picks[pid]) state.picks[pid] = {};
+            state.picks[pid][roundId] = localPicksSnap[roundId];
+            if (!state.pickSavedAt)        state.pickSavedAt = {};
+            if (!state.pickSavedAt[pid])   state.pickSavedAt[pid] = {};
+            state.pickSavedAt[pid][roundId] = localTs;
+          }
+        }
+      }
+
+      // Scenario 1: restore unsaved in-progress picks on top (only while round is still open)
+      if (pendingSnapshot && saved.roundStatus === 'open' && saved.currentRound === pendingRoundId) {
         if (!state.picks[pid]) state.picks[pid] = {};
         if (!state.picks[pid][pendingRoundId]) state.picks[pid][pendingRoundId] = {};
         Object.assign(state.picks[pid][pendingRoundId], pendingSnapshot);
