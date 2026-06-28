@@ -257,10 +257,16 @@ app.post('/api/state', async (req, res) => {
                              'roundDeadlines', 'broadcast'];
         adminFields.forEach(field => {
           if (incoming[field] === undefined) return;
-          // bonusAnswers: merge so a stale empty client state can't wipe set answers
+          // bonusAnswers: merge; r32Teams: only update when non-empty — both protect against
+          // stale client state wiping server values set via direct POST
           if (field === 'bonusAnswers') {
             if (incoming[field] && Object.keys(incoming[field]).length > 0) {
               existing[field] = { ...(existing[field] || {}), ...incoming[field] };
+            }
+          } else if (field === 'r32Teams') {
+            if (incoming[field] && typeof incoming[field] === 'object' &&
+                !Array.isArray(incoming[field]) && Object.keys(incoming[field]).length > 0) {
+              existing[field] = incoming[field];
             }
           } else {
             existing[field] = incoming[field];

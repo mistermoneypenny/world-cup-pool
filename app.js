@@ -1947,8 +1947,8 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     ? [{ team: t1 }, { team: null, isDraw: true }, { team: t2 }]
     : [{ team: t1 }, { team: t2 }];
 
-  // Pre-compute pick popularity for locked/closed rounds
-  const popData = (!isOpen && state.players.length > 1) ? getPickPopularity(game, game.round) : null;
+  // Show pick popularity for past/locked rounds, and always for admin
+  const popData = ((!isOpen || isAdmin()) && state.players.length > 1) ? getPickPopularity(game, game.round) : null;
 
   options.forEach(({ team, isDraw }) => {
     const optionName = isDraw ? 'Draw' : team?.name;
