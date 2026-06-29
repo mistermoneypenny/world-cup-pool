@@ -766,8 +766,8 @@ function applyLoadedState(saved) {
   if (saved.bonusPicks)   state.bonusPicks   = saved.bonusPicks;
   if (saved.bonusAnswers) state.bonusAnswers = saved.bonusAnswers;
   if (saved.playerPins)   state.playerPins   = saved.playerPins;
-  // Only restore r32Teams if it's a real object with region keys (not an empty array)
-  if (saved.r32Teams && !Array.isArray(saved.r32Teams) && Object.keys(saved.r32Teams).length)
+  // Only restore r32Teams if it uses the correct region-keyed format {A:[...], B:[...], ...}
+  if (saved.r32Teams && !Array.isArray(saved.r32Teams) && saved.r32Teams['A'])
     state.r32Teams = saved.r32Teams;
   if (saved.scores)         state.scores         = saved.scores;
   if (saved.roundDeadlines) state.roundDeadlines = saved.roundDeadlines;
