@@ -755,8 +755,11 @@ function applyLoadedState(saved) {
     if (migratePicksToMatchupKeys(state.picks)) setTimeout(() => saveState(), 500);
   }
   if (saved.currentRound) {
-    state.currentRound     = saved.currentRound;
-    state.activePicksRound = saved.currentRound;
+    const wasFollowingCurrent = state.activePicksRound === state.currentRound;
+    state.currentRound = saved.currentRound;
+    // Only sync activePicksRound to the new currentRound if the user hasn't navigated
+    // to a specific past/future round tab (i.e., they were tracking the current round)
+    if (wasFollowingCurrent) state.activePicksRound = saved.currentRound;
   }
   if (saved.roundStatus)      state.roundStatus  = saved.roundStatus;
   if (saved.rulesText !== undefined) state.rulesText = saved.rulesText;
@@ -1994,16 +1997,16 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     radio.disabled = !isOpen;
 
     const optPts = calcPickPoints(game, optionName, cfg);
-    const ptsTxt = Number.isInteger(optPts)
-      ? `${optPts} pt${optPts !== 1 ? 's' : ''}` : `${optPts} pts`;
+    const ptsTxt = Number.isInteger(optPts) ? `${optPts}p` : `${optPts}p`;
 
-    // Individual team score (goals) for this option
+    // Individual team score (goals) for this option — only when a score has been recorded
     const teamGoal = (!isDraw && sc !== undefined)
       ? String(team === t1 ? sc.t1 : sc.t2)
       : '';
+    const scoreSpan = teamGoal !== '' ? `<span class="pick-o-score">${teamGoal}</span>` : '';
 
-    // Always emit result span (even empty) so columns stay aligned
-    const resultSpan = resultMark || '<span class="pick-o-result"></span>';
+    // Only emit result span when there is actual content (saves ~52px when no result yet)
+    const resultSpan = resultMark;
 
     // Popularity bar (shown when round is locked/closed)
     let popHtml = '';
@@ -2013,14 +2016,14 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
       const pickerNames = state.players
         .filter(p => (state.picks[p.id] || {})[game.round]?.[getPickKey(game)] === optionName)
         .map(p => p.name).join('||');
-      popHtml = `<span class="pick-o-pop" data-pickers="${esc(pickerNames)}" role="button" tabindex="0"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${popData.total}</span></span>`;
+      popHtml = `<span class="pick-o-pop" data-pickers="${esc(pickerNames)}" title="${cnt}/${popData.total}" role="button" tabindex="0"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${popData.total}</span></span>`;
     }
 
     const yourPickBadge = (isPicked && !isOpen) ? '<span class="your-pick-badge">✓</span>' : '';
     if (isDraw) {
-      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw${yourPickBadge}</span><span class="pick-o-score"></span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
+      row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw${yourPickBadge}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     } else {
-      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span>${flag(team.name)}<span class="pick-o-name">${esc(team.name)}${yourPickBadge}</span><span class="pick-o-score">${teamGoal}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
+      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span>${flag(team.name)}<span class="pick-o-name">${esc(team.name)}${yourPickBadge}</span>${scoreSpan}<span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     }
     row.insertBefore(radio, row.firstChild);
 
@@ -2347,7 +2350,9 @@ function renderLbBody() {
         : '';
       const bestRank    = getBestPossibleRank(row.player.id, rows);
       const bRankIcon   = bestRank <= 3 ? ['🥇','🥈','🥉'][bestRank - 1] : `#${bestRank}`;
-      tdHTML += `<td><span class="lb-total">${fmtScore(row.total.total)}</span>${wl}
+      const totalBonusSuffix = row.total.totalBonus > 0
+        ? `<span class="lb-bonus">(+${row.total.totalBonus} bonus)</span>` : '';
+      tdHTML += `<td><span class="lb-total">${fmtScore(row.total.total)}</span>${totalBonusSuffix}${wl}
           <div class="pct-bar-wrap"><div class="pct-bar" style="width:${pctW}%"></div></div></td>
         <td class="lb-possible">${fmtScore(maxPossible)}</td>
         ${(() => {
@@ -2362,7 +2367,8 @@ function renderLbBody() {
         const s = row.byRound[cfg.id];
         const isBest = roundBest[cfg.id] && s.score === roundBest[cfg.id];
         const wlTip = s.correct || s.wrong ? ` title="${s.correct}✔ ${s.wrong}✘"` : '';
-        tdHTML += `<td class="lb-round-score num ${s.score === 0 && !s.correct && !s.wrong ? 'zero' : ''}${isBest ? ' round-best' : ''}"${wlTip}>${fmtScore(s.score)}</td>`;
+        const bonusSuffix = s.bonusPts > 0 ? `<span class="lb-bonus">(+${s.bonusPts})</span>` : '';
+        tdHTML += `<td class="lb-round-score num ${s.score === 0 && !s.correct && !s.wrong ? 'zero' : ''}${isBest ? ' round-best' : ''}"${wlTip}>${fmtScore(s.score)}${bonusSuffix}</td>`;
       });
     } else {
       const s = row.byRound[state.lbRound];
@@ -2370,7 +2376,8 @@ function renderLbBody() {
       const wl = s.correct || s.wrong
         ? `<div class="lb-wl-row"><span class="lb-w">${s.correct} correct</span> <span class="lb-l">${s.wrong} wrong</span></div>`
         : '';
-      tdHTML += `<td class="num${isBest ? ' round-best' : ''}"><span class="lb-total">${fmtScore(s.score)}</span>${wl}</td>
+      const roundBonusSuffix = s.bonusPts > 0 ? `<span class="lb-bonus">(+${s.bonusPts})</span>` : '';
+      tdHTML += `<td class="num${isBest ? ' round-best' : ''}"><span class="lb-total">${fmtScore(s.score)}</span>${roundBonusSuffix}${wl}</td>
         <td class="lb-possible num">${fmtScore(s.score + s.possible)}</td>`;
     }
 

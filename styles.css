@@ -365,8 +365,8 @@ a { color: var(--accent); }
 .pick-o-name  { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .pick-option > img { flex-shrink: 0; }
 .pick-o-score { font-size: 0.78rem; font-weight: 700; color: var(--text-2); width: 18px; text-align: center; flex-shrink: 0; }
-.pick-o-pts   { font-size: 0.7rem; color: var(--text-2); white-space: nowrap; flex-shrink: 0; text-align: left; width: 44px; }
-.pick-o-result { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; flex-shrink: 0; width: 46px; text-align: center; }
+.pick-o-pts   { font-size: 0.7rem; color: var(--text-2); white-space: nowrap; flex-shrink: 0; text-align: right; width: 28px; }
+.pick-o-result { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; flex-shrink: 0; text-align: center; }
 .pick-o-result.correct { background: rgba(46,204,113,0.2); color: var(--green); }
 .pick-o-result.wrong   { background: rgba(231,76,60,0.2);  color: var(--red); }
 .pick-o-result.won     { background: rgba(46,204,113,0.1); color: var(--green); }
@@ -430,6 +430,7 @@ a { color: var(--accent); }
 .lb-pm { padding: 0 !important; }
 .lb-pm-sub { display: block; font-size: 0.65em; font-weight: 400; opacity: 0.6; line-height: 1.2; }
 .lb-round-score.zero { color: var(--text-3); }
+.lb-bonus { font-size: 0.6rem; color: var(--text-3); margin-left: 2px; vertical-align: middle; }
 .pct-bar-wrap { height: 3px; background: var(--surface-3); border-radius: 2px; margin-top: 4px; overflow: hidden; }
 .pct-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
 
@@ -659,9 +660,9 @@ td.round-best { background: rgba(46,204,113,0.07); border-radius: 3px; }
 /* ── PICK POPULARITY ─────────────────────────────────────────── */
 .pick-o-pop { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; margin-left: 0.15rem; cursor: pointer; }
 .pick-o-pop:hover .pick-pop-txt { color: var(--text-2); }
-.pick-pop-track { width: 34px; height: 4px; background: rgba(255,255,255,0.09); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.pick-pop-track { width: 16px; height: 4px; background: rgba(255,255,255,0.09); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
 .pick-pop-fill { display: block; height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
-.pick-pop-txt { font-size: 0.62rem; color: var(--text-3); white-space: nowrap; min-width: 24px; }
+.pick-pop-txt { display: none; }
 .pick-option.result-correct .pick-pop-fill { background: var(--green); }
 .pick-option.result-wrong   .pick-pop-fill { background: var(--text-3); }
 
