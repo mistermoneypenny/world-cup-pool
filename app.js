@@ -399,7 +399,7 @@ function buildGames() {
 
   // R32: 4 games per quadrant. Uses saved r32Teams if set; otherwise auto-computes from group
   // standings when all 12 groups are complete; otherwise TBD.
-  const hasR32Teams = state.r32Teams && !Array.isArray(state.r32Teams) && Object.keys(state.r32Teams).length;
+  const hasR32Teams = state.r32Teams && !Array.isArray(state.r32Teams) && state.r32Teams['A'];
   const allGroupsDone = state.games && GROUP_LETTERS.every(grp =>
     GROUP_PAIRS.every((_, idx) => state.results[gameId('groups', grp, idx)])
   );
@@ -4383,7 +4383,16 @@ function setupEvents() {
 
   document.getElementById('set-round-btn')?.addEventListener('click', () => {
     const roundSel  = document.getElementById('admin-round-sel');
-    state.currentRound = roundSel.value;
+    const newRound  = roundSel.value;
+    const RORDER    = ['groups','r32','r16','qf','sf','third','final'];
+    const curIdx    = RORDER.indexOf(state.currentRound);
+    const newIdx    = RORDER.indexOf(newRound);
+    if (newIdx < curIdx) {
+      const curLabel = ROUND_CONFIG.find(r => r.id === state.currentRound)?.label || state.currentRound;
+      const newLabel = ROUND_CONFIG.find(r => r.id === newRound)?.label || newRound;
+      if (!confirm(`⚠️ Move BACK to ${newLabel}?\n\nCurrent round is "${curLabel}". Rolling back will change the active round for all players. Confirm?`)) return;
+    }
+    state.currentRound = newRound;
     state.roundStatus  = 'open'; // advancing to a new round always opens picks; use Set Status to close
     const statusSel = document.getElementById('admin-status-sel');
     if (statusSel) statusSel.value = 'open';

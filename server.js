@@ -93,6 +93,23 @@ setInterval(() => {
   }
 }, 60000);
 
+// ── Startup floor: prevents stale JSONBin deploys from rolling back progress ──
+// Update MIN_ROUND when the tournament advances beyond the current floor.
+const ROUND_ORDER = ['groups','r32','r16','qf','sf','third','final'];
+const MIN_ROUND = 'r32'; // group stage is complete — never fall back below R32
+
+function applyStartupFloor(data) {
+  const minIdx = ROUND_ORDER.indexOf(MIN_ROUND);
+  const curIdx = ROUND_ORDER.indexOf(data.currentRound || 'groups');
+  if (curIdx < minIdx) {
+    console.log(`[floor] Correcting stale round: ${data.currentRound} → ${MIN_ROUND}`);
+    data.currentRound = MIN_ROUND;
+    // Write correction back to JSONBin so subsequent reads are already correct
+    writeState(data).catch(e => console.warn('[floor] JSONBin correction write failed:', e.message));
+  }
+  return data;
+}
+
 // ── Helper: read state (memory → JSONBin → local file) ──────
 async function readState() {
   const now = Date.now();
@@ -114,6 +131,7 @@ async function readState() {
         lastJsonBinRead = now;
         return {};
       }
+      applyStartupFloor(data);
       memoryState = data;
       lastJsonBinRead = now;
       const tmpFile = DATA_FILE + '.tmp';
@@ -281,8 +299,9 @@ app.post('/api/state', async (req, res) => {
               }
             }
           } else if (field === 'r32Teams') {
+            // Must be a non-empty object with region keys A/B/C/D (not game-ID keyed)
             if (incoming[field] && typeof incoming[field] === 'object' &&
-                !Array.isArray(incoming[field]) && Object.keys(incoming[field]).length > 0) {
+                !Array.isArray(incoming[field]) && incoming[field]['A']) {
               existing[field] = incoming[field];
             }
           } else if (field === 'currentRound') {
