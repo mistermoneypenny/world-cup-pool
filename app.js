@@ -4859,8 +4859,25 @@ function renderBonusTracker() {
     return `<span class="pick-o-pop" data-pickers="${nameStr}"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${names.length}/${denom}</span></span>`;
   }
 
-  function secRow(label) {
-    return `<tr class="bt-sec-row"><td colspan="4">${label}</td></tr>`;
+  function secRow(label, cls) {
+    return `<tr class="bt-sec-row${cls ? ' ' + cls : ''}"><td colspan="4">${label}</td></tr>`;
+  }
+
+  function winnersRow(id) {
+    const ans = state.bonusAnswers[id];
+    if (!ans) return '';
+    const ansArr = Array.isArray(ans) ? ans : [ans];
+    const ansNorm = new Set(ansArr.map(a => String(a).trim().toLowerCase()));
+    const winners = [];
+    for (const [pid, pp] of bpEntries) {
+      const v = pp[id];
+      if (!v) continue;
+      if (!ansNorm.has(String(v).trim().toLowerCase())) continue;
+      const pl = state.players.find(p => p.id === pid);
+      if (pl) winners.push(pl.name);
+    }
+    if (!winners.length) return '';
+    return `<tr class="bt-winners-row"><td></td><td colspan="3">&#9989; <span class="bt-winner-name">${esc(winners.join(', '))}</span></td></tr>`;
   }
 
   function qRows(id, title, pts, subtitle, rows) {
@@ -4906,25 +4923,40 @@ function renderBonusTracker() {
   const hmWinner = hm ? (hm.margin >= 6 ? '6+' : String(hm.margin)) : null;
   const updText = stats?.lastUpdated ? `Updated ${timeAgo(stats.lastUpdated)} &middot; as.com / live results` : '';
 
+  // For grp_most_goals: when the answer is final (an array of tied teams), show all tied teams highlighted
+  const mostGoalsAns = state.bonusAnswers['grp_most_goals'];
+  const mostGoalsRows = (() => {
+    if (mostGoalsAns) {
+      const tied = Array.isArray(mostGoalsAns) ? mostGoalsAns : [mostGoalsAns];
+      return tied.map(team => ({ name: team, val: '10 goals · tied', leading: true }));
+    }
+    return stats ? (stats.teamGoals?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value} goals` })) || []) : undefined;
+  })();
+
   el.innerHTML = `<div class="bonus-tracker">
     <div class="bt-header">
       <h3 class="bt-title">&#127942; Bonus Tracker</h3>
       ${updText ? `<span class="bt-upd">${updText}</span>` : ''}
     </div>
     <table class="bt-table"><colgroup><col class="bt-col-rank"><col><col class="bt-col-val"><col class="bt-col-picks"></colgroup><tbody>
-      ${secRow('Tournament-Wide')}
+      ${secRow('&#127760; Tournament-Wide &middot; scored at tournament end')}
       ${qRows('tw_golden_boot', 'Golden Boot Winner', 6, null,
           stats ? (stats.goldenBoot?.slice(0, 8).map(e => ({ name: e.player, sub: e.team, val: `${e.goals} goal${e.goals !== 1 ? 's' : ''}` })) || []) : undefined)}
       ${qRows('tw_possession', 'Best Time of Possession %', 6, null,
           stats ? (stats.possession?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value}%` })) || []) : undefined)}
       ${qRows('tw_pot1_exit', 'First Pot 1 Team Eliminated', 6, 'Not yet determined', null)}
-      ${secRow('Group Stage')}
-      ${qRows('grp_most_goals', 'Team with Most Goals', 5, null,
-          stats ? (stats.teamGoals?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value} goals` })) || []) : undefined)}
+      ${secRow('&#11088; Group Stage &middot; complete', 'bt-sec-row--grp')}
+      ${qRows('grp_most_goals', 'Team with Most Goals', 5, mostGoalsAns ? 'Tied at 10 goals' : null, mostGoalsRows)}
+      ${winnersRow('grp_most_goals')}
       ${qRows('grp_conf_winrate', 'Confederation Win Rate', 5, null,
           stats ? (stats.confWinRate?.map(e => ({ name: e.conf, val: `${e.rate}% (${e.wins}W / ${e.games}G)`, pk: CONF_KEY[e.conf] || e.conf })) || []) : undefined)}
+      ${winnersRow('grp_conf_winrate')}
       ${qRows('grp_margin', 'Highest Winning Margin', 4, hm ? hm.label : null,
           stats ? ['6+', '5', '4', '3'].map(opt => ({ name: `${opt} goals`, val: opt === hmWinner && hm ? hm.label : '', pk: opt, leading: opt === hmWinner })) : undefined)}
+      ${winnersRow('grp_margin')}
+      ${secRow('&#9876;&#65039; Round of 32 &middot; in progress', 'bt-sec-row--r32')}
+      ${qRows('r32_red_cards', 'Total Red Cards in R32', 6, state.bonusAnswers['r32_red_cards'] ? null : 'Answer TBD after all R32 games', null)}
+      ${winnersRow('r32_red_cards')}
     </tbody></table>
   </div>`;
 }

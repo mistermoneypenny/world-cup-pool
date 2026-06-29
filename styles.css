@@ -1056,7 +1056,11 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
   text-transform: uppercase; letter-spacing: 0.1em;
   border-top: 1px solid #1A3050; border-bottom: 1px solid #1A3050;
 }
+.bt-sec-row--grp td  { color: #5A8A50; }
+.bt-sec-row--r32 td  { color: #7A6A30; }
 .bt-table tbody tr:first-child.bt-sec-row td { border-top: none; }
+.bt-winners-row td { padding: 0.18rem 0.5rem 0.35rem; background: #07111F; font-size: 0.6rem; color: #4A8A60; }
+.bt-winners-row .bt-winner-name { color: #80BF90; font-weight: 600; }
 /* Question header rows */
 .bt-q-row td { padding: 0.65rem 1rem 0.2rem; background: #07111F; }
 .bt-sec-row + .bt-q-row td { padding-top: 0.35rem; }

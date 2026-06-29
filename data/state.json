@@ -79,7 +79,24 @@
         "England|Ghana": "England",
         "Croatia|Panama": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "South Africa",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Croatia",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Algeria",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -161,7 +178,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -243,7 +277,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "South Africa",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Algeria",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -325,7 +376,24 @@
         "Colombia|Portugal": "Draw",
         "DR Congo|Uzbekistan": "Draw"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -407,7 +475,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "South Africa",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -489,7 +574,24 @@
         "Colombia|Portugal": "Draw",
         "DR Congo|Uzbekistan": "Uzbekistan"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Australia"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -571,7 +673,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "South Africa",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Belgium",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Algeria",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Ghana",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -653,7 +772,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Draw"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Japan",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -735,7 +871,24 @@
         "Czech Republic|South Korea": "South Korea",
         "Mexico|South Africa": "Mexico"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Ecuador",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Belgium",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -817,7 +970,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Draw"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "DR Congo",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -899,7 +1069,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Ghana"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Belgium",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -981,7 +1168,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Belgium",
+        "Croatia|Portugal": "Croatia",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Ghana",
+        "Australia|Egypt": "Australia"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1063,7 +1267,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Morocco",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Ivory Coast",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "Bosnia",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Croatia",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1145,7 +1366,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Morocco",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Croatia",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1227,7 +1465,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "South Africa",
+        "Brazil|Japan": "Japan",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Belgium",
+        "Croatia|Portugal": "Croatia",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Algeria",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Australia"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1309,7 +1564,24 @@
         "South Africa|South Korea": "Draw",
         "Haiti|Scotland": "Scotland"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Australia"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1391,7 +1663,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Ivory Coast",
+        "Ecuador|Mexico": "Ecuador",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Switzerland",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1473,7 +1762,24 @@
         "England|Panama": "England",
         "Croatia|Ghana": "Croatia"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Ecuador",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Croatia",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Algeria",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Ghana",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1555,7 +1861,24 @@
         "Croatia|Ghana": "Croatia",
         "Algeria|Argentina": "Algeria"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Belgium",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Algeria",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Australia"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1637,7 +1960,24 @@
         "Ghana|Panama": "Draw",
         "Croatia|England": "England"
       },
-      "r32": {},
+      "r32": {
+        "Canada|South Africa": "Canada",
+        "Brazil|Japan": "Brazil",
+        "Germany|Paraguay": "Germany",
+        "Morocco|Netherlands": "Netherlands",
+        "France|Sweden": "France",
+        "Ivory Coast|Norway": "Norway",
+        "Ecuador|Mexico": "Mexico",
+        "DR Congo|England": "England",
+        "Bosnia|USA": "USA",
+        "Belgium|Senegal": "Senegal",
+        "Croatia|Portugal": "Portugal",
+        "Austria|Spain": "Spain",
+        "Algeria|Switzerland": "Algeria",
+        "Argentina|Cape Verde": "Argentina",
+        "Colombia|Ghana": "Colombia",
+        "Australia|Egypt": "Egypt"
+      },
       "r16": {},
       "qf": {},
       "sf": {},
@@ -1661,7 +2001,8 @@
       "tw_pot1_exit": "Germany",
       "grp_most_goals": "France",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "4"
+      "grp_margin": "4",
+      "r32_red_cards": "3"
     },
     "pmnkxkq5lq95v": {
       "tw_golden_boot": "Harry Kane",
@@ -1669,7 +2010,8 @@
       "tw_pot1_exit": "Croatia",
       "grp_most_goals": "Spain",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "5"
+      "grp_margin": "5",
+      "r32_red_cards": "0"
     },
     "pmnkxkq5lh2fn": {
       "tw_possession": "Spain",
@@ -1677,7 +2019,8 @@
       "grp_most_goals": "France",
       "grp_conf_winrate": "UEFA (Europe)",
       "grp_margin": "6+",
-      "tw_golden_boot": "Mbappé"
+      "tw_golden_boot": "Mbappé",
+      "r32_red_cards": "4"
     },
     "pmq3o4oxf2ovs": {
       "tw_golden_boot": "Harry Kane",
@@ -1685,7 +2028,8 @@
       "tw_pot1_exit": "Netherlands",
       "grp_most_goals": "Germany",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "6+"
+      "grp_margin": "6+",
+      "r32_red_cards": "3"
     },
     "pmq3o4btjbtji": {
       "grp_margin": "5",
@@ -1693,7 +2037,8 @@
       "tw_possession": "Spain",
       "tw_golden_boot": "Kylian Mbappe",
       "grp_most_goals": "Spain",
-      "tw_pot1_exit": "Croatia"
+      "tw_pot1_exit": "Croatia",
+      "r32_red_cards": "3"
     },
     "pmnkxkq5lctkz": {
       "tw_golden_boot": "Mbappe",
@@ -1701,7 +2046,8 @@
       "tw_pot1_exit": "Belgium",
       "grp_most_goals": "Spain",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "3"
+      "grp_margin": "3",
+      "r32_red_cards": "3"
     },
     "pmq3o3mu24pff": {
       "tw_golden_boot": "Harry Kane",
@@ -1709,7 +2055,8 @@
       "tw_pot1_exit": "Croatia",
       "grp_conf_winrate": "CONMEBOL (South America)",
       "grp_most_goals": "Spain",
-      "grp_margin": "6+"
+      "grp_margin": "6+",
+      "r32_red_cards": "3"
     },
     "pmq3o5zszp5uv": {
       "tw_possession": "Spain",
@@ -1717,7 +2064,8 @@
       "tw_pot1_exit": "Belgium",
       "grp_most_goals": "Germany",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "6+"
+      "grp_margin": "6+",
+      "r32_red_cards": "5"
     },
     "pmnkxkq5l2ky5": {
       "tw_possession": "Spain",
@@ -1725,7 +2073,8 @@
       "tw_golden_boot": "Mbappe",
       "grp_conf_winrate": "UEFA (Europe)",
       "grp_margin": "4",
-      "grp_most_goals": "Spain"
+      "grp_most_goals": "Spain",
+      "r32_red_cards": "4"
     },
     "pmq3o55ju2pms": {
       "tw_golden_boot": "Kylian Mbappé",
@@ -1733,7 +2082,8 @@
       "tw_pot1_exit": "Colombia",
       "grp_most_goals": "Spain",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "5"
+      "grp_margin": "5",
+      "r32_red_cards": "3"
     },
     "pmnn5u6une8tg": {
       "tw_golden_boot": "Oyarzabal",
@@ -1741,7 +2091,8 @@
       "tw_pot1_exit": "Croatia",
       "grp_most_goals": "Germany",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "5"
+      "grp_margin": "5",
+      "r32_red_cards": "1"
     },
     "pmq3o3jpxcyi2": {
       "grp_margin": "5",
@@ -1749,7 +2100,8 @@
       "grp_most_goals": "Spain",
       "tw_possession": "Spain",
       "tw_golden_boot": "Laminate Yamal",
-      "tw_pot1_exit": "Morocco"
+      "tw_pot1_exit": "Morocco",
+      "r32_red_cards": "4"
     },
     "pmnn5ww9z72en": {
       "tw_golden_boot": "Mbappe",
@@ -1757,7 +2109,8 @@
       "tw_pot1_exit": "Colombia",
       "grp_most_goals": "Brazil",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "4"
+      "grp_margin": "4",
+      "r32_red_cards": "12"
     },
     "pmq7atd14ba5p": {
       "grp_most_goals": "Germany",
@@ -1765,7 +2118,8 @@
       "grp_margin": "5",
       "tw_golden_boot": "Mbappe",
       "tw_possession": "Spain",
-      "tw_pot1_exit": "Netherlands"
+      "tw_pot1_exit": "Netherlands",
+      "r32_red_cards": "2"
     },
     "pmq3o5k356vr2": {
       "tw_golden_boot": "Mbappe",
@@ -1773,11 +2127,13 @@
       "tw_pot1_exit": "Croatia",
       "grp_most_goals": "Portugal",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "4"
+      "grp_margin": "4",
+      "r32_red_cards": "2"
     },
     "pmnn5qosafknw": {
       "tw_possession": "Brazil",
-      "tw_pot1_exit": "Morocco"
+      "tw_pot1_exit": "Morocco",
+      "r32_red_cards": "7"
     },
     "pmq791b2ospne": {
       "tw_golden_boot": "Kylian Mbappé",
@@ -1785,7 +2141,8 @@
       "tw_pot1_exit": "Colombia",
       "grp_most_goals": "Portugal",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "5"
+      "grp_margin": "5",
+      "r32_red_cards": "2"
     },
     "pmnnha5dy76jt": {
       "tw_possession": "Portugal",
@@ -1793,7 +2150,8 @@
       "tw_pot1_exit": "Netherlands",
       "grp_most_goals": "Portugal",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "3"
+      "grp_margin": "3",
+      "r32_red_cards": "3"
     },
     "pmq3o691xsy7c": {
       "tw_golden_boot": "Brasil",
@@ -1801,7 +2159,8 @@
       "tw_pot1_exit": "Morocco",
       "grp_most_goals": "France",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "4"
+      "grp_margin": "4",
+      "r32_red_cards": "3"
     },
     "pmq9jrk7dpq9i": {
       "tw_golden_boot": "Kane",
@@ -1809,7 +2168,8 @@
       "tw_pot1_exit": "Belgium",
       "grp_most_goals": "France",
       "grp_conf_winrate": "UEFA (Europe)",
-      "grp_margin": "4"
+      "grp_margin": "4",
+      "r32_red_cards": "3"
     }
   },
   "results": {
@@ -1856,7 +2216,36 @@
     "groups-i-2": "France",
     "groups-i-3": "Norway",
     "groups-j-2": "Argentina",
-    "groups-j-3": "Algeria"
+    "groups-j-3": "Algeria",
+    "groups-a-4": "Mexico",
+    "groups-a-5": "South Africa",
+    "groups-b-4": "Switzerland",
+    "groups-b-5": "Bosnia",
+    "groups-c-4": "Brazil",
+    "groups-c-5": "Morocco",
+    "groups-d-4": "Turkey",
+    "groups-d-5": "Draw",
+    "groups-e-4": "Ecuador",
+    "groups-e-5": "Ivory Coast",
+    "groups-f-4": "Netherlands",
+    "groups-f-5": "Draw",
+    "groups-g-4": "Belgium",
+    "groups-g-5": "Draw",
+    "groups-h-4": "Spain",
+    "groups-h-5": "Draw",
+    "groups-i-4": "France",
+    "groups-i-5": "Senegal",
+    "groups-j-4": "Argentina",
+    "groups-j-5": "Draw",
+    "groups-k-2": "Portugal",
+    "groups-k-3": "Colombia",
+    "groups-k-4": "Draw",
+    "groups-k-5": "DR Congo",
+    "groups-l-2": "Draw",
+    "groups-l-3": "Croatia",
+    "groups-l-4": "England",
+    "groups-l-5": "Croatia",
+    "r32-a-0": "Canada"
   },
   "players": [
     {
@@ -1945,10 +2334,158 @@
   "currentRound": "groups",
   "roundStatus": "locked",
   "scores": {},
-  "rulesText": "WORLD CUP 2026 POOL — OFFICIAL RULES\n\nHOW IT WORKS\nBefore each round opens, every player submits their picks for that round. Once the round is locked by the Commissioner, picks can no longer be changed. Points are awarded for correct picks, with bigger rewards for later rounds and for picking upsets.\n\nPICK DEADLINES\nPicks must be submitted before the Commissioner locks the round. Late picks will not be accepted. Make sure you are logged in and have saved your picks before the deadline.\n\n——————————————————————————\nSCORING\n——————————————————————————\n\nBASE POINTS\nEvery correct pick earns base points, regardless of which team wins:\n\n  Group Stage       1 pt\n  Round of 32       2 pts\n  Round of 16       3 pts\n  Quarterfinals     5 pts\n  Semifinals        8 pts\n  3rd Place         8 pts\n  Final            15 pts\n\n——————————————————————————\n\nUPSET BONUS — PICKING A WINNER\nTeams are seeded by FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). If you pick a higher-pot team to beat a lower-pot team, you earn base points plus an upset bonus:\n\n  Total = Base pts + (Underdog pot − Favourite pot) × Round multiplier\n\nRound multipliers:\n  Group Stage ×1.0  ·  R32 ×1.2  ·  R16 ×1.3\n  QF ×1.6  ·  SF ×2.0  ·  3rd Place ×2.0  ·  Final ×3.0\n\nIf there is no pot differential (equal-pot teams, or favourite wins), you earn base points only — no multiplier applied.\n\nExamples:\n  Pot 4 beats Pot 1 in the Group Stage → 1 + (3 × 1.0) = 4 pts\n  Pot 3 beats Pot 1 in the Round of 32 → 2 + (2 × 1.2) = 4.4 pts\n  Pot 2 beats Pot 1 in the Quarterfinals → 5 + (1 × 1.6) = 6.6 pts\n  Pot 4 beats Pot 1 in the Final → 15 + (3 × 3.0) = 24 pts\n\n——————————————————————————\n\nDRAWS (Group Stage only)\nYou may pick a Draw in any Group Stage game. Knockout rounds are always decided by penalty kicks if level after 90 minutes, so Draw is not a pick option there. A correct draw pick earns base points plus a pot-gap bonus:\n\n  Total = Base pts + (Pot differential / 2) × Round multiplier\n\nExamples:\n  Same-pot draw (e.g. Pot 2 vs Pot 2) → 1 + 0 = 1 pt\n  Pot 1 vs Pot 2 draw → 1 + (0.5 × 1.0) = 1.5 pts\n  Pot 1 vs Pot 3 draw → 1 + (1.0 × 1.0) = 2 pts\n  Pot 1 vs Pot 4 draw → 1 + (1.5 × 1.0) = 2.5 pts\n\n——————————————————————————\nBONUS QUESTIONS\n——————————————————————————\n\nEach round includes bonus questions worth extra points. Answers must be submitted before the round locks.\n\nTournament-Wide Predictions (due before the Group Stage begins)\n  · Golden Boot Winner (player name) — 6 pts\n  · Team with Best Time of Possession % — 6 pts\n  · First Pot 1 Team to be Eliminated — 6 pts\n\nGroup Stage\n  · Team with Most Goals in the Group Stage — 5 pts\n  · Confederation with Highest Win Rate — 5 pts\n  · Highest Winning Margin in Any Single Game (goals) — 4 pts\n\nRound of 32\n  · Total Red Cards in R32 — 6 pts\n\nRound of 16\n  · Total Goals in R16 — 5 pts\n\nQuarterfinals\n  · Team with Most Assists — 2 pts\n  · All Four Correct Semi-Finalist Picks — 10 pts\n\nSemifinals\n  · High Individual Scorer (Semi-Finals) — 3 pts\n\nFinal\n  · Man of the Match — 3 pts\n\n——————————————————————————\nSTANDINGS\n——————————————————————————\n\nThe leaderboard shows each player's total points earned and their maximum possible score (current points plus potential points from picks already submitted for unplayed games). Players are ranked by total score. Tied players share the same rank.\n\n——————————————————————————\nPARTICIPATING TEAMS BY POT\n——————————————————————————\n\nPot 1 (Top Seeds)\n  Argentina · Belgium · Brazil · Colombia · Croatia · England\n  France · Germany · Morocco · Netherlands · Portugal · Spain\n\nPot 2\n  Austria · Canada · Ecuador · Iran · Japan · Mexico\n  Senegal · South Korea · Switzerland · Turkey · Uruguay · USA\n\nPot 3\n  Algeria · Australia · Czech Republic · DR Congo · Egypt · Ivory Coast\n  Norway · Panama · Qatar · Saudi Arabia · Scotland · Sweden\n\nPot 4\n  Bosnia · Cape Verde · Curacao · Ghana · Haiti · Iraq\n  Jordan · New Zealand · Paraguay · South Africa · Tunisia · Uzbekistan\n\n——————————————————————————\nGENERAL RULES\n——————————————————————————\n\n· The Commissioner's decisions are final.\n· All picks are private until the round is locked.\n· Have fun and may the best picker win!",
+  "rulesText": "WORLD CUP 2026 POOL — OFFICIAL RULES\n\nHOW IT WORKS\nBefore each round opens, every player submits their picks for that round. Once the round is locked by the Commissioner, picks can no longer be changed. Points are awarded for correct picks, with bigger rewards for later rounds and for picking upsets.\n\nPICK DEADLINES\nPicks must be submitted before the Commissioner locks the round. Late picks will not be accepted. Make sure you are logged in and have saved your picks before the deadline.\n\n——————————————————————————\nSCORING\n——————————————————————————\n\nBASE POINTS\nEvery correct pick earns base points, regardless of which team wins:\n\n  Group Stage       1 pt\n  Round of 32       2 pts\n  Round of 16       3 pts\n  Quarterfinals     5 pts\n  Semifinals        8 pts\n  3rd Place         8 pts\n  Final            15 pts\n\n——————————————————————————\n\nUPSET BONUS — PICKING A WINNER\nTeams are seeded by FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). If you pick a higher-pot team to beat a lower-pot team, you earn base points plus an upset bonus. The upset multiplier equals the base points for that round — so upsets become proportionally more rewarding as the tournament progresses:\n\n  Total = Base pts + (Underdog pot − Favourite pot) × Base pts\n        = Base pts × (1 + Pot differential)\n\nIf there is no pot differential (equal-pot teams, or favourite wins), you earn base points only.\n\nExamples:\n  Pot 4 beats Pot 2 in the Round of 32  → 2 + (2 × 2)   = 6 pts\n  Pot 4 beats Pot 1 in the Round of 32  → 2 + (3 × 2)   = 8 pts\n  Pot 4 beats Pot 1 in the Round of 16  → 3 + (3 × 3)   = 12 pts\n  Pot 4 beats Pot 1 in the Quarterfinals → 5 + (3 × 5)  = 20 pts\n  Pot 4 beats Pot 1 in the Semifinals   → 8 + (3 × 8)   = 32 pts\n  Pot 4 beats Pot 1 in the Final        → 15 + (3 × 15) = 60 pts\n\n——————————————————————————\n\nDRAWS (Group Stage only)\nYou may pick a Draw in any Group Stage game. Knockout rounds are always decided by penalty kicks if level after 90 minutes, so Draw is not a pick option there. A correct draw pick earns base points plus a pot-gap bonus:\n\n  Total = Base pts + (Pot differential / 2) × Round multiplier\n\nExamples:\n  Same-pot draw (e.g. Pot 2 vs Pot 2) → 1 + 0 = 1 pt\n  Pot 1 vs Pot 2 draw → 1 + (0.5 × 1.0) = 1.5 pts\n  Pot 1 vs Pot 3 draw → 1 + (1.0 × 1.0) = 2 pts\n  Pot 1 vs Pot 4 draw → 1 + (1.5 × 1.0) = 2.5 pts\n\n——————————————————————————\nBONUS QUESTIONS\n——————————————————————————\n\nEach round includes bonus questions worth extra points. Answers must be submitted before the round locks.\n\nTournament-Wide Predictions (due before the Group Stage begins)\n  · Golden Boot Winner (player name) — 6 pts\n  · Team with Best Time of Possession % — 6 pts\n  · First Pot 1 Team to be Eliminated — 6 pts\n\nGroup Stage\n  · Team with Most Goals in the Group Stage — 5 pts\n  · Confederation with Highest Win Rate — 5 pts\n  · Highest Winning Margin in Any Single Game (goals) — 4 pts\n\nRound of 32\n  · Total Red Cards in R32 — 6 pts\n\nRound of 16\n  · Total Goals in R16 — 5 pts\n\nQuarterfinals\n  · Team with Most Assists — 2 pts\n  · All Four Correct Semi-Finalist Picks — 10 pts\n\nSemifinals\n  · High Individual Scorer (Semi-Finals) — 3 pts\n\nFinal\n  · Man of the Match — 3 pts\n\n——————————————————————————\nSTANDINGS\n——————————————————————————\n\nThe leaderboard shows each player's total points earned and their maximum possible score (current points plus potential points from picks already submitted for unplayed games). Players are ranked by total score. Tied players share the same rank.\n\n——————————————————————————\nPARTICIPATING TEAMS BY POT\n——————————————————————————\n\nPot 1 (Top Seeds)\n  Argentina · Belgium · Brazil · Colombia · Croatia · England\n  France · Germany · Morocco · Netherlands · Portugal · Spain\n\nPot 2\n  Austria · Canada · Ecuador · Iran · Japan · Mexico\n  Senegal · South Korea · Switzerland · Turkey · Uruguay · USA\n\nPot 3\n  Algeria · Australia · Czech Republic · DR Congo · Egypt · Ivory Coast\n  Norway · Panama · Qatar · Saudi Arabia · Scotland · Sweden\n\nPot 4\n  Bosnia · Cape Verde · Curacao · Ghana · Haiti · Iraq\n  Jordan · New Zealand · Paraguay · South Africa · Tunisia · Uzbekistan\n\n——————————————————————————\nGENERAL RULES\n——————————————————————————\n\n· The Commissioner's decisions are final.\n· All picks are private until the round is locked.\n· Have fun and may the best picker win!",
   "defaultPlayersKey": "Commish,Lorenz,Diego,Cole,Matthias",
-  "bonusAnswers": {},
-  "r32Teams": null,
+  "bonusAnswers": {
+    "grp_margin": "6+",
+    "grp_conf_winrate": [
+      "UEFA (Europe)",
+      "CONMEBOL (South America)"
+    ],
+    "grp_most_goals": [
+      "Germany",
+      "Netherlands",
+      "France"
+    ]
+  },
+  "r32Teams": {
+    "A": [
+      {
+        "seed": 4,
+        "name": "South Africa"
+      },
+      {
+        "seed": 2,
+        "name": "Canada"
+      },
+      {
+        "seed": 1,
+        "name": "Germany"
+      },
+      {
+        "seed": 4,
+        "name": "Paraguay"
+      },
+      {
+        "seed": 1,
+        "name": "Brazil"
+      },
+      {
+        "seed": 2,
+        "name": "Japan"
+      },
+      {
+        "seed": 3,
+        "name": "Ivory Coast"
+      },
+      {
+        "seed": 3,
+        "name": "Norway"
+      }
+    ],
+    "B": [
+      {
+        "seed": 1,
+        "name": "Netherlands"
+      },
+      {
+        "seed": 1,
+        "name": "Morocco"
+      },
+      {
+        "seed": 1,
+        "name": "France"
+      },
+      {
+        "seed": 3,
+        "name": "Sweden"
+      },
+      {
+        "seed": 2,
+        "name": "Mexico"
+      },
+      {
+        "seed": 2,
+        "name": "Ecuador"
+      },
+      {
+        "seed": 1,
+        "name": "England"
+      },
+      {
+        "seed": 3,
+        "name": "DR Congo"
+      }
+    ],
+    "C": [
+      {
+        "seed": 1,
+        "name": "Spain"
+      },
+      {
+        "seed": 2,
+        "name": "Austria"
+      },
+      {
+        "seed": 1,
+        "name": "Portugal"
+      },
+      {
+        "seed": 1,
+        "name": "Croatia"
+      },
+      {
+        "seed": 1,
+        "name": "Belgium"
+      },
+      {
+        "seed": 2,
+        "name": "Senegal"
+      },
+      {
+        "seed": 2,
+        "name": "USA"
+      },
+      {
+        "seed": 4,
+        "name": "Bosnia"
+      }
+    ],
+    "D": [
+      {
+        "seed": 3,
+        "name": "Australia"
+      },
+      {
+        "seed": 3,
+        "name": "Egypt"
+      },
+      {
+        "seed": 1,
+        "name": "Colombia"
+      },
+      {
+        "seed": 4,
+        "name": "Ghana"
+      },
+      {
+        "seed": 2,
+        "name": "Switzerland"
+      },
+      {
+        "seed": 3,
+        "name": "Algeria"
+      },
+      {
+        "seed": 1,
+        "name": "Argentina"
+      },
+      {
+        "seed": 4,
+        "name": "Cape Verde"
+      }
+    ]
+  },
   "roundDeadlines": {},
   "broadcast": null,
   "playerPins": {}
