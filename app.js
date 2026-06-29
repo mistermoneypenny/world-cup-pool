@@ -3974,106 +3974,9 @@ function renderUpsetTracker(container) {
 // ── BONUS RACE ────────────────────────────────────────────────
 
 function renderBonusRace(container) {
-  const stats   = state.liveStats;
-  const bpMap   = state.bonusPicks || {};
-  const players = state.players   || [];
-
-  function norm(s) {
-    return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-  }
-
-  function pickersFor(qid, keys) {
-    const nkeys = keys.map(norm);
-    const names = [];
-    for (const [pid, pp] of Object.entries(bpMap)) {
-      const v = pp[qid];
-      if (!v) continue;
-      const nv = norm(Array.isArray(v) ? v.join(', ') : String(v));
-      if (nkeys.some(nk => nk === nv || nk.includes(nv) || nv.includes(nk))) {
-        const pl = players.find(p => p.id === pid);
-        if (pl) names.push(pl.name);
-      }
-    }
-    return names;
-  }
-
-  const CONF_KEY = {
-    CONMEBOL: 'CONMEBOL (South America)', UEFA: 'UEFA (Europe)',
-    CAF: 'CAF (Africa)', AFC: 'AFC (Asia)',
-    CONCACAF: 'CONCACAF (N./C. America)', OFC: 'OFC (Oceania)'
-  };
-
-  const hm = stats?.highestMargin;
-  const marginCat = hm ? (hm.margin >= 6 ? '6+' : String(hm.margin)) : null;
-
-  const QUESTIONS = [
-    {
-      label: 'Golden Boot', pts: 6, qid: 'tw_golden_boot',
-      leader: stats?.goldenBoot?.[0]
-        ? `${stats.goldenBoot[0].player} (${stats.goldenBoot[0].goals} goal${stats.goldenBoot[0].goals !== 1 ? 's' : ''})`
-        : null,
-      keys: stats?.goldenBoot?.[0] ? [stats.goldenBoot[0].player] : [],
-    },
-    {
-      label: 'Best Possession', pts: 6, qid: 'tw_possession',
-      leader: stats?.possession?.[0] ? `${stats.possession[0].team} (${stats.possession[0].value}%)` : null,
-      keys:   stats?.possession?.[0] ? [stats.possession[0].team] : [],
-    },
-    {
-      label: 'First Pot 1 Exit', pts: 6, qid: 'tw_pot1_exit',
-      leader: null, keys: [], undecided: true,
-    },
-    {
-      label: 'Most Goals (Group Stage)', pts: 5, qid: 'grp_most_goals',
-      leader: stats?.teamGoals?.[0] ? `${stats.teamGoals[0].team} (${stats.teamGoals[0].value} goals)` : null,
-      keys:   stats?.teamGoals?.[0] ? [stats.teamGoals[0].team] : [],
-    },
-    {
-      label: 'Conf. Win Rate', pts: 5, qid: 'grp_conf_winrate',
-      leader: stats?.confWinRate?.[0] ? `${stats.confWinRate[0].conf} (${stats.confWinRate[0].rate}%)` : null,
-      keys:   stats?.confWinRate?.[0] ? [CONF_KEY[stats.confWinRate[0].conf] || stats.confWinRate[0].conf] : [],
-    },
-    {
-      label: 'Highest Margin', pts: 4, qid: 'grp_margin',
-      leader: hm ? `${marginCat} goals — ${hm.label}` : null,
-      keys:   marginCat ? [marginCat] : [],
-    },
-  ];
-
-  const section = document.createElement('div');
-  section.className = 'bonus-race';
-
-  const hdr = document.createElement('div');
-  hdr.className = 'bonus-race-hdr';
-  hdr.innerHTML = '<span class="bonus-race-title">&#127919; Bonus Race</span>'
-    + '<span class="bonus-race-sub">currently earning bonus points</span>';
-  section.appendChild(hdr);
-
-  QUESTIONS.forEach(q => {
-    const row = document.createElement('div');
-    row.className = 'bonus-race-row';
-
-    let pickersHtml;
-    if (q.undecided || !q.leader) {
-      pickersHtml = '<span class="bonus-race-tbd">not yet determined</span>';
-    } else {
-      const names = pickersFor(q.qid, q.keys);
-      pickersHtml = names.length
-        ? names.map(n => `<span class="bonus-race-name">${esc(n)}</span>`).join('')
-        : '<span class="bonus-race-nobody">nobody picked this</span>';
-    }
-
-    row.innerHTML = `
-      <div class="bonus-race-left">
-        <span class="bonus-race-q">${q.label}</span>
-        <span class="bonus-race-pts">+${q.pts}pts</span>
-        ${q.leader ? `<span class="bonus-race-leader">${esc(q.leader)}</span>` : ''}
-      </div>
-      <div class="bonus-race-right">${pickersHtml}</div>`;
-    section.appendChild(row);
-  });
-
-  container.appendChild(section);
+  const wrapper = document.createElement('div');
+  container.appendChild(wrapper);
+  renderBonusTracker(wrapper);
 }
 
 // ── FEATURE 9: EMOJI REACTIONS ────────────────────────────────
@@ -4793,8 +4696,8 @@ async function fetchLiveStats() {
   } catch (e) { /* ignore */ }
 }
 
-function renderBonusTracker() {
-  const el = document.getElementById('bonus-tracker');
+function renderBonusTracker(targetEl) {
+  const el = targetEl || document.getElementById('bonus-tracker');
   if (!el) return;
   const stats = state.liveStats;
 
