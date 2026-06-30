@@ -847,7 +847,7 @@ function renderCurrentView() {
   switch (state.currentView) {
     case 'rules':       renderRules();        break;
     case 'bracket':     renderBracket();      break;
-    case 'picks':       renderPicks();        break;
+    case 'picks':       if (state.currentView !== 'picks') state.activePicksRound = state.currentRound; renderPicks(); break;
     case 'leaderboard': renderLeaderboard();  break;
     case 'analytics':   renderAnalytics();   break;
     case 'admin':       renderAdmin();        break;
@@ -1944,7 +1944,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
   const hdr = document.createElement('div');
   hdr.className = 'pick-card-hdr';
   hdr.innerHTML = `<span class="pick-card-hdr-label">${esc(regionLabel)}</span>
-    ${kickoffHtml}${liveBadgeHtml}${scoreHtml}
+    ${kickoffHtml}${liveBadgeHtml}
     <span class="pick-pts">${cfg.pts} pt${cfg.pts > 1 ? 's' : ''}</span>`;
   card.appendChild(hdr);
 
@@ -2009,11 +2009,19 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     const optPts = calcPickPoints(game, optionName, cfg);
     const ptsTxt = Number.isInteger(optPts) ? `${optPts}p` : `${optPts}p`;
 
-    // Individual team score (goals) for this option — only when a score has been recorded
-    const teamGoal = (!isDraw && sc !== undefined)
-      ? String(team === t1 ? sc.t1 : sc.t2)
+    const teamGoal = !isDraw
+      ? (sc !== undefined
+          ? String(team === t1 ? sc.t1 : sc.t2)
+          : (isLive || isPost) && liveSc?.t1 != null
+            ? String(team === t1 ? liveSc.t1 : liveSc.t2)
+            : '')
       : '';
-    const scoreSpan = teamGoal !== '' ? `<span class="pick-o-score">${teamGoal}</span>` : '';
+    const pksVal = !isDraw && sc?.pens && sc?.pks
+      ? (team === t1 ? sc.pks.t1 : sc.pks.t2) : null;
+    const scoreSpan = teamGoal !== ''
+      ? `<span class="pick-o-score${isLive && !sc ? ' live' : ''}">${teamGoal}</span>` : '';
+    const pksSpan = sc?.pens
+      ? (pksVal !== null ? `<span class="pick-o-pks">(${pksVal})</span>` : '<span class="pick-o-pks"></span>') : '';
 
     // Only emit result span when there is actual content (saves ~52px when no result yet)
     const resultSpan = resultMark;
@@ -2033,7 +2041,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
     if (isDraw) {
       row.innerHTML = `<span class="pick-o-seed"></span><span class="pick-o-name pick-draw-label">Draw${yourPickBadge}</span><span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     } else {
-      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span>${flag(team.name)}<span class="pick-o-name">${esc(team.name)}${yourPickBadge}</span>${scoreSpan}<span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
+      row.innerHTML = `<span class="pick-o-seed">${team.seed}</span>${flag(team.name)}<span class="pick-o-name">${esc(team.name)}${yourPickBadge}</span>${scoreSpan}${pksSpan}<span class="pick-o-pts">${ptsTxt}</span>${resultSpan}${popHtml}`;
     }
     row.insertBefore(radio, row.firstChild);
 
