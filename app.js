@@ -2018,10 +2018,11 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
       : '';
     const pksVal = !isDraw && sc?.pens && sc?.pks
       ? (team === t1 ? sc.pks.t1 : sc.pks.t2) : null;
-    const scoreSpan = teamGoal !== ''
+    // Always emit score + pks spans for non-draw options so grid columns stay consistent
+    const scoreSpan = !isDraw
       ? `<span class="pick-o-score${isLive && !sc ? ' live' : ''}">${teamGoal}</span>` : '';
-    const pksSpan = sc?.pens
-      ? (pksVal !== null ? `<span class="pick-o-pks">(${pksVal})</span>` : '<span class="pick-o-pks"></span>') : '';
+    const pksSpan = !isDraw
+      ? `<span class="pick-o-pks">${pksVal !== null ? `(${pksVal})` : ''}</span>` : '';
 
     // Only emit result span when there is actual content (saves ~52px when no result yet)
     const resultSpan = resultMark;

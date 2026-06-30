@@ -354,21 +354,26 @@ a { color: var(--accent); }
 .pick-card-hdr-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); }
 .pick-pts  { font-size: 0.65rem; font-weight: 600; color: var(--accent); }
 .pick-tbd  { padding: 0.5rem 0.6rem; font-size: 0.75rem; color: var(--text-3); font-style: italic; }
-.pick-option { display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); font-size: 0.78rem; cursor: pointer; transition: background 0.1s; border-left: 3px solid transparent; }
+/* Columns: [dot] [seed] [flag] [name] [goal] [pks] [pts] [result] [pop] */
+/* NOTE: all columns are fixed-width except [name]=1fr. Using auto for result would let it */
+/* steal from 1fr ("WON" wider than "✗"), misaligning goal/pts between rows. Use 42px. */
+.pick-option { display: grid; grid-template-columns: 9px 18px 22px 1fr 22px 36px 32px 42px; align-items: center; column-gap: 0.35rem; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); border-left: 4px solid transparent; font-size: 0.78rem; cursor: pointer; transition: background 0.1s; }
 .pick-option:last-child { border-bottom: none; }
 .pick-option.selected  { background: rgba(0,166,81,0.30); border-left: 4px solid var(--accent); }
 .pick-option.disabled  { cursor: default; }
 .pick-option:hover:not(.disabled) { background: var(--surface-2); }
 .pick-option.result-correct { background: rgba(46,204,113,0.1); }
 .pick-option.result-wrong   { background: rgba(231,76,60,0.07); }
-.pick-o-seed  { font-size: 0.65rem; font-weight: 700; color: var(--text-3); width: 16px; min-width: 16px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
-.pick-o-name  { flex: 1; min-width: 0; word-break: break-word; }
-.pick-option > img { flex-shrink: 0; }
-.pick-o-score { font-size: 0.78rem; font-weight: 700; color: var(--text-2); width: 18px; text-align: center; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+/* Draw option (group stage only) reverts to flex — different element count */
+.pick-draw-option { display: flex; gap: 0.4rem; align-items: center; }
+.pick-o-seed  { grid-column: 2; font-size: 0.65rem; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
+.pick-o-name  { grid-column: 4; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick-option > img { grid-column: 3; }
+.pick-o-score { grid-column: 5; font-size: 0.82rem; font-weight: 700; color: var(--text-2); text-align: center; font-variant-numeric: tabular-nums; }
 .pick-o-score.live { color: #4ade80; }
-.pick-o-pks   { font-size: 0.7rem; color: var(--gold); opacity: 0.85; min-width: 30px; text-align: left; flex-shrink: 0; font-variant-numeric: tabular-nums; }
-.pick-o-pts   { font-size: 0.7rem; color: var(--text-2); white-space: nowrap; flex-shrink: 0; text-align: right; width: 28px; }
-.pick-o-result { font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; flex-shrink: 0; text-align: center; }
+.pick-o-pks   { grid-column: 6; font-size: 0.72rem; color: var(--gold); opacity: 0.85; text-align: center; font-variant-numeric: tabular-nums; }
+.pick-o-pts   { grid-column: 7; font-size: 0.7rem; color: var(--text-2); white-space: nowrap; text-align: right; }
+.pick-o-result { grid-column: 8; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; white-space: nowrap; text-align: center; }
 .pick-o-result.correct { background: rgba(46,204,113,0.2); color: var(--green); }
 .pick-o-result.wrong   { background: rgba(231,76,60,0.2);  color: var(--red); }
 .pick-o-result.won     { background: rgba(46,204,113,0.1); color: var(--green); }
@@ -380,11 +385,12 @@ a { color: var(--accent); }
 .pick-option::before {
   content: '';
   display: block;
+  grid-column: 1;
   width: 7px; height: 7px;
   border-radius: 50%;
   border: 1.5px solid var(--text-3);
-  flex-shrink: 0;
   align-self: center;
+  justify-self: center;
 }
 /* Pending / player's pick with no result yet */
 .pick-option.selected::before        { border-color: var(--accent); background: var(--accent); }
