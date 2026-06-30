@@ -462,8 +462,8 @@ async function fetchESPNScores() {
         continue;
       }
       scores[key] = {
-        t1: { name: home.team?.displayName || '', score: parseInt(home.score) || 0 },
-        t2: { name: away.team?.displayName || '', score: parseInt(away.score) || 0 },
+        t1: { name: home.team?.displayName || '', score: parseInt(home.score) || 0, winner: home.winner === true },
+        t2: { name: away.team?.displayName || '', score: parseInt(away.score) || 0, winner: away.winner === true },
         status,
         statusDetail: comp.status?.type?.shortDetail || '',
         link,
@@ -517,6 +517,38 @@ async function autoUpdateWCResults(scores) {
         break;
       }
     });
+  }
+
+  // R32 auto-results from r32Teams
+  const r32Teams = memoryState.r32Teams || {};
+  for (const [region, teams] of Object.entries(r32Teams)) {
+    for (let i = 0; i < 4; i++) {
+      const gid = `r32-${region.toLowerCase()}-${i}`;
+      if (results[gid] !== undefined) continue;
+      const t1 = teams[i * 2]?.name, t2 = teams[i * 2 + 1]?.name;
+      if (!t1 || !t2) continue;
+      for (const sc of Object.values(scores)) {
+        if (sc.status !== 'post') continue;
+        const fwd = matchWCTeam(sc.t1.name, t1) && matchWCTeam(sc.t2.name, t2);
+        const rev = matchWCTeam(sc.t1.name, t2) && matchWCTeam(sc.t2.name, t1);
+        if (!fwd && !rev) continue;
+        const s1 = fwd ? sc.t1.score : sc.t2.score;
+        const s2 = fwd ? sc.t2.score : sc.t1.score;
+        const w1 = fwd ? sc.t1.winner : sc.t2.winner;
+        if (s1 > s2) { results[gid] = t1; }
+        else if (s2 > s1) { results[gid] = t2; }
+        else if (w1 !== undefined) { results[gid] = w1 ? t1 : t2; }
+        else { break; }
+        const isPens = (sc.statusDetail || '').toLowerCase().includes('pen');
+        if (isPens && !memoryState.scores?.[gid]) {
+          if (!memoryState.scores) memoryState.scores = {};
+          memoryState.scores[gid] = { t1: s1, t2: s2, pens: true };
+        }
+        console.log(`Auto-result R32: ${gid} → ${results[gid]}`);
+        changed++;
+        break;
+      }
+    }
   }
 
   if (changed > 0) {

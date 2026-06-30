@@ -4665,8 +4665,8 @@ function findGameScore(t1Name, t2Name) {
     if (!fwd && !rev) continue;
     // Normalise so t1 always corresponds to our t1
     return fwd
-      ? { t1: sc.t1.score, t2: sc.t2.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate }
-      : { t1: sc.t2.score, t2: sc.t1.score, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate };
+      ? { t1: sc.t1.score, t2: sc.t2.score, t1Winner: sc.t1.winner, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate }
+      : { t1: sc.t2.score, t2: sc.t1.score, t1Winner: sc.t2.winner, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate };
   }
   return null;
 }
@@ -4699,8 +4699,20 @@ function autoSetResultsFromScores() {
     if (game.round === 'groups') {
       state.results[game.id] = sc.t1 > sc.t2 ? t1.name : sc.t2 > sc.t1 ? t2.name : 'Draw';
     } else {
-      if (sc.t1 === sc.t2) continue; // extra time / pens still in progress
-      state.results[game.id] = sc.t1 > sc.t2 ? t1.name : t2.name;
+      if (sc.t1 > sc.t2) {
+        state.results[game.id] = t1.name;
+      } else if (sc.t2 > sc.t1) {
+        state.results[game.id] = t2.name;
+      } else if (sc.t1Winner !== undefined) {
+        // Tied after 90 min — use ESPN winner flag (set correctly for PK outcomes)
+        state.results[game.id] = sc.t1Winner ? t1.name : t2.name;
+        const isPens = sc.statusDetail && sc.statusDetail.toLowerCase().includes('pen');
+        if (isPens && !state.scores[game.id]) {
+          state.scores[game.id] = { t1: sc.t1, t2: sc.t2, pens: true };
+        }
+      } else {
+        continue; // genuinely undecided (live extra time)
+      }
     }
     changed++;
   }
