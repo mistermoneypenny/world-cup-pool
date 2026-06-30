@@ -468,6 +468,18 @@ async function fetchESPNScores() {
         statusDetail: comp.status?.type?.shortDetail || '',
         link,
       };
+      // Parse penalty shootout score from ESPN notes: "[Winner] advance X-Y on penalties"
+      const penNote = comp.notes?.find(n => /advance \d+-\d+ on penalties/i.test(n.text || ''));
+      if (penNote) {
+        const m = (penNote.text || '').match(/advance (\d+)-(\d+) on penalties/i);
+        if (m) {
+          const winScore = parseInt(m[1]), loseScore = parseInt(m[2]);
+          // t1=home, t2=away; winner flag determines which scored more
+          scores[key].pks = home.winner === true
+            ? { t1: winScore, t2: loseScore }
+            : { t1: loseScore, t2: winScore };
+        }
+      }
     }
   }
 
@@ -540,9 +552,12 @@ async function autoUpdateWCResults(scores) {
         else if (w1 !== undefined) { results[gid] = w1 ? t1 : t2; }
         else { break; }
         const isPens = (sc.statusDetail || '').toLowerCase().includes('pen');
-        if (isPens && !memoryState.scores?.[gid]) {
+        if (isPens) {
           if (!memoryState.scores) memoryState.scores = {};
-          memoryState.scores[gid] = { t1: s1, t2: s2, pens: true };
+          const existing = memoryState.scores[gid] || {};
+          // fwd: sc.t1=game t1, sc.t2=game t2; rev: flipped — correct pks direction accordingly
+          const apiPks = sc.pks ? (fwd ? sc.pks : { t1: sc.pks.t2, t2: sc.pks.t1 }) : null;
+          memoryState.scores[gid] = { ...existing, t1: s1, t2: s2, pens: true, ...(apiPks ? { pks: apiPks } : {}) };
         }
         console.log(`Auto-result R32: ${gid} → ${results[gid]}`);
         changed++;

@@ -4726,10 +4726,11 @@ function findGameScore(t1Name, t2Name) {
     const fwd = matchLiveTeam(sc.t1.name, t1Name) && matchLiveTeam(sc.t2.name, t2Name);
     const rev = matchLiveTeam(sc.t1.name, t2Name) && matchLiveTeam(sc.t2.name, t1Name);
     if (!fwd && !rev) continue;
-    // Normalise so t1 always corresponds to our t1
+    // Normalise so t1/t2 always correspond to our game's t1/t2 (not ESPN home/away)
+    const pks = sc.pks ? (fwd ? sc.pks : { t1: sc.pks.t2, t2: sc.pks.t1 }) : undefined;
     return fwd
-      ? { t1: sc.t1.score, t2: sc.t2.score, t1Winner: sc.t1.winner, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate }
-      : { t1: sc.t2.score, t2: sc.t1.score, t1Winner: sc.t2.winner, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate };
+      ? { t1: sc.t1.score, t2: sc.t2.score, t1Winner: sc.t1.winner, pks, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate }
+      : { t1: sc.t2.score, t2: sc.t1.score, t1Winner: sc.t2.winner, pks, status: sc.status, statusDetail: sc.statusDetail, link: sc.link, scheduledDate: sc.scheduledDate };
   }
   return null;
 }
@@ -4770,8 +4771,9 @@ function autoSetResultsFromScores() {
         // Tied after 90 min — use ESPN winner flag (set correctly for PK outcomes)
         state.results[game.id] = sc.t1Winner ? t1.name : t2.name;
         const isPens = sc.statusDetail && sc.statusDetail.toLowerCase().includes('pen');
-        if (isPens && !state.scores[game.id]) {
-          state.scores[game.id] = { t1: sc.t1, t2: sc.t2, pens: true };
+        if (isPens) {
+          const existing = state.scores[game.id] || {};
+          state.scores[game.id] = { ...existing, t1: sc.t1, t2: sc.t2, pens: true, ...(sc.pks ? { pks: sc.pks } : {}) };
         }
       } else {
         continue; // genuinely undecided (live extra time)
