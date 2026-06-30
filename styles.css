@@ -653,6 +653,10 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .result-pens-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0 0.1rem; justify-content: center; font-size: 0.72rem; color: var(--text-3); }
 .result-pens-row label { cursor: pointer; }
 .result-pens-row input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
+.result-pks-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.1rem 0 0.2rem; justify-content: center; font-size: 0.72rem; color: var(--text-3); }
+.pks-row-label { font-size: 0.65rem; color: var(--text-3); }
+.pks-inp { width: 2.2rem !important; }
+.matchup-pks-note { text-align: center; font-size: 0.6rem; color: var(--gold); opacity: 0.8; padding: 2px 0 1px; letter-spacing: 0.02em; }
 .pens-badge { font-size: 0.55rem; font-weight: 700; color: var(--gold); background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.3); border-radius: 3px; padding: 0px 3px; margin-left: 3px; vertical-align: middle; letter-spacing: 0.04em; }
 
 .lb-round-score.round-best { color: var(--green); font-weight: 700; background: rgba(46,204,113,0.1); border-radius: 3px; }

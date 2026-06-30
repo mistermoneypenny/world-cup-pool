@@ -1324,6 +1324,7 @@ function buildMatchup(game) {
     card.appendChild(kickoff);
   }
   const isPens = sc?.pens;
+  const pks = sc?.pks;
   [{ team: t1 }, { team: t2 }].forEach(({ team }, idx) => {
     const row = document.createElement('div');
     row.className = 'team-slot';
@@ -1348,6 +1349,13 @@ function buildMatchup(game) {
     }
     card.appendChild(row);
   });
+
+  if (isPens && pks) {
+    const pksNote = document.createElement('div');
+    pksNote.className = 'matchup-pks-note';
+    pksNote.textContent = `(${pks.t1}–${pks.t2} pens)`;
+    card.appendChild(pksNote);
+  }
 
   return card;
 }
@@ -3760,8 +3768,9 @@ function buildResultGameCard(game) {
         const v1 = parseInt(inp1.value, 10);
         const v2 = parseInt(inp2.value, 10);
         if (!isNaN(v1) && !isNaN(v2)) {
-          const pens = pensChk ? pensChk.checked : (state.scores[game.id]?.pens || false);
-          state.scores[game.id] = { t1: v1, t2: v2, ...(pens ? { pens: true } : {}) };
+          const existing = state.scores[game.id] || {};
+          const pens = pensChk ? pensChk.checked : (existing.pens || false);
+          state.scores[game.id] = { ...existing, t1: v1, t2: v2, ...(pens ? { pens: true } : {}) };
         } else {
           delete state.scores[game.id];
         }
@@ -3789,7 +3798,7 @@ function buildResultGameCard(game) {
       scoreRow.appendChild(inp2);
       card.appendChild(scoreRow);
 
-      // Penalties checkbox — knockout rounds only
+      // Penalties checkbox + PK score — knockout rounds only
       if (game.round !== 'groups') {
         const pensRow = document.createElement('div');
         pensRow.className = 'result-pens-row';
@@ -3797,21 +3806,66 @@ function buildResultGameCard(game) {
         pensChk.type = 'checkbox';
         pensChk.id = `pens-${game.id}`;
         pensChk.checked = !!sc.pens;
+
+        // PK score inputs (shown/hidden based on checkbox)
+        const pksRow = document.createElement('div');
+        pksRow.className = 'result-pks-row';
+        pksRow.style.display = sc.pens ? '' : 'none';
+
+        const savePks = () => {
+          const p1 = parseInt(pksInp1.value, 10);
+          const p2 = parseInt(pksInp2.value, 10);
+          const existing = state.scores[game.id] || {};
+          if (!isNaN(p1) && !isNaN(p2)) {
+            state.scores[game.id] = { ...existing, pks: { t1: p1, t2: p2 } };
+          } else {
+            const s = { ...existing }; delete s.pks; state.scores[game.id] = s;
+          }
+          rebuildGames(); saveState();
+        };
+
+        const pksInp1 = document.createElement('input');
+        pksInp1.type = 'number'; pksInp1.min = '0'; pksInp1.max = '20';
+        pksInp1.className = 'score-inp pks-inp'; pksInp1.placeholder = '-';
+        pksInp1.value = sc.pks?.t1 !== undefined ? sc.pks.t1 : '';
+        pksInp1.addEventListener('change', savePks);
+
+        const pksDash = document.createElement('span');
+        pksDash.className = 'score-dash'; pksDash.textContent = '–';
+
+        const pksInp2 = document.createElement('input');
+        pksInp2.type = 'number'; pksInp2.min = '0'; pksInp2.max = '20';
+        pksInp2.className = 'score-inp pks-inp'; pksInp2.placeholder = '-';
+        pksInp2.value = sc.pks?.t2 !== undefined ? sc.pks.t2 : '';
+        pksInp2.addEventListener('change', savePks);
+
+        const pksLbl = document.createElement('span');
+        pksLbl.className = 'pks-row-label'; pksLbl.textContent = 'Pen score:';
+
+        pksRow.appendChild(pksLbl);
+        pksRow.appendChild(pksInp1);
+        pksRow.appendChild(pksDash);
+        pksRow.appendChild(pksInp2);
+
         pensChk.addEventListener('change', () => {
           const v1 = parseInt(inp1.value, 10);
           const v2 = parseInt(inp2.value, 10);
+          pksRow.style.display = pensChk.checked ? '' : 'none';
           if (!isNaN(v1) && !isNaN(v2)) {
-            state.scores[game.id] = { t1: v1, t2: v2, ...(pensChk.checked ? { pens: true } : {}) };
-            rebuildGames();
-            saveState();
+            const existing = state.scores[game.id] || {};
+            state.scores[game.id] = { ...existing, t1: v1, t2: v2, ...(pensChk.checked ? { pens: true } : { pens: false }) };
+            if (!pensChk.checked) { const s = state.scores[game.id]; delete s.pks; delete s.pens; }
+            rebuildGames(); saveState();
           }
         });
+
         const pensLbl = document.createElement('label');
         pensLbl.htmlFor = `pens-${game.id}`;
         pensLbl.textContent = 'Won on penalties';
         pensRow.appendChild(pensChk);
         pensRow.appendChild(pensLbl);
         card.appendChild(pensRow);
+        card.appendChild(pksRow);
       }
     }
   }
