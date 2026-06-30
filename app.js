@@ -1323,6 +1323,7 @@ function buildMatchup(game) {
     kickoff.textContent = `${dateStr} · ${timeStr}`;
     card.appendChild(kickoff);
   }
+  const isPens = sc?.pens;
   [{ team: t1 }, { team: t2 }].forEach(({ team }, idx) => {
     const row = document.createElement('div');
     row.className = 'team-slot';
@@ -1341,8 +1342,9 @@ function buildMatchup(game) {
       const displaySc = sc ?? liveSc;
       const rawVal = displaySc != null ? (idx === 0 ? displaySc.t1 : displaySc.t2) : null;
       const scoreNum = rawVal == null ? '' : (typeof rawVal === 'object' ? rawVal.score : rawVal);
+      const pensBadge = isPens && isWinner ? `<span class="pens-badge">P</span>` : '';
       const goals = rawVal != null ? `<span class="t-score${isLive ? ' live' : ''}">${scoreNum}</span>` : '';
-      row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${flag(team.name)}${esc(team.name)}</span>${goals}`;
+      row.innerHTML = `<span class="t-seed">${team.seed}</span><span class="t-name">${flag(team.name)}${esc(team.name)}</span>${goals}${pensBadge}`;
     }
     card.appendChild(row);
   });
@@ -3682,7 +3684,9 @@ function buildResultGameCard(game) {
   lbl.className = 'result-game-hdr';
   // For group stage show "MD1: ArgvCol" style; for knockout show quadrant/label
   const adminSc = state.scores[game.id];
-  const adminScoreStr = adminSc !== undefined ? ` <span class="result-score-badge">${adminSc.t1}–${adminSc.t2}</span>` : '';
+  const adminScoreStr = adminSc !== undefined
+    ? ` <span class="result-score-badge">${adminSc.t1}–${adminSc.t2}${adminSc.pens ? ' <span class="pens-label">pen</span>' : ''}</span>`
+    : '';
   if (game.round === 'groups') {
     const MD_NAMES = ['MD1','MD1','MD2','MD2','MD3','MD3'];
     lbl.innerHTML = `${MD_NAMES[game.idx]}: ${t1 ? esc(t1.name) : '?'} vs ${t2 ? esc(t2.name) : '?'}${adminScoreStr}`;
@@ -3750,12 +3754,14 @@ function buildResultGameCard(game) {
       const scoreRow = document.createElement('div');
       scoreRow.className = 'result-score-row';
       const sc = state.scores[game.id] || {};
+      let pensChk = null;
 
       const saveScore = () => {
         const v1 = parseInt(inp1.value, 10);
         const v2 = parseInt(inp2.value, 10);
         if (!isNaN(v1) && !isNaN(v2)) {
-          state.scores[game.id] = { t1: v1, t2: v2 };
+          const pens = pensChk ? pensChk.checked : (state.scores[game.id]?.pens || false);
+          state.scores[game.id] = { t1: v1, t2: v2, ...(pens ? { pens: true } : {}) };
         } else {
           delete state.scores[game.id];
         }
@@ -3782,6 +3788,31 @@ function buildResultGameCard(game) {
       scoreRow.appendChild(dash);
       scoreRow.appendChild(inp2);
       card.appendChild(scoreRow);
+
+      // Penalties checkbox — knockout rounds only
+      if (game.round !== 'groups') {
+        const pensRow = document.createElement('div');
+        pensRow.className = 'result-pens-row';
+        pensChk = document.createElement('input');
+        pensChk.type = 'checkbox';
+        pensChk.id = `pens-${game.id}`;
+        pensChk.checked = !!sc.pens;
+        pensChk.addEventListener('change', () => {
+          const v1 = parseInt(inp1.value, 10);
+          const v2 = parseInt(inp2.value, 10);
+          if (!isNaN(v1) && !isNaN(v2)) {
+            state.scores[game.id] = { t1: v1, t2: v2, ...(pensChk.checked ? { pens: true } : {}) };
+            rebuildGames();
+            saveState();
+          }
+        });
+        const pensLbl = document.createElement('label');
+        pensLbl.htmlFor = `pens-${game.id}`;
+        pensLbl.textContent = 'Won on penalties';
+        pensRow.appendChild(pensChk);
+        pensRow.appendChild(pensLbl);
+        card.appendChild(pensRow);
+      }
     }
   }
   return card;
