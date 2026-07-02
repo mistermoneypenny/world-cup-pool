@@ -72,10 +72,10 @@ const REGIONS = ['A', 'B', 'C', 'D'];
 const LEFT_REGIONS  = ['A', 'B'];
 const RIGHT_REGIONS = ['C', 'D'];
 
-// Left side (A + B) → SF game 0  |  Right side (C + D) → SF game 1
+// FIFA 2026 bracket: SF1 = QF1(A) winner vs QF2(C) winner | SF2 = QF3(B) winner vs QF4(D) winner
 const SF_PAIRINGS = [
-  ['A', 'B'],
-  ['C', 'D'],
+  ['A', 'C'],
+  ['B', 'D'],
 ];
 
 // ── TEAM DATA ─────────────────────────────────────────────────
@@ -431,6 +431,15 @@ function buildGames() {
       }
     });
   });
+
+  // FIFA 2026 bracket correction: R16 games 1 & 2 cross pool regions A ↔ B
+  // R16-1: r32-a-0 winner (Canada) vs r32-b-0 winner (Morocco)   — July 4
+  // R16-2: r32-a-1 winner (Paraguay) vs r32-b-1 winner (France)  — July 4
+  // This cascades into QF-A (pairs R16-1 & R16-2) and QF-B (pairs R16-3 & R16-4)
+  games['r16-a-0'].p2 = 'r32-b-0';
+  games['r16-b-0'].p1 = 'r32-a-1';
+  games['qf-a-0'].p2  = 'r16-b-0';
+  games['qf-b-0'].p1  = 'r16-a-1';
 
   // Semifinals: 2 games
   SF_PAIRINGS.forEach(([r1, r2], i) => {
@@ -1017,10 +1026,10 @@ const ROUND_LABELS = {
 
 const ROUND_DATES = {
   groups: 'Jun 12–26',
-  r32:    'Jun 29 – Jul 2',
-  r16:    'Jul 5–8',
-  qf:     'Jul 11–12',
-  sf:     'Jul 15–16',
+  r32:    'Jun 28 – Jul 4',
+  r16:    'Jul 4–7',
+  qf:     'Jul 9–12',
+  sf:     'Jul 14–15',
   third:  'Jul 18',
   final:  'Jul 19',
 };
