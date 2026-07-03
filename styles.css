@@ -356,8 +356,9 @@ a { color: var(--accent); }
 .pick-tbd  { padding: 0.5rem 0.6rem; font-size: 0.75rem; color: var(--text-3); font-style: italic; }
 /* Columns: [dot] [seed] [flag] [name] [goal] [pks] [pts] [result] [pop] */
 /* NOTE: all columns are fixed-width except [name]=1fr. Using auto for result would let it */
-/* steal from 1fr ("WON" wider than "✗"), misaligning goal/pts between rows. Use 42px. */
-.pick-option { display: grid; grid-template-columns: 9px 18px 22px 1fr 22px 36px 32px 42px; align-items: center; column-gap: 0.35rem; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); border-left: 4px solid transparent; font-size: 0.78rem; cursor: pointer; transition: background 0.1s; }
+/* steal from 1fr ("WON" wider than "✗"), misaligning goal/pts between rows. Use 42px.   */
+/* Col 9 (20px) is reserved for the pick-popularity bar — pinned so it never shifts.      */
+.pick-option { display: grid; grid-template-columns: 9px 18px 22px 1fr 22px 36px 32px 42px 20px; align-items: center; column-gap: 0.35rem; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); border-left: 4px solid transparent; font-size: 0.78rem; cursor: pointer; transition: background 0.1s; }
 .pick-option:last-child { border-bottom: none; }
 .pick-option.selected  { background: rgba(0,166,81,0.30); border-left: 4px solid var(--accent); }
 .pick-option.disabled  { cursor: default; }
@@ -675,7 +676,7 @@ td.round-best { background: rgba(46,204,113,0.07); border-radius: 3px; }
 .team-flag { display: block; flex-shrink: 0; }
 
 /* ── PICK POPULARITY ─────────────────────────────────────────── */
-.pick-o-pop { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; margin-left: 0.15rem; cursor: pointer; }
+.pick-o-pop { grid-column: 9; display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; cursor: pointer; }
 .pick-o-pop:hover .pick-pop-txt { color: var(--text-2); }
 .pick-pop-track { width: 16px; height: 4px; background: rgba(255,255,255,0.09); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
 .pick-pop-fill { display: block; height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
