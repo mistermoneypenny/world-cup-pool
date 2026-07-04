@@ -2245,7 +2245,22 @@
     "groups-l-3": "Croatia",
     "groups-l-4": "England",
     "groups-l-5": "Croatia",
-    "r32-a-0": "Canada"
+    "r32-a-0": "Canada",
+    "r32-a-2": "Brazil",
+    "r32-a-1": "Paraguay",
+    "r32-a-3": "Norway",
+    "r32-b-0": "Morocco",
+    "r32-b-1": "France",
+    "r32-b-2": "Mexico",
+    "r32-b-3": "England",
+    "r32-c-0": "Spain",
+    "r32-c-1": "Portugal",
+    "r32-c-2": "Belgium",
+    "r32-c-3": "USA",
+    "r32-d-0": "Egypt",
+    "r32-d-1": "Colombia",
+    "r32-d-2": "Switzerland",
+    "r32-d-3": "Argentina"
   },
   "players": [
     {
@@ -2333,7 +2348,35 @@
   "pickSavedAt": {},
   "currentRound": "groups",
   "roundStatus": "locked",
-  "scores": {},
+  "scores": {
+    "r32-a-1": {
+      "t1": 1,
+      "t2": 1,
+      "pens": true,
+      "pks": {
+        "t1": 3,
+        "t2": 4
+      }
+    },
+    "r32-b-0": {
+      "t1": 1,
+      "t2": 1,
+      "pens": true,
+      "pks": {
+        "t1": 2,
+        "t2": 3
+      }
+    },
+    "r32-d-0": {
+      "t1": 1,
+      "t2": 1,
+      "pens": true,
+      "pks": {
+        "t1": 2,
+        "t2": 4
+      }
+    }
+  },
   "rulesText": "WORLD CUP 2026 POOL — OFFICIAL RULES\n\nHOW IT WORKS\nBefore each round opens, every player submits their picks for that round. Once the round is locked by the Commissioner, picks can no longer be changed. Points are awarded for correct picks, with bigger rewards for later rounds and for picking upsets.\n\nPICK DEADLINES\nPicks must be submitted before the Commissioner locks the round. Late picks will not be accepted. Make sure you are logged in and have saved your picks before the deadline.\n\n——————————————————————————\nSCORING\n——————————————————————————\n\nBASE POINTS\nEvery correct pick earns base points, regardless of which team wins:\n\n  Group Stage       1 pt\n  Round of 32       2 pts\n  Round of 16       3 pts\n  Quarterfinals     5 pts\n  Semifinals        8 pts\n  3rd Place         8 pts\n  Final            15 pts\n\n——————————————————————————\n\nUPSET BONUS — PICKING A WINNER\nTeams are seeded by FIFA Draw Pot (Pot 1 = strongest, Pot 4 = weakest). If you pick a higher-pot team to beat a lower-pot team, you earn base points plus an upset bonus. The upset multiplier equals the base points for that round — so upsets become proportionally more rewarding as the tournament progresses:\n\n  Total = Base pts + (Underdog pot − Favourite pot) × Base pts\n        = Base pts × (1 + Pot differential)\n\nIf there is no pot differential (equal-pot teams, or favourite wins), you earn base points only.\n\nExamples:\n  Pot 4 beats Pot 2 in the Round of 32  → 2 + (2 × 2)   = 6 pts\n  Pot 4 beats Pot 1 in the Round of 32  → 2 + (3 × 2)   = 8 pts\n  Pot 4 beats Pot 1 in the Round of 16  → 3 + (3 × 3)   = 12 pts\n  Pot 4 beats Pot 1 in the Quarterfinals → 5 + (3 × 5)  = 20 pts\n  Pot 4 beats Pot 1 in the Semifinals   → 8 + (3 × 8)   = 32 pts\n  Pot 4 beats Pot 1 in the Final        → 15 + (3 × 15) = 60 pts\n\n——————————————————————————\n\nDRAWS (Group Stage only)\nYou may pick a Draw in any Group Stage game. Knockout rounds are always decided by penalty kicks if level after 90 minutes, so Draw is not a pick option there. A correct draw pick earns base points plus a pot-gap bonus:\n\n  Total = Base pts + (Pot differential / 2) × Round multiplier\n\nExamples:\n  Same-pot draw (e.g. Pot 2 vs Pot 2) → 1 + 0 = 1 pt\n  Pot 1 vs Pot 2 draw → 1 + (0.5 × 1.0) = 1.5 pts\n  Pot 1 vs Pot 3 draw → 1 + (1.0 × 1.0) = 2 pts\n  Pot 1 vs Pot 4 draw → 1 + (1.5 × 1.0) = 2.5 pts\n\n——————————————————————————\nBONUS QUESTIONS\n——————————————————————————\n\nEach round includes bonus questions worth extra points. Answers must be submitted before the round locks.\n\nTournament-Wide Predictions (due before the Group Stage begins)\n  · Golden Boot Winner (player name) — 6 pts\n  · Team with Best Time of Possession % — 6 pts\n  · First Pot 1 Team to be Eliminated — 6 pts\n\nGroup Stage\n  · Team with Most Goals in the Group Stage — 5 pts\n  · Confederation with Highest Win Rate — 5 pts\n  · Highest Winning Margin in Any Single Game (goals) — 4 pts\n\nRound of 32\n  · Total Red Cards in R32 — 6 pts\n\nRound of 16\n  · Total Goals in R16 — 5 pts\n\nQuarterfinals\n  · Team with Most Assists — 2 pts\n  · All Four Correct Semi-Finalist Picks — 10 pts\n\nSemifinals\n  · High Individual Scorer (Semi-Finals) — 3 pts\n\nFinal\n  · Man of the Match — 3 pts\n\n——————————————————————————\nSTANDINGS\n——————————————————————————\n\nThe leaderboard shows each player's total points earned and their maximum possible score (current points plus potential points from picks already submitted for unplayed games). Players are ranked by total score. Tied players share the same rank.\n\n——————————————————————————\nPARTICIPATING TEAMS BY POT\n——————————————————————————\n\nPot 1 (Top Seeds)\n  Argentina · Belgium · Brazil · Colombia · Croatia · England\n  France · Germany · Morocco · Netherlands · Portugal · Spain\n\nPot 2\n  Austria · Canada · Ecuador · Iran · Japan · Mexico\n  Senegal · South Korea · Switzerland · Turkey · Uruguay · USA\n\nPot 3\n  Algeria · Australia · Czech Republic · DR Congo · Egypt · Ivory Coast\n  Norway · Panama · Qatar · Saudi Arabia · Scotland · Sweden\n\nPot 4\n  Bosnia · Cape Verde · Curacao · Ghana · Haiti · Iraq\n  Jordan · New Zealand · Paraguay · South Africa · Tunisia · Uzbekistan\n\n——————————————————————————\nGENERAL RULES\n——————————————————————————\n\n· The Commissioner's decisions are final.\n· All picks are private until the round is locked.\n· Have fun and may the best picker win!",
   "defaultPlayersKey": "Commish,Lorenz,Diego,Cole,Matthias",
   "bonusAnswers": {
@@ -2346,6 +2389,12 @@
       "Germany",
       "Netherlands",
       "France"
+    ],
+    "r32_red_cards": "2",
+    "tw_pot1_exit": [
+      "Germany",
+      "Netherlands",
+      "Croatia"
     ]
   },
   "r32Teams": {

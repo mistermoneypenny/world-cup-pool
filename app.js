@@ -2237,6 +2237,12 @@ function doAutoSave() {
       }
     });
   });
+  (BONUS_CONFIG[rid] || []).forEach(b => {
+    if (b.type !== 'multi') {
+      const val = (state.bonusPicks[pid] || {})[b.id];
+      if (val !== undefined && val !== null && val !== '') bonusForRound[b.id] = val;
+    }
+  });
   if (!state.pickSavedAt)      state.pickSavedAt      = {};
   if (!state.pickSavedAt[pid]) state.pickSavedAt[pid] = {};
   state.pickSavedAt[pid][rid] = new Date().toISOString();
@@ -2277,6 +2283,12 @@ function savePicks() {
         bonusForRound[b.id] = state.bonusPicks[pid][b.id];
       }
     });
+  });
+  (BONUS_CONFIG[rid] || []).forEach(b => {
+    if (b.type !== 'multi') {
+      const val = (state.bonusPicks[pid] || {})[b.id];
+      if (val !== undefined && val !== null && val !== '') bonusForRound[b.id] = val;
+    }
   });
   if (!state.pickSavedAt)       state.pickSavedAt       = {};
   if (!state.pickSavedAt[pid])  state.pickSavedAt[pid]  = {};
