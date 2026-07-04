@@ -447,6 +447,7 @@ function buildGames() {
   // R16-8: r32-d-1 winner (Colombia) vs r32-d-2 winner (Switzerland) — July 7
   games['r16-d-0'].p2 = 'r32-d-3';
   games['r16-d-1'].p1 = 'r32-d-1';
+  games['r16-d-1'].p2 = 'r32-d-2';
 
   // Semifinals: 2 games
   SF_PAIRINGS.forEach(([r1, r2], i) => {
