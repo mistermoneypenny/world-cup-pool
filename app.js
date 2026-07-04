@@ -441,6 +441,12 @@ function buildGames() {
   games['qf-a-0'].p2  = 'r16-b-0';
   games['qf-b-0'].p1  = 'r16-a-1';
 
+  // FIFA 2026 bracket correction: R16 Quadrant D cross-pairings (slots 0v3, 1v2)
+  // R16-7: r32-d-0 winner (Egypt) vs r32-d-3 winner (Argentina)  — July 7
+  // R16-8: r32-d-1 winner (Colombia) vs r32-d-2 winner (Switzerland) — July 7
+  games['r16-d-0'].p2 = 'r32-d-3';
+  games['r16-d-1'].p1 = 'r32-d-1';
+
   // Semifinals: 2 games
   SF_PAIRINGS.forEach(([r1, r2], i) => {
     const id = gameId('sf', null, i);
