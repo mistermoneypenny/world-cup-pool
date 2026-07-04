@@ -347,7 +347,7 @@ a { color: var(--accent); }
 .admin-view-banner { display: flex; align-items: center; justify-content: space-between; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.25); border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.8rem; color: var(--gold); margin-bottom: 0.75rem; }
 .admin-view-close { background: none; border: none; color: var(--text-2); font-size: 0.8rem; cursor: pointer; padding: 0; }
 .admin-view-close:hover { color: var(--text); }
-.picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 0.6rem; }
+.picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.6rem; }
 .pick-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .pick-card--played { opacity: 0.5; }
 .pick-card-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0.3rem 0.6rem; background: var(--surface-2); border-bottom: 1px solid var(--border); }
@@ -358,7 +358,7 @@ a { color: var(--accent); }
 /* NOTE: all columns are fixed-width except [name]=1fr. Using auto for result would let it */
 /* steal from 1fr ("WON" wider than "✗"), misaligning goal/pts between rows. Use 42px.   */
 /* Col 9 (20px) is reserved for the pick-popularity bar — pinned so it never shifts.      */
-.pick-option { display: grid; grid-template-columns: 9px 18px 22px 1fr 22px 36px 32px 42px 20px; align-items: center; column-gap: 0.35rem; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); border-left: 4px solid transparent; font-size: 0.78rem; cursor: pointer; transition: background 0.1s; }
+.pick-option { display: grid; grid-template-columns: 9px 18px 22px minmax(110px, 1fr) 22px 36px 32px 42px 20px; align-items: center; column-gap: 0.35rem; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); border-left: 4px solid transparent; font-size: 0.78rem; cursor: pointer; transition: background 0.1s; }
 .pick-option:last-child { border-bottom: none; }
 .pick-option.selected  { background: rgba(0,166,81,0.30); border-left: 4px solid var(--accent); }
 .pick-option.disabled  { cursor: default; }
@@ -368,7 +368,7 @@ a { color: var(--accent); }
 /* Draw option (group stage only) reverts to flex — different element count */
 .pick-draw-option { display: flex; gap: 0.4rem; align-items: center; }
 .pick-o-seed  { grid-column: 2; font-size: 0.65rem; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
-.pick-o-name  { grid-column: 4; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick-o-name  { grid-column: 4; min-width: 0; white-space: nowrap; }
 .pick-option > img { grid-column: 3; }
 .pick-o-score { grid-column: 5; font-size: 0.82rem; font-weight: 700; color: var(--text-2); text-align: center; font-variant-numeric: tabular-nums; }
 .pick-o-score.live { color: #4ade80; }
