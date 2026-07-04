@@ -466,6 +466,7 @@ async function fetchESPNScores() {
         t2: { name: away.team?.displayName || '', score: parseInt(away.score) || 0, winner: away.winner === true },
         status,
         statusDetail: comp.status?.type?.shortDetail || '',
+        scheduledDate: event.date || null,
         link,
       };
       // Parse penalty shootout score from ESPN notes: "[Winner] advance X-Y on penalties"
@@ -572,10 +573,37 @@ async function autoUpdateWCResults(scores) {
   }
 }
 
+// R16 dates — all games on these days are Round of 16
+const R16_DATES = new Set(['2026-07-04', '2026-07-05', '2026-07-06', '2026-07-07']);
+
+async function autoUpdateR16Bonuses(scores) {
+  if (!memoryState) return;
+  // Skip if both answers already set
+  if (memoryState.bonusAnswers?.r16_goals && memoryState.bonusAnswers?.r16_pks) return;
+
+  const r16Games = Object.values(scores).filter(sc =>
+    sc.status === 'post' && R16_DATES.has((sc.scheduledDate || '').slice(0, 10))
+  );
+  if (r16Games.length < 8) return; // wait until all 8 are complete
+
+  let totalGoals = 0, pkCount = 0;
+  for (const sc of r16Games) {
+    totalGoals += (sc.t1.score || 0) + (sc.t2.score || 0);
+    if (sc.pks || /pen/i.test(sc.statusDetail || '')) pkCount++;
+  }
+
+  if (!memoryState.bonusAnswers) memoryState.bonusAnswers = {};
+  memoryState.bonusAnswers.r16_goals = String(totalGoals);
+  memoryState.bonusAnswers.r16_pks   = String(pkCount);
+  console.log(`Auto R16 bonuses: goals=${totalGoals}, pks=${pkCount}`);
+  try { await writeState(memoryState); } catch (e) { console.error('R16 bonus save failed:', e.message); }
+}
+
 app.get('/api/scores', async (req, res) => {
   try {
     const scores = await fetchESPNScores();
     await autoUpdateWCResults(scores);
+    await autoUpdateR16Bonuses(scores);
     res.json(scores);
   } catch (e) {
     console.error('GET /api/scores error:', e.message);

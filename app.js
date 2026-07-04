@@ -5007,6 +5007,10 @@ function renderBonusTracker(targetEl) {
   const hm = stats?.highestMargin;
   const hmWinner = hm ? (hm.margin >= 6 ? '6+' : String(hm.margin)) : null;
   const updText = stats?.lastUpdated ? `Updated ${timeAgo(stats.lastUpdated)} &middot; as.com / live results` : '';
+  const pot1Ans = state.bonusAnswers['tw_pot1_exit'];
+  const pot1Sub = pot1Ans ? 'Answer: ' + (Array.isArray(pot1Ans) ? pot1Ans.join(', ') : pot1Ans) : 'TBD';
+  const r32rcAns = state.bonusAnswers['r32_red_cards'];
+  const r32rcSub = r32rcAns ? 'Answer: ' + r32rcAns : 'TBD after all R32 games';
 
   // For grp_most_goals: when the answer is final (an array of tied teams), show all tied teams highlighted
   const mostGoalsAns = state.bonusAnswers['grp_most_goals'];
@@ -5029,7 +5033,8 @@ function renderBonusTracker(targetEl) {
           stats ? (stats.goldenBoot?.slice(0, 8).map(e => ({ name: e.player, sub: e.team, val: `${e.goals} goal${e.goals !== 1 ? 's' : ''}` })) || []) : undefined)}
       ${qRows('tw_possession', 'Best Time of Possession %', 6, null,
           stats ? (stats.possession?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value}%` })) || []) : undefined)}
-      ${qRows('tw_pot1_exit', 'First Pot 1 Team Eliminated', 6, 'Not yet determined', null)}
+      ${qRows('tw_pot1_exit', 'First Pot 1 Team Eliminated', 6, pot1Sub, null)}
+      ${winnersRow('tw_pot1_exit')}
       ${secRow('&#11088; Group Stage &middot; complete', 'bt-sec-row--grp')}
       ${qRows('grp_most_goals', 'Team with Most Goals', 5, mostGoalsAns ? 'Tied at 10 goals' : null, mostGoalsRows)}
       ${winnersRow('grp_most_goals')}
@@ -5040,7 +5045,7 @@ function renderBonusTracker(targetEl) {
           stats ? ['6+', '5', '4', '3'].map(opt => ({ name: `${opt} goals`, val: opt === hmWinner && hm ? hm.label : '', pk: opt, leading: opt === hmWinner })) : undefined)}
       ${winnersRow('grp_margin')}
       ${secRow('&#9876;&#65039; Round of 32 &middot; complete', 'bt-sec-row--r32')}
-      ${qRows('r32_red_cards', 'Total Red Cards in R32', 6, state.bonusAnswers['r32_red_cards'] ? null : 'Answer TBD after all R32 games', null)}
+      ${qRows('r32_red_cards', 'Total Red Cards in R32', 6, r32rcSub, null)}
       ${winnersRow('r32_red_cards')}
       ${secRow('&#127359; Round of 16 &middot; in progress', 'bt-sec-row--r16')}
       ${qRows('r16_goals', 'Total Goals in R16', 2.5, state.bonusAnswers['r16_goals'] ? null : 'Answer TBD after R16', null)}
