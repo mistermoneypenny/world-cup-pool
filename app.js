@@ -41,7 +41,6 @@ const BONUS_CONFIG = {
   tournament: [
     { id: 'tw_golden_boot', label: 'Golden Boot Winner',                       points: 6,  type: 'text' },
     { id: 'tw_possession',  label: 'Team with Best Time of Possession %',      points: 6,  type: 'select', options: '__ALL_TEAMS__' },
-    { id: 'tw_pot1_exit',   label: 'First Pot 1 Team to be Eliminated',        points: 6,  type: 'select', options: '__POT1_TEAMS__' },
   ],
   groups: [
     { id: 'grp_most_goals',   label: 'Team with Most Goals in the Group Stage',           points: 5, type: 'select', options: '__ALL_TEAMS__' },
@@ -49,7 +48,8 @@ const BONUS_CONFIG = {
     { id: 'grp_margin',       label: 'Highest Winning Margin in Any Single Game (goals)', points: 4, type: 'select', options: ['1','2','3','4','5','6+'] },
   ],
   r32: [
-    { id: 'r32_red_cards', label: 'Total Red Cards in R32', points: 6, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)) },
+    { id: 'r32_red_cards', label: 'Total Red Cards in R32',          points: 6, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)) },
+    { id: 'tw_pot1_exit',  label: 'First Pot 1 Team to be Eliminated', points: 6, type: 'select', options: '__POT1_TEAMS__' },
   ],
   r16: [
     { id: 'r16_goals', label: 'Total Goals in R16 (regulation + extra time)', points: 2.5, type: 'select', options: Array.from({length: 41}, (_, i) => String(i)), scoring: 'closest' },
