@@ -52,7 +52,8 @@ const BONUS_CONFIG = {
     { id: 'r32_red_cards', label: 'Total Red Cards in R32', points: 6, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)) },
   ],
   r16: [
-    { id: 'r16_goals', label: 'Total Goals in R16', points: 5, type: 'select', options: Array.from({length: 41}, (_, i) => String(i)) },
+    { id: 'r16_goals', label: 'Total Goals in R16 (regulation + extra time)', points: 2.5, type: 'select', options: Array.from({length: 41}, (_, i) => String(i)), scoring: 'closest' },
+    { id: 'r16_pks',   label: 'Number of R16 Matches Going to Penalties',     points: 2.5, type: 'select', options: Array.from({length: 9},  (_, i) => String(i)), scoring: 'closest' },
   ],
   qf: [
     { id: 'qf_assists', label: 'Team with Most Assists',                 points: 2,  type: 'select', options: '__ALL_TEAMS__' },
@@ -665,7 +666,20 @@ function getBonusScore(playerId, roundId) {
     const playerAns  = (state.bonusPicks[playerId] || {})[b.id];
     const correctAns = state.bonusAnswers[b.id];
     if (!playerAns || !correctAns) return;
-    if (b.type === 'multi') {
+    if (b.scoring === 'closest') {
+      const correct = parseFloat(correctAns);
+      if (isNaN(correct)) return;
+      const myVal = parseFloat(playerAns);
+      if (isNaN(myVal)) return;
+      const allDists = state.players.map(p => {
+        const ans = (state.bonusPicks[p.id] || {})[b.id];
+        if (!ans) return null;
+        const v = parseFloat(ans);
+        return isNaN(v) ? null : Math.abs(v - correct);
+      }).filter(d => d !== null);
+      if (!allDists.length) return;
+      if (Math.abs(myVal - correct) === Math.min(...allDists)) score += b.points;
+    } else if (b.type === 'multi') {
       if (!Array.isArray(playerAns) || !Array.isArray(correctAns)) return;
       const normP = playerAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
       const normC = correctAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
@@ -686,10 +700,27 @@ function getPlayerBonusDetails(playerId, roundId) {
   return bonuses.map(b => {
     const playerAns  = (state.bonusPicks[playerId] || {})[b.id];
     const correctAns = state.bonusAnswers[b.id];
-    let status = 'pending', earned = 0;
+    let status = 'pending', earned = 0, closestInfo = null;
     if (playerAns && correctAns) {
       let isCorrect = false;
-      if (b.type === 'multi') {
+      if (b.scoring === 'closest') {
+        const correct = parseFloat(correctAns);
+        if (!isNaN(correct)) {
+          const myVal = parseFloat(playerAns);
+          if (!isNaN(myVal)) {
+            const allDists = state.players.map(p => {
+              const ans = (state.bonusPicks[p.id] || {})[b.id];
+              if (!ans) return null;
+              const v = parseFloat(ans);
+              return isNaN(v) ? null : Math.abs(v - correct);
+            }).filter(d => d !== null);
+            const minDist = allDists.length ? Math.min(...allDists) : Infinity;
+            const myDist = Math.abs(myVal - correct);
+            isCorrect = myDist === minDist;
+            closestInfo = { myDist, minDist, correct };
+          }
+        }
+      } else if (b.type === 'multi') {
         if (Array.isArray(playerAns) && Array.isArray(correctAns)) {
           const np = playerAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
           const nc = correctAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
@@ -704,7 +735,7 @@ function getPlayerBonusDetails(playerId, roundId) {
       status = isCorrect ? 'correct' : 'wrong';
       earned = isCorrect ? b.points : 0;
     }
-    return { ...b, playerAns, correctAns, status, earned };
+    return { ...b, playerAns, correctAns, status, earned, closestInfo };
   });
 }
 
@@ -1894,11 +1925,18 @@ function renderPicksBody() {
         const res = document.createElement('div');
         res.className = 'bonus-result ' + detail.status;
         if (detail.status === 'correct') {
-          res.innerHTML = `&#10004; Correct! +${detail.earned} pts`;
+          res.innerHTML = b.scoring === 'closest'
+            ? `&#10004; Closest! +${detail.earned} pts &mdash; answer was ${detail.correctAns}`
+            : `&#10004; Correct! +${detail.earned} pts`;
         } else {
-          const correctDisplay = Array.isArray(detail.correctAns)
-            ? detail.correctAns.join(', ') : detail.correctAns;
-          res.innerHTML = `&#10008; Incorrect &mdash; Answer: ${esc(correctDisplay)}`;
+          if (b.scoring === 'closest' && detail.closestInfo) {
+            const { myDist, minDist, correct } = detail.closestInfo;
+            res.innerHTML = `&#10008; Off by ${myDist} &mdash; answer: ${correct}, closest was ${minDist} away`;
+          } else {
+            const correctDisplay = Array.isArray(detail.correctAns)
+              ? detail.correctAns.join(', ') : detail.correctAns;
+            res.innerHTML = `&#10008; Incorrect &mdash; Answer: ${esc(correctDisplay)}`;
+          }
         }
         bonusCard.appendChild(res);
       }
@@ -4906,6 +4944,27 @@ function renderBonusTracker(targetEl) {
     return `<tr class="bt-winners-row"><td></td><td colspan="3">&#9989; <span class="bt-winner-name">${esc(winners.join(', '))}</span></td></tr>`;
   }
 
+  function winnersRowClosest(id) {
+    const ans = state.bonusAnswers[id];
+    if (!ans) return '';
+    const correct = parseFloat(ans);
+    if (isNaN(correct)) return '';
+    const dists = [];
+    for (const [pid, pp] of bpEntries) {
+      const v = parseFloat(pp[id]);
+      if (!isNaN(v)) dists.push({ pid, dist: Math.abs(v - correct) });
+    }
+    if (!dists.length) return '';
+    const minDist = Math.min(...dists.map(d => d.dist));
+    const winners = dists
+      .filter(d => d.dist === minDist)
+      .map(d => state.players.find(p => p.id === d.pid)?.name)
+      .filter(Boolean);
+    if (!winners.length) return '';
+    const label = minDist === 0 ? 'Exact!' : `Closest (off by ${minDist})`;
+    return `<tr class="bt-winners-row"><td></td><td colspan="3">&#9989; ${label} &mdash; <span class="bt-winner-name">${esc(winners.join(', '))}</span></td></tr>`;
+  }
+
   function qRows(id, title, pts, subtitle, rows) {
     const dist = pickDist(id);
     const used = new Set();
@@ -4980,9 +5039,14 @@ function renderBonusTracker(targetEl) {
       ${qRows('grp_margin', 'Highest Winning Margin', 4, hm ? hm.label : null,
           stats ? ['6+', '5', '4', '3'].map(opt => ({ name: `${opt} goals`, val: opt === hmWinner && hm ? hm.label : '', pk: opt, leading: opt === hmWinner })) : undefined)}
       ${winnersRow('grp_margin')}
-      ${secRow('&#9876;&#65039; Round of 32 &middot; in progress', 'bt-sec-row--r32')}
+      ${secRow('&#9876;&#65039; Round of 32 &middot; complete', 'bt-sec-row--r32')}
       ${qRows('r32_red_cards', 'Total Red Cards in R32', 6, state.bonusAnswers['r32_red_cards'] ? null : 'Answer TBD after all R32 games', null)}
       ${winnersRow('r32_red_cards')}
+      ${secRow('&#127359; Round of 16 &middot; in progress', 'bt-sec-row--r16')}
+      ${qRows('r16_goals', 'Total Goals in R16', 2.5, state.bonusAnswers['r16_goals'] ? null : 'Answer TBD after R16', null)}
+      ${winnersRowClosest('r16_goals')}
+      ${qRows('r16_pks', 'R16 Matches to Penalties', 2.5, state.bonusAnswers['r16_pks'] ? null : 'Answer TBD after R16', null)}
+      ${winnersRowClosest('r16_pks')}
     </tbody></table>
   </div>`;
 }
