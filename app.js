@@ -1111,11 +1111,13 @@ function renderBracket() {
     scrollEl.insertBefore(notice, wrapper);
   }
 
-  // Left column: Quadrant A (top) + Quadrant B (bottom), rounds L→R
+  // Left column: cross-paired A↔B blocks, rounds L→R
+  // Top block (QF-A feeders): r32-a-0,b-0,a-1,b-1 → r16-a-0,b-0 → qf-a-0
+  // Bot block (QF-B feeders): r32-a-2,a-3,b-2,b-3 → r16-a-1,b-1 → qf-b-0
   const leftCol = document.createElement('div');
   leftCol.className = 'bracket-left-col';
-  leftCol.appendChild(buildRegionBlock('A', 'left', true));
-  leftCol.appendChild(buildRegionBlock('B', 'left', false));
+  leftCol.appendChild(buildCrossRegionBlock('top', true));
+  leftCol.appendChild(buildCrossRegionBlock('bottom', false));
 
   // Center column: SF col 0 | Final | SF col 1
   const centerCol = buildBracketCenter();
@@ -1283,6 +1285,89 @@ function renderGroupStageBracket(wrapper) {
   });
 
   wrapper.appendChild(grid);
+}
+
+function buildCrossRegionBlock(half, showHeader = true) {
+  // FIFA 2026 A↔B cross-pairings: group by which QF game the teams feed into
+  const isTop  = half === 'top';
+  // top: a-0+b-0 feed r16-a-0; a-1+b-1 feed r16-b-0 → qf-a-0
+  // bot: a-2+a-3 feed r16-a-1; b-2+b-3 feed r16-b-1 → qf-b-0
+  const r32Ids = isTop
+    ? ['r32-a-0', 'r32-b-0', 'r32-a-1', 'r32-b-1']
+    : ['r32-a-2', 'r32-a-3', 'r32-b-2', 'r32-b-3'];
+  const r16Ids = isTop ? ['r16-a-0', 'r16-b-0'] : ['r16-a-1', 'r16-b-1'];
+  const qfId   = isTop ? 'qf-a-0' : 'qf-b-0';
+  const label  = isTop ? QUADRANT_NAMES['A'] : QUADRANT_NAMES['B'];
+
+  const block = document.createElement('div');
+  block.className = 'region-block';
+
+  if (showHeader) {
+    const hdrRow = document.createElement('div');
+    hdrRow.className = 'bracket-hdr-row';
+    ['r32', 'r16', 'qf'].forEach(roundId => {
+      const cell = document.createElement('div');
+      cell.className = 'bracket-hdr-cell';
+      cell.innerHTML = `<strong>${ROUND_LABELS[roundId]}</strong>`;
+      hdrRow.appendChild(cell);
+    });
+    block.appendChild(hdrRow);
+  }
+
+  const lbl = document.createElement('div');
+  lbl.className = 'region-label';
+  lbl.textContent = label;
+  block.appendChild(lbl);
+
+  const roundsRow = document.createElement('div');
+  roundsRow.className = 'region-rounds';
+
+  // R32 column — gap within each pair (positions 0 and 2 start each pair)
+  const r32Col = document.createElement('div');
+  r32Col.className = 'round-col round-r32';
+  r32Ids.forEach((id, pos) => {
+    const game = state.games[id];
+    if (!game) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'matchup-wrap';
+    wrap.appendChild(buildMatchup(game));
+    r32Col.appendChild(wrap);
+    if (pos % 2 === 0) {
+      const gap = document.createElement('div');
+      gap.className = 'r32-pair-gap';
+      r32Col.appendChild(gap);
+    }
+  });
+
+  // R16 column
+  const r16Col = document.createElement('div');
+  r16Col.className = 'round-col round-r16';
+  r16Ids.forEach(id => {
+    const game = state.games[id];
+    if (!game) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'matchup-wrap';
+    wrap.appendChild(buildMatchup(game));
+    r16Col.appendChild(wrap);
+  });
+
+  // QF column
+  const qfCol = document.createElement('div');
+  qfCol.className = 'round-col round-qf';
+  const qfGame = state.games[qfId];
+  if (qfGame) {
+    const wrap = document.createElement('div');
+    wrap.className = 'matchup-wrap';
+    wrap.appendChild(buildMatchup(qfGame));
+    qfCol.appendChild(wrap);
+  }
+
+  roundsRow.appendChild(r32Col);
+  roundsRow.appendChild(r16Col);
+  roundsRow.appendChild(qfCol);
+  block.appendChild(roundsRow);
+
+  return block;
 }
 
 function buildRegionBlock(region, side, showHeader = true) {
