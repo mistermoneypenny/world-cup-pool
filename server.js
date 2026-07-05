@@ -901,8 +901,61 @@ async function shutdown(signal) {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
 
+// ── STARTUP PICKS PROTECTION ─────────────────────────────────
+// On every deploy, merge the git-committed data/state.json into the live state.
+// This is additive-only: picks/bonusPicks already in JSONBin are kept as-is;
+// only keys that are MISSING from the live state get filled in from the baseline.
+// Prevents pick loss when JSONBin is temporarily unavailable during a redeploy.
+async function startupPicksProtection() {
+  try {
+    let baseline = null;
+    try {
+      const raw = fs.readFileSync(DATA_FILE, 'utf8');
+      if (raw.trim()) baseline = JSON.parse(raw);
+    } catch (_) {}
+    if (!baseline) return;
+
+    const live = await readState();
+    let changed = false;
+
+    // Merge picks (nested: playerId -> roundId -> picks object)
+    const livePicks = live.picks || {};
+    for (const [pid, rounds] of Object.entries(baseline.picks || {})) {
+      if (!livePicks[pid]) { livePicks[pid] = rounds; changed = true; continue; }
+      for (const [rnd, picks] of Object.entries(rounds)) {
+        if (!livePicks[pid][rnd] || Object.keys(livePicks[pid][rnd]).length === 0) {
+          livePicks[pid][rnd] = picks; changed = true;
+        }
+      }
+    }
+
+    // Merge bonusPicks (nested: playerId -> bonusKey -> value)
+    const liveBP = live.bonusPicks || {};
+    for (const [pid, bpData] of Object.entries(baseline.bonusPicks || {})) {
+      if (!liveBP[pid]) { liveBP[pid] = bpData; changed = true; continue; }
+      for (const [key, val] of Object.entries(bpData)) {
+        if (!liveBP[pid][key]) { liveBP[pid][key] = val; changed = true; }
+      }
+    }
+
+    if (changed) {
+      live.picks = livePicks;
+      live.bonusPicks = liveBP;
+      await writeState(live);
+      console.log('[startup] Picks protection: merged missing picks from git baseline');
+    } else {
+      console.log('[startup] Picks protection: live state is complete, no merge needed');
+    }
+  } catch (e) {
+    console.warn('[startup] Picks protection error:', e.message);
+  }
+}
+
 app.listen(PORT, () => {
   console.log(`World Cup 2026 Pool running at http://localhost:${PORT}`);
+
+  // Run picks protection 3s after boot so JSONBin has time to respond
+  setTimeout(() => startupPicksProtection(), 3000);
 
   // ── KEEP-ALIVE PING (Render free tier) ──────────────────────
   // Pings self every 14 minutes to prevent the server sleeping
