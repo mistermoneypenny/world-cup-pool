@@ -337,9 +337,16 @@ app.post('/api/state', async (req, res) => {
       if (incoming.picks) {
         if (!existing.picks) existing.picks = {};
         if (sender) {
-          // Always merge per-sender — even admin only writes their own picks.
-          // Bulk restore uses /api/picks-restore instead.
-          existing.picks[sender] = incoming.picks[sender] || {};
+          // Merge per-round so a client sending empty rounds can't wipe stored picks.
+          // A round is only updated when the incoming data is non-empty.
+          if (!existing.picks[sender]) existing.picks[sender] = {};
+          const inPicks = incoming.picks[sender] || {};
+          for (const [rnd, rndPicks] of Object.entries(inPicks)) {
+            if (rndPicks && Object.keys(rndPicks).length > 0) {
+              existing.picks[sender][rnd] = rndPicks;
+            }
+            // empty round object silently ignored — never wipes stored picks
+          }
         } else {
           // Senderless: only allow if DB has no picks yet (initial setup only).
           const hasExistingPicks = Object.keys(existing.picks).length > 0;
@@ -349,7 +356,14 @@ app.post('/api/state', async (req, res) => {
 
       if (incoming.bonusPicks && sender) {
         if (!existing.bonusPicks) existing.bonusPicks = {};
-        existing.bonusPicks[sender] = incoming.bonusPicks[sender] || {};
+        // Same protection: only merge non-empty bonus picks
+        if (!existing.bonusPicks[sender]) existing.bonusPicks[sender] = {};
+        const inBP = incoming.bonusPicks[sender] || {};
+        for (const [key, val] of Object.entries(inBP)) {
+          if (val !== '' && val != null && !(Array.isArray(val) && val.length === 0)) {
+            existing.bonusPicks[sender][key] = val;
+          }
+        }
       } else if (incoming.bonusPicks && !sender) {
         existing.bonusPicks = incoming.bonusPicks;
       }
