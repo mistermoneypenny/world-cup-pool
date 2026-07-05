@@ -151,7 +151,9 @@ async function readState() {
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf8');
       if (raw.trim()) {
-        memoryState = JSON.parse(raw);
+        const data = JSON.parse(raw);
+        applyStartupFloor(data);
+        memoryState = data;
         return memoryState;
       }
     }
