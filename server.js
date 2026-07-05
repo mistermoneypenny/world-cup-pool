@@ -96,14 +96,16 @@ setInterval(() => {
 // ── Startup floor: prevents stale JSONBin deploys from rolling back progress ──
 // Update MIN_ROUND when the tournament advances beyond the current floor.
 const ROUND_ORDER = ['groups','r32','r16','qf','sf','third','final'];
-const MIN_ROUND = 'r32'; // group stage is complete — never fall back below R32
+const MIN_ROUND        = 'r16';   // R32 is complete — never fall back below R16
+const MIN_ROUND_STATUS = 'open';  // stale snapshots arrive locked — reset to open
 
 function applyStartupFloor(data) {
   const minIdx = ROUND_ORDER.indexOf(MIN_ROUND);
   const curIdx = ROUND_ORDER.indexOf(data.currentRound || 'groups');
   if (curIdx < minIdx) {
-    console.log(`[floor] Correcting stale round: ${data.currentRound} → ${MIN_ROUND}`);
+    console.log(`[floor] Correcting stale round: ${data.currentRound} → ${MIN_ROUND} (status: ${data.roundStatus} → ${MIN_ROUND_STATUS})`);
     data.currentRound = MIN_ROUND;
+    data.roundStatus  = MIN_ROUND_STATUS;
     // Write correction back to JSONBin so subsequent reads are already correct
     writeState(data).catch(e => console.warn('[floor] JSONBin correction write failed:', e.message));
   }
