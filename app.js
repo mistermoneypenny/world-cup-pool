@@ -56,8 +56,13 @@ const BONUS_CONFIG = {
     { id: 'r16_pks',   label: 'Number of R16 Matches Going to Penalties',     points: 2.5, type: 'select', options: Array.from({length: 9},  (_, i) => String(i)), scoring: 'closest' },
   ],
   qf: [
-    { id: 'qf_assists', label: 'Team with Most Assists',                 points: 2,  type: 'select', options: '__ALL_TEAMS__' },
-    { id: 'qf_teams',   label: 'All Four Correct Picks (Semi-Finalists)', points: 10, type: 'multi', count: 4, sourceRound: 'qf' },
+    { id: 'qf_motm_1',   label: 'Man of the Match — Morocco vs France',        points: 1, type: 'text' },
+    { id: 'qf_motm_2',   label: 'Man of the Match — Norway vs England',         points: 1, type: 'text' },
+    { id: 'qf_motm_3',   label: 'Man of the Match — Spain vs Belgium',          points: 1, type: 'text' },
+    { id: 'qf_motm_4',   label: 'Man of the Match — Argentina vs Switzerland',  points: 1, type: 'text' },
+    { id: 'qf_yellows',   label: 'Total Yellow Cards Across All QF Games',      points: 3, type: 'select', options: Array.from({length: 31}, (_, i) => String(i)), scoring: 'closest' },
+    { id: 'qf_goal_diff', label: 'Total Goal Difference Across All QF Games',   points: 3, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)), scoring: 'closest' },
+    { id: 'qf_teams',     label: 'Final Four — All Four Correct Picks',    points: 2, type: 'multi', count: 4, sourceRound: 'qf' },
   ],
   sf: [
     { id: 'sf_top_scorer', label: 'High Individual Scorer (Semi-Finals)', points: 3, type: 'text' },
@@ -1668,11 +1673,14 @@ Round of 32
   · Total Red Cards in R32 — 6 pts
 
 Round of 16
-  · Total Goals in R16 — 5 pts
+  · Total Goals in R16 (regulation + extra time) — 2.5 pts
+  · R16 Matches Going to Penalties — 2.5 pts
 
 Quarterfinals
-  · Team with Most Assists — 2 pts
-  · All Four Correct Semi-Finalist Picks — 10 pts
+  · Man of the Match for each QF game — 1 pt each (4 pts total)
+  · Total Yellow Cards Across All QF Games (closest score wins) — 3 pts
+  · Total Goal Difference Across All QF Games (closest score wins) — 3 pts
+  · Final Four — All Four Correct Semi-Finalist Picks — 2 pts
 
 Semifinals
   · High Individual Scorer (Semi-Finals) — 3 pts
@@ -5042,6 +5050,24 @@ function renderBonusTracker(targetEl) {
     return `<tr class="bt-winners-row"><td></td><td colspan="3">&#9989; <span class="bt-winner-name">${esc(winners.join(', '))}</span></td></tr>`;
   }
 
+  function winnersRowMulti(id) {
+    const ans = state.bonusAnswers[id];
+    if (!ans || !Array.isArray(ans)) return '';
+    const normC = ans.map(a => String(a).trim().toLowerCase()).sort();
+    const winners = [];
+    for (const [pid, pp] of bpEntries) {
+      const v = pp[id];
+      if (!Array.isArray(v)) continue;
+      const normP = v.map(a => String(a).trim().toLowerCase()).sort();
+      if (normP.length === normC.length && normP.every((x, i) => x === normC[i])) {
+        const pl = state.players.find(p => p.id === pid);
+        if (pl) winners.push(pl.name);
+      }
+    }
+    if (!winners.length) return '';
+    return `<tr class="bt-winners-row"><td></td><td colspan="3">&#9989; <span class="bt-winner-name">${esc(winners.join(', '))}</span></td></tr>`;
+  }
+
   function winnersRowClosest(id) {
     const ans = state.bonusAnswers[id];
     if (!ans) return '';
@@ -5145,11 +5171,26 @@ function renderBonusTracker(targetEl) {
       ${secRow('&#9876;&#65039; Round of 32 &middot; complete', 'bt-sec-row--r32')}
       ${qRows('r32_red_cards', 'Total Red Cards in R32', 6, r32rcSub, null)}
       ${winnersRow('r32_red_cards')}
-      ${secRow('&#127359; Round of 16 &middot; in progress', 'bt-sec-row--r16')}
+      ${secRow('&#127359; Round of 16 &middot; complete', 'bt-sec-row--r16')}
       ${qRows('r16_goals', 'Total Goals in R16', 2.5, state.bonusAnswers['r16_goals'] ? null : 'Answer TBD after R16', null)}
       ${winnersRowClosest('r16_goals')}
       ${qRows('r16_pks', 'R16 Matches to Penalties', 2.5, state.bonusAnswers['r16_pks'] ? null : 'Answer TBD after R16', null)}
       ${winnersRowClosest('r16_pks')}
+      ${secRow('&#127942; Quarterfinals &middot; in progress', 'bt-sec-row--qf')}
+      ${qRows('qf_motm_1', 'Man of the Match — Morocco vs France', 1, state.bonusAnswers['qf_motm_1'] ? null : 'Answer TBD after QF-A', null)}
+      ${winnersRow('qf_motm_1')}
+      ${qRows('qf_motm_2', 'Man of the Match — Norway vs England', 1, state.bonusAnswers['qf_motm_2'] ? null : 'Answer TBD after QF-B', null)}
+      ${winnersRow('qf_motm_2')}
+      ${qRows('qf_motm_3', 'Man of the Match — Spain vs Belgium', 1, state.bonusAnswers['qf_motm_3'] ? null : 'Answer TBD after QF-C', null)}
+      ${winnersRow('qf_motm_3')}
+      ${qRows('qf_motm_4', 'Man of the Match — Argentina vs Switzerland', 1, state.bonusAnswers['qf_motm_4'] ? null : 'Answer TBD after QF-D', null)}
+      ${winnersRow('qf_motm_4')}
+      ${qRows('qf_yellows', 'Total Yellow Cards in QF', 3, state.bonusAnswers['qf_yellows'] ? null : 'Closest score wins · Answer TBD after QF', null)}
+      ${winnersRowClosest('qf_yellows')}
+      ${qRows('qf_goal_diff', 'Total Goal Difference in QF', 3, state.bonusAnswers['qf_goal_diff'] ? null : 'Closest score wins · Answer TBD after QF', null)}
+      ${winnersRowClosest('qf_goal_diff')}
+      ${qRows('qf_teams', 'Final Four — All Four Correct Picks', 2, state.bonusAnswers['qf_teams'] ? null : 'Answer TBD after QF', null)}
+      ${winnersRowMulti('qf_teams')}
     </tbody></table>
   </div>`;
 }
