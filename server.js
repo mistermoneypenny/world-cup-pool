@@ -6,7 +6,8 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
-const DATA_FILE = path.join(DATA_DIR, 'state.json');
+const DATA_FILE          = path.join(DATA_DIR, 'state.json');
+const DATA_BASELINE_FILE = path.join(DATA_DIR, 'state-baseline.json');
 
 // JSONBin.io persistent storage
 const JSONBIN_ID  = '69b9bc23c3097a1dd5342b3b';
@@ -154,6 +155,21 @@ async function readState() {
         const data = JSON.parse(raw);
         applyStartupFloor(data);
         memoryState = data;
+        return memoryState;
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  // Last resort: read the committed baseline snapshot (present on Render when JSONBin
+  // is unavailable and data/state.json doesn't exist, e.g. quota exhausted on deploy).
+  try {
+    if (fs.existsSync(DATA_BASELINE_FILE)) {
+      const raw = fs.readFileSync(DATA_BASELINE_FILE, 'utf8');
+      if (raw.trim()) {
+        const data = JSON.parse(raw);
+        applyStartupFloor(data);
+        memoryState = data;
+        console.log('[readState] Loaded from committed state-baseline.json (JSONBin unavailable)');
         return memoryState;
       }
     }
