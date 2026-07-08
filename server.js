@@ -96,7 +96,7 @@ setInterval(() => {
 // ── Startup floor: prevents stale JSONBin deploys from rolling back progress ──
 // Update MIN_ROUND when the tournament advances beyond the current floor.
 const ROUND_ORDER = ['groups','r32','r16','qf','sf','third','final'];
-const MIN_ROUND        = 'r16';   // R32 is complete — never fall back below R16
+const MIN_ROUND        = 'qf';    // R16 is complete — never fall back below QF
 const MIN_ROUND_STATUS = 'open';  // stale snapshots arrive locked — reset to open
 
 function applyStartupFloor(data) {
@@ -865,6 +865,11 @@ app.post('/api/picks/:playerId', async (req, res) => {
 
       if (!existing.picks) existing.picks = {};
       if (!existing.picks[playerId]) existing.picks[playerId] = {};
+      // Guard: never overwrite existing non-empty picks with an empty object
+      const hasExistingPicks = Object.keys(existing.picks[playerId][roundId] || {}).length > 0;
+      if (Object.keys(picks).length === 0 && hasExistingPicks) {
+        return { error: 'Cannot overwrite existing picks with empty set', status: 400 };
+      }
       existing.picks[playerId][roundId] = picks;
 
       if (bonusPicks && typeof bonusPicks === 'object') {
