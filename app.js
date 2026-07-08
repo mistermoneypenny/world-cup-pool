@@ -5089,8 +5089,8 @@ function renderBonusTracker(targetEl) {
     return `<tr class="bt-winners-row"><td></td><td colspan="3">&#9989; ${label} &mdash; <span class="bt-winner-name">${esc(winners.join(', '))}</span></td></tr>`;
   }
 
-  function qRows(id, title, pts, subtitle, rows) {
-    const dist = pickDist(id);
+  function qRows(id, title, pts, subtitle, rows, hide) {
+    const dist = hide ? {} : pickDist(id);
     const used = new Set();
     let html = `<tr class="bt-q-row"><td colspan="4"><span class="bt-q-title">${title}</span><span class="bt-q-pts">${pts}pts</span>${subtitle ? `<span class="bt-q-sub">${esc(subtitle)}</span>` : ''}</td></tr>`;
 
@@ -5099,6 +5099,9 @@ function renderBonusTracker(targetEl) {
     }
 
     if (rows === null) {
+      if (hide) {
+        return html + `<tr class="bt-tr"><td colspan="4" class="bt-loading-cell">&#128274; Picks hidden until round locks</td></tr>`;
+      }
       const entries = Object.entries(dist).sort((a, b) => b[1] - a[1]);
       if (!entries.length) return html + `<tr class="bt-tr"><td colspan="4" class="bt-loading-cell">No picks yet</td></tr>`;
       return html + entries.map(([k]) =>
@@ -5114,15 +5117,17 @@ function renderBonusTracker(targetEl) {
         <td class="bt-td-rank">${i + 1}</td>
         <td class="bt-td-name">${esc(r.name)}${flag(r.sub || r.name)}${r.sub ? `<span class="bt-td-sub">${esc(r.sub)}</span>` : ''}</td>
         <td class="bt-td-val">${esc(r.val || '')}</td>
-        <td class="bt-td-picks">${popEl(id, pks)}</td>
+        <td class="bt-td-picks">${hide ? '' : popEl(id, pks)}</td>
       </tr>`;
     }).join('');
 
-    const extra = Object.entries(dist).filter(([k]) => !used.has(k));
-    if (extra.length) {
-      html += extra.map(([k]) =>
-        `<tr class="bt-tr bt-tr-other"><td class="bt-td-rank">?</td><td class="bt-td-name">${esc(k)}${flag(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
-      ).join('');
+    if (!hide) {
+      const extra = Object.entries(dist).filter(([k]) => !used.has(k));
+      if (extra.length) {
+        html += extra.map(([k]) =>
+          `<tr class="bt-tr bt-tr-other"><td class="bt-td-rank">?</td><td class="bt-td-name">${esc(k)}${flag(k)}</td><td class="bt-td-val"></td><td class="bt-td-picks">${popEl(id, [k])}</td></tr>`
+        ).join('');
+      }
     }
     return html;
   }
@@ -5145,6 +5150,8 @@ function renderBonusTracker(targetEl) {
     }
     return stats ? (stats.teamGoals?.slice(0, 8).map(e => ({ name: e.team, val: `${e.value} goals` })) || []) : undefined;
   })();
+
+  const qfOpen = state.currentRound === 'qf' && state.roundStatus === 'open';
 
   el.innerHTML = `<div class="bonus-tracker">
     <div class="bt-header">
@@ -5177,19 +5184,19 @@ function renderBonusTracker(targetEl) {
       ${qRows('r16_pks', 'R16 Matches to Penalties', 2.5, state.bonusAnswers['r16_pks'] ? null : 'Answer TBD after R16', null)}
       ${winnersRowClosest('r16_pks')}
       ${secRow('&#127942; Quarterfinals &middot; in progress', 'bt-sec-row--qf')}
-      ${qRows('qf_motm_1', 'Man of the Match — Morocco vs France', 1, state.bonusAnswers['qf_motm_1'] ? null : 'Answer TBD after QF-A', null)}
+      ${qRows('qf_motm_1', 'Man of the Match — Morocco vs France', 1, state.bonusAnswers['qf_motm_1'] ? null : 'Answer TBD after QF-A', null, qfOpen)}
       ${winnersRow('qf_motm_1')}
-      ${qRows('qf_motm_2', 'Man of the Match — Norway vs England', 1, state.bonusAnswers['qf_motm_2'] ? null : 'Answer TBD after QF-B', null)}
+      ${qRows('qf_motm_2', 'Man of the Match — Norway vs England', 1, state.bonusAnswers['qf_motm_2'] ? null : 'Answer TBD after QF-B', null, qfOpen)}
       ${winnersRow('qf_motm_2')}
-      ${qRows('qf_motm_3', 'Man of the Match — Spain vs Belgium', 1, state.bonusAnswers['qf_motm_3'] ? null : 'Answer TBD after QF-C', null)}
+      ${qRows('qf_motm_3', 'Man of the Match — Spain vs Belgium', 1, state.bonusAnswers['qf_motm_3'] ? null : 'Answer TBD after QF-C', null, qfOpen)}
       ${winnersRow('qf_motm_3')}
-      ${qRows('qf_motm_4', 'Man of the Match — Argentina vs Switzerland', 1, state.bonusAnswers['qf_motm_4'] ? null : 'Answer TBD after QF-D', null)}
+      ${qRows('qf_motm_4', 'Man of the Match — Argentina vs Switzerland', 1, state.bonusAnswers['qf_motm_4'] ? null : 'Answer TBD after QF-D', null, qfOpen)}
       ${winnersRow('qf_motm_4')}
-      ${qRows('qf_yellows', 'Total Yellow Cards in QF', 3, state.bonusAnswers['qf_yellows'] ? null : 'Closest score wins · Answer TBD after QF', null)}
+      ${qRows('qf_yellows', 'Total Yellow Cards in QF', 3, state.bonusAnswers['qf_yellows'] ? null : 'Closest score wins · Answer TBD after QF', null, qfOpen)}
       ${winnersRowClosest('qf_yellows')}
-      ${qRows('qf_goal_diff', 'Total Goal Difference in QF', 3, state.bonusAnswers['qf_goal_diff'] ? null : 'Closest score wins · Answer TBD after QF', null)}
+      ${qRows('qf_goal_diff', 'Total Goal Difference in QF', 3, state.bonusAnswers['qf_goal_diff'] ? null : 'Closest score wins · Answer TBD after QF', null, qfOpen)}
       ${winnersRowClosest('qf_goal_diff')}
-      ${qRows('qf_teams', 'Final Four — All Four Correct Picks', 2, state.bonusAnswers['qf_teams'] ? null : 'Answer TBD after QF', null)}
+      ${qRows('qf_teams', 'Final Four — All Four Correct Picks', 2, state.bonusAnswers['qf_teams'] ? null : 'Answer TBD after QF', null, qfOpen)}
       ${winnersRowMulti('qf_teams')}
     </tbody></table>
   </div>`;
