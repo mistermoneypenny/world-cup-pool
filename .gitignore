@@ -1,5 +1,6 @@
 node_modules/
-data/
+data/*
+!data/bonus-picks-baseline.json
 *.tmp
 .DS_Store
 

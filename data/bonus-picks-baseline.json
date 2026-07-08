@@ -1,0 +1,260 @@
+﻿{
+    "pmnkxkq5lrcy4":  {
+                          "tw_golden_boot":  "Mbappe",
+                          "tw_possession":  "Argentina",
+                          "tw_pot1_exit":  "Germany",
+                          "grp_most_goals":  "France",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "4",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "22",
+                          "r16_pks":  "2",
+                          "qf_teams":  [
+                                           "France",
+                                           "Norway",
+                                           "Belgium",
+                                           "Argentina"
+                                       ],
+                          "qf_motm_1":  "De Bruyne",
+                          "qf_motm_2":  "Haaland",
+                          "qf_motm_3":  "De Bruyne",
+                          "qf_motm_4":  "Messi",
+                          "qf_yellows":  "14",
+                          "qf_goal_diff":  "5"
+                      },
+    "pmnkxkq5lq95v":  {
+                          "tw_golden_boot":  "Harry Kane",
+                          "tw_possession":  "Germany",
+                          "tw_pot1_exit":  "Croatia",
+                          "grp_most_goals":  "Spain",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "5",
+                          "r32_red_cards":  "0",
+                          "r16_goals":  "23",
+                          "r16_pks":  "2",
+                          "qf_teams":  [
+                                           "Morocco",
+                                           "Norway",
+                                           "Spain",
+                                           "Argentina"
+                                       ]
+                      },
+    "pmnkxkq5lh2fn":  {
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Croatia",
+                          "grp_most_goals":  "France",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "6+",
+                          "tw_golden_boot":  "MbappÃ©",
+                          "r32_red_cards":  "4",
+                          "r16_goals":  "18",
+                          "r16_pks":  "1",
+                          "qf_teams":  [
+                                           "",
+                                           "",
+                                           "",
+                                           ""
+                                       ]
+                      },
+    "pmq3o4oxf2ovs":  {
+                          "tw_golden_boot":  "Harry Kane",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Netherlands",
+                          "grp_most_goals":  "Germany",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "6+",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "23",
+                          "r16_pks":  "1"
+                      },
+    "pmq3o4btjbtji":  {
+                          "grp_margin":  "5",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "tw_possession":  "Spain",
+                          "tw_golden_boot":  "Kylian Mbappe",
+                          "grp_most_goals":  "Spain",
+                          "tw_pot1_exit":  "Croatia",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "21",
+                          "r16_pks":  "1"
+                      },
+    "pmnkxkq5lctkz":  {
+                          "tw_golden_boot":  "Mbappe",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Belgium",
+                          "grp_most_goals":  "Spain",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "3",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "20",
+                          "r16_pks":  "3"
+                      },
+    "pmq3o3mu24pff":  {
+                          "tw_golden_boot":  "Harry Kane",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Croatia",
+                          "grp_conf_winrate":  "CONMEBOL (South America)",
+                          "grp_most_goals":  "Spain",
+                          "grp_margin":  "6+",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "23",
+                          "r16_pks":  "2",
+                          "qf_teams":  [
+                                           "",
+                                           "",
+                                           "",
+                                           ""
+                                       ]
+                      },
+    "pmq3o5zszp5uv":  {
+                          "tw_possession":  "Spain",
+                          "tw_golden_boot":  "MbappÃ©",
+                          "tw_pot1_exit":  "Belgium",
+                          "grp_most_goals":  "Germany",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "6+",
+                          "r32_red_cards":  "5",
+                          "r16_goals":  "19",
+                          "r16_pks":  "1"
+                      },
+    "pmnkxkq5l2ky5":  {
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Croatia",
+                          "tw_golden_boot":  "Mbappe",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "4",
+                          "grp_most_goals":  "Spain",
+                          "r32_red_cards":  "4",
+                          "r16_goals":  "21",
+                          "r16_pks":  "2"
+                      },
+    "pmq3o55ju2pms":  {
+                          "tw_golden_boot":  "Kylian MbappÃ©",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Colombia",
+                          "grp_most_goals":  "Spain",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "5",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "23",
+                          "r16_pks":  "2"
+                      },
+    "pmnn5u6une8tg":  {
+                          "tw_golden_boot":  "Oyarzabal",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Croatia",
+                          "grp_most_goals":  "Germany",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "5",
+                          "r32_red_cards":  "1",
+                          "r16_goals":  "23",
+                          "r16_pks":  "2"
+                      },
+    "pmq3o3jpxcyi2":  {
+                          "grp_margin":  "5",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_most_goals":  "Spain",
+                          "tw_possession":  "Spain",
+                          "tw_golden_boot":  "Laminate Yamal",
+                          "tw_pot1_exit":  "Morocco",
+                          "r32_red_cards":  "4",
+                          "r16_goals":  "21",
+                          "r16_pks":  "2",
+                          "qf_teams":  [
+                                           "",
+                                           "",
+                                           "",
+                                           ""
+                                       ]
+                      },
+    "pmnn5ww9z72en":  {
+                          "tw_golden_boot":  "Mbappe",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Colombia",
+                          "grp_most_goals":  "Brazil",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "4",
+                          "r32_red_cards":  "12",
+                          "r16_goals":  "19",
+                          "r16_pks":  "3"
+                      },
+    "pmq7atd14ba5p":  {
+                          "grp_most_goals":  "Germany",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "5",
+                          "tw_golden_boot":  "Mbappe",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Netherlands",
+                          "r32_red_cards":  "2",
+                          "r16_goals":  "23",
+                          "r16_pks":  "2"
+                      },
+    "pmq3o5k356vr2":  {
+                          "tw_golden_boot":  "Mbappe",
+                          "tw_possession":  "France",
+                          "tw_pot1_exit":  "Croatia",
+                          "grp_most_goals":  "Portugal",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "4",
+                          "r32_red_cards":  "2",
+                          "r16_goals":  "26",
+                          "r16_pks":  "3"
+                      },
+    "pmnn5qosafknw":  {
+                          "tw_possession":  "Brazil",
+                          "tw_pot1_exit":  "Morocco",
+                          "r32_red_cards":  "7",
+                          "r16_goals":  "15",
+                          "r16_pks":  "1"
+                      },
+    "pmq791b2ospne":  {
+                          "tw_golden_boot":  "Kylian MbappÃ©",
+                          "tw_possession":  "Spain",
+                          "tw_pot1_exit":  "Colombia",
+                          "grp_most_goals":  "Portugal",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "5",
+                          "r32_red_cards":  "2",
+                          "r16_goals":  "23",
+                          "r16_pks":  "3"
+                      },
+    "pmnnha5dy76jt":  {
+                          "tw_possession":  "Portugal",
+                          "tw_golden_boot":  "Mbappe",
+                          "tw_pot1_exit":  "Netherlands",
+                          "grp_most_goals":  "Portugal",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "3",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "25",
+                          "r16_pks":  "2"
+                      },
+    "pmq3o691xsy7c":  {
+                          "tw_golden_boot":  "Brasil",
+                          "tw_possession":  "Germany",
+                          "tw_pot1_exit":  "Morocco",
+                          "grp_most_goals":  "France",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "4",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "38",
+                          "r16_pks":  "3"
+                      },
+    "pmq9jrk7dpq9i":  {
+                          "tw_golden_boot":  "Kane",
+                          "tw_possession":  "France",
+                          "tw_pot1_exit":  "Belgium",
+                          "grp_most_goals":  "France",
+                          "grp_conf_winrate":  "UEFA (Europe)",
+                          "grp_margin":  "4",
+                          "r32_red_cards":  "3",
+                          "r16_goals":  "25",
+                          "r16_pks":  "1",
+                          "qf_teams":  [
+                                           "",
+                                           "",
+                                           "",
+                                           ""
+                                       ]
+                      }
+}

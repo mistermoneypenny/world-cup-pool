@@ -365,7 +365,9 @@ app.post('/api/state', async (req, res) => {
           }
         }
       } else if (incoming.bonusPicks && !sender) {
-        existing.bonusPicks = incoming.bonusPicks;
+        // Senderless: only allow if DB has no bonus picks yet (initial setup only).
+        const hasExistingBP = existing.bonusPicks && Object.keys(existing.bonusPicks).length > 0;
+        if (!hasExistingBP) existing.bonusPicks = incoming.bonusPicks;
       }
 
       // Reactions: any player can update (fun feature, not score-critical)
@@ -921,10 +923,13 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
 
 // ── STARTUP PICKS PROTECTION ─────────────────────────────────
-// On every deploy, merge the git-committed data/state.json into the live state.
-// This is additive-only: picks/bonusPicks already in JSONBin are kept as-is;
-// only keys that are MISSING from the live state get filled in from the baseline.
-// Prevents pick loss when JSONBin is temporarily unavailable during a redeploy.
+// On every deploy, merge the git-committed baselines into the live JSONBin state.
+// Additive-only: picks/bonusPicks already in JSONBin are kept as-is;
+// only keys that are MISSING from the live state get filled in.
+// data/state.json is gitignored (local only); data/bonus-picks-baseline.json is
+// committed and available on Render — it provides bonus picks restore on redeploy.
+const BONUS_BASELINE_FILE = path.join(DATA_DIR, 'bonus-picks-baseline.json');
+
 async function startupPicksProtection() {
   try {
     let baseline = null;
@@ -932,36 +937,50 @@ async function startupPicksProtection() {
       const raw = fs.readFileSync(DATA_FILE, 'utf8');
       if (raw.trim()) baseline = JSON.parse(raw);
     } catch (_) {}
-    if (!baseline) return;
+
+    // Fallback: load bonus picks from the committed baseline file (available on Render)
+    let bonusBaseline = baseline?.bonusPicks || null;
+    if (!bonusBaseline) {
+      try {
+        const raw = fs.readFileSync(BONUS_BASELINE_FILE, 'utf8');
+        if (raw.trim()) bonusBaseline = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!baseline && !bonusBaseline) return;
 
     const live = await readState();
     let changed = false;
 
     // Merge picks (nested: playerId -> roundId -> picks object)
-    const livePicks = live.picks || {};
-    for (const [pid, rounds] of Object.entries(baseline.picks || {})) {
-      if (!livePicks[pid]) { livePicks[pid] = rounds; changed = true; continue; }
-      for (const [rnd, picks] of Object.entries(rounds)) {
-        if (!livePicks[pid][rnd] || Object.keys(livePicks[pid][rnd]).length === 0) {
-          livePicks[pid][rnd] = picks; changed = true;
+    if (baseline) {
+      const livePicks = live.picks || {};
+      for (const [pid, rounds] of Object.entries(baseline.picks || {})) {
+        if (!livePicks[pid]) { livePicks[pid] = rounds; changed = true; continue; }
+        for (const [rnd, picks] of Object.entries(rounds)) {
+          if (!livePicks[pid][rnd] || Object.keys(livePicks[pid][rnd]).length === 0) {
+            livePicks[pid][rnd] = picks; changed = true;
+          }
         }
       }
+      live.picks = livePicks;
     }
 
     // Merge bonusPicks (nested: playerId -> bonusKey -> value)
-    const liveBP = live.bonusPicks || {};
-    for (const [pid, bpData] of Object.entries(baseline.bonusPicks || {})) {
-      if (!liveBP[pid]) { liveBP[pid] = bpData; changed = true; continue; }
-      for (const [key, val] of Object.entries(bpData)) {
-        if (!liveBP[pid][key]) { liveBP[pid][key] = val; changed = true; }
+    if (bonusBaseline) {
+      const liveBP = live.bonusPicks || {};
+      for (const [pid, bpData] of Object.entries(bonusBaseline)) {
+        if (!liveBP[pid]) { liveBP[pid] = bpData; changed = true; continue; }
+        for (const [key, val] of Object.entries(bpData)) {
+          if (!liveBP[pid][key]) { liveBP[pid][key] = val; changed = true; }
+        }
       }
+      live.bonusPicks = liveBP;
     }
 
     if (changed) {
-      live.picks = livePicks;
-      live.bonusPicks = liveBP;
       await writeState(live);
-      console.log('[startup] Picks protection: merged missing picks from git baseline');
+      console.log('[startup] Picks protection: merged missing picks from baseline');
     } else {
       console.log('[startup] Picks protection: live state is complete, no merge needed');
     }

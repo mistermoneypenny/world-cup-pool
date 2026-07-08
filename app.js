@@ -756,7 +756,9 @@ function saveState(extra = {}) {
     picks:        state.picks,
     rulesText:    state.rulesText,
     defaultPlayersKey: DEFAULT_PLAYERS_KEY,
-    bonusPicks:   state.bonusPicks,
+    // Only include bonusPicks when there's a known sender — senderless saves (fresh
+    // install, rules auto-update) must not be able to overwrite the shared bonus picks store.
+    bonusPicks:   (state.sessionPlayer || state.currentPlayer) ? state.bonusPicks : undefined,
     bonusAnswers: state.bonusAnswers,
     playerPins:   state.playerPins,
     r32Teams:       state.r32Teams,
