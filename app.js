@@ -1994,8 +1994,10 @@ function renderPicksBody() {
           sel.appendChild(o);
         });
         sel.addEventListener('change', () => {
-          if (!state.bonusPicks[state.currentPlayer]) state.bonusPicks[state.currentPlayer] = {};
-          state.bonusPicks[state.currentPlayer][b.id] = sel.value;
+          const cpid = state.currentPlayer;
+          if (!state.bonusPicks[cpid]) state.bonusPicks[cpid] = {};
+          state.bonusPicks[cpid][b.id] = sel.value;
+          scheduleAutoSave();
         });
         row.appendChild(sel);
         bonusCard.appendChild(row);
@@ -2009,9 +2011,11 @@ function renderPicksBody() {
         inp.value = playerAns || '';
         inp.disabled = !isOpen;
         inp.dataset.bonusId = b.id;
-        inp.addEventListener('change', () => {
-          if (!state.bonusPicks[state.currentPlayer]) state.bonusPicks[state.currentPlayer] = {};
-          state.bonusPicks[state.currentPlayer][b.id] = inp.value.trim();
+        inp.addEventListener('input', () => {
+          const cpid = state.currentPlayer;
+          if (!state.bonusPicks[cpid]) state.bonusPicks[cpid] = {};
+          state.bonusPicks[cpid][b.id] = inp.value;
+          scheduleAutoSave();
         });
         row.appendChild(inp);
         bonusCard.appendChild(row);
@@ -4816,6 +4820,9 @@ async function pollServer() {
     const localPicksSnap    = pid ? JSON.parse(JSON.stringify(state.picks[pid]    || {})) : null;
     const localSavedAtSnap  = pid ? JSON.parse(JSON.stringify((state.pickSavedAt || {})[pid] || {})) : null;
 
+    // Snapshot in-progress bonus picks so poll doesn't wipe values being typed
+    const bonusPicksSnap = pid ? JSON.parse(JSON.stringify(state.bonusPicks[pid] || {})) : null;
+
     applyLoadedState(saved);
     if (JSON.stringify(state.r32Teams) !== hadR32) rebuildGames();
 
@@ -4840,6 +4847,16 @@ async function pollServer() {
         if (!state.picks[pid]) state.picks[pid] = {};
         if (!state.picks[pid][pendingRoundId]) state.picks[pid][pendingRoundId] = {};
         Object.assign(state.picks[pid][pendingRoundId], pendingSnapshot);
+      }
+
+      // Restore in-progress bonus picks: prefer local non-empty values over server state
+      if (bonusPicksSnap && Object.keys(bonusPicksSnap).length > 0) {
+        if (!state.bonusPicks[pid]) state.bonusPicks[pid] = {};
+        for (const [key, val] of Object.entries(bonusPicksSnap)) {
+          if (val !== undefined && val !== null && val !== '') {
+            state.bonusPicks[pid][key] = val;
+          }
+        }
       }
     }
 
