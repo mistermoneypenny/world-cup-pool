@@ -844,8 +844,9 @@ function showPickersPopup(anchor, names) {
   const popup = document.getElementById('pick-pickers-popup');
   if (!popup) return;
   const count = names.length;
-  const nameRows = count > 0 ? names.map(n => `<span class="pop-name">${esc(n)}</span>`).join('') : '<span class="pop-empty">—</span>';
-  popup.innerHTML = `<div class="pop-hdr">${count > 0 ? count + ' picker' + (count !== 1 ? 's' : '') : 'No picks'}</div>${nameRows}`;
+  const total = state.players.length;
+  const nameRows = count > 0 ? names.map(n => `<span class="pop-name">${esc(n)}</span>`).join('') : '<span class="pop-empty">No picks yet</span>';
+  popup.innerHTML = `<div class="pop-hdr">${count > 0 ? count + '/' + total + ' players' : '0/' + total + ' players'}</div>${nameRows}`;
   popup.style.left = '0'; popup.style.top = '0'; popup.style.display = 'block';
   const rect = anchor.getBoundingClientRect();
   const pw = popup.offsetWidth;
@@ -1805,7 +1806,8 @@ function renderPicksBody() {
 
   const viewId      = state.adminViewPlayer || state.currentPlayer;
   const isAdminView = !!state.adminViewPlayer;
-  const isOpen      = !isAdminView && isCurrentRound && state.roundStatus === 'open';
+  const isOwnPicks  = !state.sessionPlayer || state.currentPlayer === state.sessionPlayer;
+  const isOpen      = !isAdminView && isOwnPicks && isCurrentRound && state.roundStatus === 'open';
   const isLocked    = !isAdminView && isCurrentRound && state.roundStatus === 'locked';
 
   const savedPicks = (state.picks[viewId] || {})[roundId] || {};
@@ -1839,6 +1841,10 @@ function renderPicksBody() {
     if (isPast)        msg.textContent = `Round complete — showing ${viewName}'s results for ${cfg.label}.`;
     else if (isFuture) msg.textContent = `${cfg.label} picks not yet open.`;
     else               msg.textContent = `Showing ${viewName}'s ${cfg.label} picks (read-only).`;
+  } else if (!isOwnPicks) {
+    const viewName = state.players.find(p => p.id === viewId)?.name || 'Player';
+    msg.className = 'picks-locked-msg';
+    msg.textContent = `Viewing ${viewName}'s picks (read-only).`;
   } else if (isOpen) {
     msg.className = 'picks-open-msg';
     msg.textContent = `✔ ${cfg.label} is open — select your winners below (${cfg.pts} pt${cfg.pts > 1 ? 's' : ''} per correct pick).`;
@@ -2188,7 +2194,7 @@ function buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg) {
       const pickerNames = state.players
         .filter(p => (state.picks[p.id] || {})[game.round]?.[getPickKey(game)] === optionName)
         .map(p => p.name).join('||');
-      popHtml = `<span class="pick-o-pop" data-pickers="${esc(pickerNames)}" title="${cnt}/${popData.total}" role="button" tabindex="0"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${popData.total}</span></span>`;
+      popHtml = `<span class="pick-o-pop" data-pickers="${esc(pickerNames)}" title="${cnt}/${state.players.length}"><span class="pick-pop-track"><span class="pick-pop-fill" style="width:${pct}%"></span></span><span class="pick-pop-txt">${cnt}/${state.players.length}</span></span>`;
     }
 
     const yourPickBadge = (isPicked && !isOpen) ? '<span class="your-pick-badge">✓</span>' : '';
@@ -4673,16 +4679,27 @@ function setupEvents() {
     if (banner) banner.style.display = 'none';
   });
 
-  // Popularity bar popup: show player names when clicked
-  document.addEventListener('click', e => {
+  // Popularity bar popup: show player names on hover
+  let _pickersHideTimer = null;
+  document.addEventListener('mouseover', e => {
     const pop = e.target.closest('.pick-o-pop[data-pickers]');
     if (pop) {
+      clearTimeout(_pickersHideTimer);
       const names = (pop.dataset.pickers || '').split('||').filter(Boolean);
       showPickersPopup(pop, names);
       return;
     }
-    const popup = document.getElementById('pick-pickers-popup');
-    if (popup && !e.target.closest('#pick-pickers-popup')) popup.style.display = 'none';
+    if (e.target.closest('#pick-pickers-popup')) {
+      clearTimeout(_pickersHideTimer);
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('.pick-o-pop[data-pickers]') || e.target.closest('#pick-pickers-popup')) {
+      _pickersHideTimer = setTimeout(() => {
+        const popup = document.getElementById('pick-pickers-popup');
+        if (popup) popup.style.display = 'none';
+      }, 120);
+    }
   });
 }
 
