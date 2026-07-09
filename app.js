@@ -689,7 +689,7 @@ function getBonusScore(playerId, roundId) {
       if (!Array.isArray(playerAns) || !Array.isArray(correctAns)) return;
       const normP = playerAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
       const normC = correctAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
-      if (normP.length === normC.length && normP.every((v, i) => v === normC[i])) score += b.points;
+      if (normP.length > 0 && normC.length > 0 && normP.length === normC.length && normP.every((v, i) => v === normC[i])) score += b.points;
     } else {
       const ans = playerAns.trim().toLowerCase();
       const correct = Array.isArray(correctAns)
@@ -730,7 +730,7 @@ function getPlayerBonusDetails(playerId, roundId) {
         if (Array.isArray(playerAns) && Array.isArray(correctAns)) {
           const np = playerAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
           const nc = correctAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
-          isCorrect = np.length === nc.length && np.every((v, i) => v === nc[i]);
+          isCorrect = np.length > 0 && nc.length > 0 && np.length === nc.length && np.every((v, i) => v === nc[i]);
         }
       } else {
         const ans = playerAns.trim().toLowerCase();
@@ -2679,7 +2679,9 @@ function renderBonusAdmin() {
       const srcRound = b.sourceRound || 'qf';
       const srcGames = getGamesForRound(srcRound);
       const actualWinners = srcGames.map(g => { const w = getWinner(g.id); return w ? w.name : ''; });
-      state.bonusAnswers[b.id] = actualWinners;
+      // Only write to bonusAnswers when at least one game has a real result.
+      // Writing all-empty arrays causes vacuous equality with players who have empty picks.
+      if (actualWinners.some(w => w !== '')) state.bonusAnswers[b.id] = actualWinners;
 
       for (let i = 0; i < actualWinners.length; i++) {
         const row = document.createElement('div');
