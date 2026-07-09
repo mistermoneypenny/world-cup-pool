@@ -3710,13 +3710,35 @@ function renderPickStatusGrid() {
     tr.appendChild(td0);
     ROUND_CONFIG.forEach(cfg => {
       const td = document.createElement('td');
-      const picks = (state.picks[p.id] || {})[cfg.id] || {};
+      const roundPicks = (state.picks[p.id] || {})[cfg.id] || {};
       const games = getGamesForRound(cfg.id).filter(g => getTeams(g).t1 && getTeams(g).t2);
-      const count = Object.keys(picks).length;
-      if (count > 0) {
+      const pickCount = Object.keys(roundPicks).length;
+      const allGamesDone = games.length > 0 && pickCount >= games.length;
+
+      // Bonus questions for this round (groups also includes tournament-wide)
+      const bonusQs = cfg.id === 'groups'
+        ? [...(BONUS_CONFIG.tournament || []), ...(BONUS_CONFIG.groups || [])]
+        : (BONUS_CONFIG[cfg.id] || []);
+      // Only require manually-entered fields (not multi, which is auto-derived from picks)
+      const requiredBonus = bonusQs.filter(b => b.type !== 'multi');
+      const playerBP = (state.bonusPicks[p.id] || {});
+      const bonusDone = requiredBonus.filter(b => {
+        const v = playerBP[b.id];
+        return v !== undefined && v !== null && v !== '';
+      }).length;
+      const allBonusDone = requiredBonus.length === 0 || bonusDone >= requiredBonus.length;
+
+      const allDone = allGamesDone && allBonusDone;
+      const anyDone = pickCount > 0 || bonusDone > 0;
+
+      if (allDone) {
         td.textContent = '✓';
         td.className = 'psg-yes';
-        td.title = `${count}/${games.length} picks`;
+        td.title = `${pickCount}/${games.length} picks, ${bonusDone}/${requiredBonus.length} bonus`;
+      } else if (anyDone) {
+        td.textContent = '✓';
+        td.className = 'psg-partial';
+        td.title = `${pickCount}/${games.length} picks, ${bonusDone}/${requiredBonus.length} bonus — incomplete`;
       } else {
         td.textContent = '✗';
         td.className = 'psg-no';

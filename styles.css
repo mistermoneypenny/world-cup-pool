@@ -535,8 +535,9 @@ select.bonus-input { cursor: pointer; appearance: auto; }
 .pick-status-table th:first-child { text-align: left; }
 .pick-status-table td { padding: 0.3rem 0.5rem; text-align: center; border-bottom: 1px solid var(--border); }
 .psg-name { text-align: left !important; font-weight: 500; color: var(--text); }
-.psg-yes { color: #2ecc71; font-weight: 700; }
-.psg-no  { color: var(--text-3); }
+.psg-yes     { color: #2ecc71; font-weight: 700; }
+.psg-partial { color: #f0a500; font-weight: 700; }
+.psg-no      { color: var(--text-3); }
 
 /* ── PIN ADMIN ─────────────────────────────────────────────── */
 .pin-admin-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
