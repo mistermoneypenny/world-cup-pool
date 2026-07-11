@@ -332,6 +332,12 @@ app.post('/api/state', async (req, res) => {
             if (incoming._setRound || inIdx >= exIdx) {
               existing[field] = incoming[field];
             }
+          } else if (field === 'roundStatus') {
+            // Only accept explicit status changes — ordinary admin saves (results, picks, etc.)
+            // must not be able to reset a locked round back to open via stale local state.
+            if (incoming._setStatus || incoming._setRound) {
+              existing[field] = incoming[field];
+            }
           } else {
             existing[field] = incoming[field];
           }

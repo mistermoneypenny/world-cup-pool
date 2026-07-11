@@ -807,6 +807,10 @@ a.live-badge:hover, a.live-badge-inline:hover { opacity: 0.8; }
   text-align: center; color: var(--text-3); font-size: 0.68rem;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.h2h-bonus-label {
+  white-space: normal; overflow: visible; text-overflow: unset;
+  line-height: 1.25; padding: 0.1rem 0.25rem; font-size: 0.62rem;
+}
 .h2h-game-pick { display: flex; }
 .h2h-game-pick.my-pick  { justify-content: flex-end; }
 .h2h-game-pick.opp-pick { justify-content: flex-start; }

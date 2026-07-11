@@ -4546,6 +4546,75 @@ function renderH2HBody(container, myId, opponentId, roundId) {
     gamesDiv.appendChild(row);
   });
   container.appendChild(gamesDiv);
+
+  // Bonus picks section — QF and beyond
+  const bonusQuestions = getBonusList(roundId);
+  if (bonusQuestions.length) {
+    const myBP  = state.bonusPicks[myId]       || {};
+    const oppBP = state.bonusPicks[opponentId] || {};
+
+    const bonusLabel = document.createElement('div');
+    bonusLabel.className = 'h2h-round-label';
+    bonusLabel.textContent = 'Bonus Picks';
+    container.appendChild(bonusLabel);
+
+    const bonusDiv = document.createElement('div');
+    bonusDiv.className = 'h2h-games';
+
+    bonusQuestions.forEach(b => {
+      const myRaw  = myBP[b.id];
+      const oppRaw = oppBP[b.id];
+      const myAns  = Array.isArray(myRaw)  ? myRaw.join(', ')  : (myRaw  || '');
+      const oppAns = Array.isArray(oppRaw) ? oppRaw.join(', ') : (oppRaw || '');
+      const correctAns = state.bonusAnswers[b.id];
+
+      const isCorrect = ans => {
+        if (!ans || !correctAns) return null;
+        if (b.scoring === 'closest') {
+          const correct = parseFloat(correctAns);
+          if (isNaN(correct)) return null;
+          const myVal = parseFloat(ans);
+          if (isNaN(myVal)) return null;
+          const allDists = state.players.map(p => {
+            const a = (state.bonusPicks[p.id] || {})[b.id];
+            if (!a) return null;
+            const v = parseFloat(a);
+            return isNaN(v) ? null : Math.abs(v - correct);
+          }).filter(d => d !== null);
+          return allDists.length && Math.abs(myVal - correct) === Math.min(...allDists);
+        }
+        if (b.type === 'multi') {
+          if (!Array.isArray(myRaw) || !Array.isArray(correctAns)) return null;
+          const normP = myRaw.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
+          const normC = correctAns.map(s => s.trim().toLowerCase()).filter(Boolean).sort();
+          return normP.length > 0 && normC.length > 0 && normP.length === normC.length && normP.every((v, i) => v === normC[i]);
+        }
+        const normAns = ans.trim().toLowerCase();
+        return Array.isArray(correctAns)
+          ? correctAns.map(s => s.trim().toLowerCase()).includes(normAns)
+          : normAns === correctAns.trim().toLowerCase();
+      };
+
+      const pickHtml = (ans, rawVal) => {
+        if (!ans) return '<span class="h2h-no-pick">—</span>';
+        const c = isCorrect(ans);
+        const cls = c === true ? 'h2h-pick correct' : c === false ? 'h2h-pick wrong' : 'h2h-pick pending';
+        const icon = c === true ? ' ✔' : c === false ? ' ✗' : '';
+        return `<span class="${cls}">${esc(ans)}${icon}</span>`;
+      };
+
+      const same = myAns && oppAns && myAns.toLowerCase() === oppAns.toLowerCase();
+      const row = document.createElement('div');
+      row.className = 'h2h-game-row' + (same ? ' h2h-same' : '');
+      row.innerHTML = `
+        <div class="h2h-game-pick my-pick">${pickHtml(myAns)}</div>
+        <div class="h2h-game-label h2h-bonus-label">${esc(b.label)}</div>
+        <div class="h2h-game-pick opp-pick">${pickHtml(oppAns)}</div>`;
+      bonusDiv.appendChild(row);
+    });
+
+    container.appendChild(bonusDiv);
+  }
 }
 
 // ── FEATURE 8: PWA INSTALL BANNER ────────────────────────────
@@ -4596,7 +4665,7 @@ function setupEvents() {
   document.getElementById('set-status-btn')?.addEventListener('click', () => {
     const statusSel = document.getElementById('admin-status-sel');
     state.roundStatus = statusSel.value;
-    saveState();
+    saveState({ _setStatus: true });
     updateRoundStatus();
     showToast(`Status updated: ${state.roundStatus}`, 'info');
   });
