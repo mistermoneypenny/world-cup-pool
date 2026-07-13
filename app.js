@@ -65,7 +65,8 @@ const BONUS_CONFIG = {
     { id: 'qf_teams',     label: 'Final Four — All Four Correct Picks',    points: 2, type: 'multi', count: 4, sourceRound: 'qf' },
   ],
   sf: [
-    { id: 'sf_top_scorer', label: 'High Individual Scorer (Semi-Finals)', points: 3, type: 'text' },
+    { id: 'sf_extra_time', label: 'Number of SF Matches Going to Extra Time', points: 1.5, type: 'select', options: ['0', '1', '2'], scoring: 'closest' },
+    { id: 'sf_goals',      label: 'Total Goals Across Both SF Matches',        points: 1.5, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)), scoring: 'closest' },
   ],
   final: [
     { id: 'final_motm', label: 'Man of the Match', points: 3, type: 'text' },
