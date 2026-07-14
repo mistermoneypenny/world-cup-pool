@@ -1037,11 +1037,23 @@ function updateRoundStatus() {
 }
 
 function updatePlayerSelect() {
+  const sel = document.getElementById('player-select');
   if (state.sessionPlayer && !isAdmin()) {
+    // Non-admin session: lock dropdown to own player only — no switching allowed
     state.currentPlayer = state.sessionPlayer;
+    sel.innerHTML = '';
+    const p = state.players.find(p => p.id === state.sessionPlayer);
+    if (p) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.disabled = true;
     return;
   }
-  const sel = document.getElementById('player-select');
+  sel.disabled = false;
   const cur = sel.value || state.currentPlayer;
   sel.innerHTML = '';
   state.players.forEach(p => {
@@ -2327,7 +2339,7 @@ function scheduleAutoSave() {
 
 function doAutoSave() {
   _autoSaveTimer = null;
-  const pid = state.currentPlayer;
+  const pid = (state.sessionPlayer && !isAdmin()) ? state.sessionPlayer : state.currentPlayer;
   const rid = state.activePicksRound;
   if (!pid) return;
   if (!state.picks[pid]) state.picks[pid] = {};
@@ -2373,7 +2385,7 @@ function doAutoSave() {
 function savePicks() {
   clearTimeout(_autoSaveTimer);
   _autoSaveTimer = null;
-  const pid = state.currentPlayer;
+  const pid = (state.sessionPlayer && !isAdmin()) ? state.sessionPlayer : state.currentPlayer;
   const rid = state.activePicksRound;
   if (!pid) return;
   if (!state.picks[pid]) state.picks[pid] = {};
@@ -4635,6 +4647,10 @@ function setupEvents() {
   document.getElementById('session-switch-btn')?.addEventListener('click', logoutSession);
 
   document.getElementById('player-select').addEventListener('change', e => {
+    if (state.sessionPlayer && !isAdmin()) {
+      e.target.value = state.sessionPlayer;
+      return;
+    }
     state.currentPlayer   = e.target.value;
     state.adminViewPlayer = null;
     renderCurrentView();
