@@ -343,6 +343,7 @@ let state = {
   currentView: 'bracket',
   currentRound: 'groups',
   roundStatus:  'open',
+  roundStatuses: {},  // per-round overrides; populated during final weekend (third + final run simultaneously)
   activePicksRound: 'groups',
   lbRound: 'all',
   resultsRound: 'groups',
@@ -749,9 +750,10 @@ function getPlayerBonusDetails(playerId, roundId) {
 
 function saveState(extra = {}) {
   const payload = {
-    currentRound: state.currentRound,
-    roundStatus:  state.roundStatus,
-    players:      state.players,
+    currentRound:  state.currentRound,
+    roundStatus:   state.roundStatus,
+    roundStatuses: state.roundStatuses,
+    players:       state.players,
     results:      state.results,
     picks:        state.picks,
     rulesText:    state.rulesText,
@@ -795,9 +797,10 @@ async function loadState() {
 
 function applyLoadedState(saved) {
   if (saved.defaultPlayersKey !== DEFAULT_PLAYERS_KEY) {
-    if (saved.results)      state.results      = saved.results;
-    if (saved.currentRound) state.currentRound = saved.currentRound;
-    if (saved.roundStatus)  state.roundStatus  = saved.roundStatus;
+    if (saved.results)        state.results        = saved.results;
+    if (saved.currentRound)   state.currentRound   = saved.currentRound;
+    if (saved.roundStatus)    state.roundStatus    = saved.roundStatus;
+    if (saved.roundStatuses)  state.roundStatuses  = saved.roundStatuses;
     if (saved.rulesText !== undefined) state.rulesText = saved.rulesText;
     return;
   }
@@ -815,7 +818,8 @@ function applyLoadedState(saved) {
     // to a specific past/future round tab (i.e., they were tracking the current round)
     if (wasFollowingCurrent) state.activePicksRound = saved.currentRound;
   }
-  if (saved.roundStatus)      state.roundStatus  = saved.roundStatus;
+  if (saved.roundStatus)      state.roundStatus   = saved.roundStatus;
+  if (saved.roundStatuses)    state.roundStatuses = saved.roundStatuses;
   if (saved.rulesText !== undefined) state.rulesText = saved.rulesText;
   if (saved.bonusPicks)   state.bonusPicks   = saved.bonusPicks;
   if (saved.bonusAnswers) state.bonusAnswers = saved.bonusAnswers;
@@ -915,8 +919,20 @@ function isAdmin() {
   return !!(state.sessionPlayer && state.sessionPlayer === state.players[0]?.id);
 }
 
+// Returns the effective status for a round, checking per-round overrides first.
+function getRoundStatus(roundId) {
+  if (state.roundStatuses[roundId] !== undefined) return state.roundStatuses[roundId];
+  if (roundId === state.currentRound) return state.roundStatus;
+  return null;
+}
+
 function isRoundPicksVisible(roundId) {
   if (isAdmin()) return true;
+  // Per-round override: used when third + final run simultaneously
+  if (state.roundStatuses[roundId] !== undefined) {
+    const st = state.roundStatuses[roundId];
+    return st === 'locked' || st === 'closed';
+  }
   const ri = ROUND_CONFIG.findIndex(r => r.id === roundId);
   const ci = ROUND_CONFIG.findIndex(r => r.id === state.currentRound);
   if (ri < ci) return true;
@@ -1019,9 +1035,17 @@ function updateSessionHeader() {
 // ── HEADER HELPERS ────────────────────────────────────────────
 
 function updateRoundStatus() {
-  const pill = document.getElementById('round-status');
-  const cfg  = ROUND_CONFIG.find(r => r.id === state.currentRound);
+  const pill   = document.getElementById('round-status');
   const labels = { open: 'Open', locked: 'Locked', closed: 'Closed' };
+  // Final weekend: both rounds active simultaneously
+  if (state.roundStatuses.third !== undefined && state.roundStatuses.final !== undefined) {
+    const ts = state.roundStatuses.third;
+    const fs = state.roundStatuses.final;
+    pill.textContent = `3rd: ${labels[ts] ?? ts} · Final: ${labels[fs] ?? fs}`;
+    pill.className   = `status-pill ${(ts === 'locked' || fs === 'locked') ? 'locked' : ts}`;
+    return;
+  }
+  const cfg = ROUND_CONFIG.find(r => r.id === state.currentRound);
   let label = `${cfg?.label ?? ''} — ${labels[state.roundStatus] ?? ''}`;
   if (state.currentRound === 'groups') {
     const total    = getGamesForRound('groups').length;
@@ -1032,7 +1056,7 @@ function updateRoundStatus() {
     label += ` — ${entered}/${total} results (${groupsDone}/12 groups complete)`;
   }
   pill.textContent = label;
-  pill.className = `status-pill ${state.roundStatus}`;
+  pill.className   = `status-pill ${state.roundStatus}`;
 }
 
 function updatePlayerSelect() {
@@ -1798,9 +1822,13 @@ function renderPicksTabs() {
     if (cfg.id === state.activePicksRound) btn.classList.add('active');
     const ri = ROUND_CONFIG.findIndex(r => r.id === cfg.id);
     const ci = ROUND_CONFIG.findIndex(r => r.id === state.currentRound);
-    if (ri < ci) btn.classList.add('done');
-    else if (ri === ci && state.roundStatus === 'locked') btn.classList.add('locked');
-    else if (ri > ci) btn.classList.add('future');
+    const st = getRoundStatus(cfg.id);
+    if (st !== null) {
+      if (st === 'locked') btn.classList.add('locked');
+      else if (st === 'closed') btn.classList.add('done');
+      // 'open' gets no extra class — it's an active round
+    } else if (ri < ci) btn.classList.add('done');
+    else if (ri > ci)   btn.classList.add('future');
     btn.addEventListener('click', () => { state.activePicksRound = cfg.id; renderPicks(); });
     tabs.appendChild(btn);
   });
@@ -1816,15 +1844,18 @@ function renderPicksBody() {
   const ri  = ROUND_CONFIG.findIndex(r => r.id === roundId);
   const ci  = ROUND_CONFIG.findIndex(r => r.id === state.currentRound);
 
-  const isCurrentRound = roundId === state.currentRound;
-  const isPast         = ri < ci;
-  const isFuture       = ri > ci;
+  // A round is "current" if it's the active round OR has an independent per-round status
+  // (used during final weekend when third + final run simultaneously).
+  const isCurrentRound = roundId === state.currentRound || state.roundStatuses[roundId] !== undefined;
+  const isPast         = ri < ci && !isCurrentRound;
+  const isFuture       = ri > ci && !isCurrentRound;
+  const roundSt        = getRoundStatus(roundId);
 
   const viewId      = state.adminViewPlayer || state.currentPlayer;
   const isAdminView = !!state.adminViewPlayer;
   const isOwnPicks  = !state.sessionPlayer || state.currentPlayer === state.sessionPlayer;
-  const isOpen      = !isAdminView && isOwnPicks && isCurrentRound && state.roundStatus === 'open';
-  const isLocked    = !isAdminView && isCurrentRound && state.roundStatus === 'locked';
+  const isOpen      = !isAdminView && isOwnPicks && isCurrentRound && roundSt === 'open';
+  const isLocked    = !isAdminView && isCurrentRound && roundSt === 'locked';
 
   const savedPicks = (state.picks[viewId] || {})[roundId] || {};
   state.pendingPicks = isAdminView ? {} : { ...savedPicks };
@@ -1879,7 +1910,7 @@ function renderPicksBody() {
   // ── Countdown timer (Feature 1) ──────────────────────────────
   if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
   const dlRaw = (state.roundDeadlines || {})[roundId];
-  if (dlRaw && isCurrentRound && state.roundStatus === 'open') {
+  if (dlRaw && isCurrentRound && roundSt === 'open') {
     const dlMs = new Date(dlRaw).getTime();
     if (dlMs > Date.now()) {
       const cdDiv = document.createElement('div');
@@ -3895,10 +3926,22 @@ function populateRoundSelects() {
       sel.appendChild(opt);
     });
   });
+  const isFinalWeekend = state.roundStatuses.third !== undefined && state.roundStatuses.final !== undefined;
+
   const statusSel = document.getElementById('admin-status-sel');
-  if (statusSel) statusSel.value = state.roundStatus;
+  if (statusSel) statusSel.value = isFinalWeekend ? (state.roundStatuses.third ?? state.roundStatus) : state.roundStatus;
   const roundSel = document.getElementById('admin-round-sel');
   if (roundSel) roundSel.value = state.currentRound;
+
+  // Show/hide dual status controls for final weekend
+  const finalStatusRow = document.getElementById('final-status-row');
+  const statusRowLabel = document.getElementById('admin-status-row-label');
+  if (finalStatusRow) finalStatusRow.style.display = isFinalWeekend ? '' : 'none';
+  if (statusRowLabel) statusRowLabel.textContent = isFinalWeekend ? '3rd Place Status:' : 'Round Status:';
+  if (isFinalWeekend) {
+    const finalStatusSel = document.getElementById('admin-final-status-sel');
+    if (finalStatusSel) finalStatusSel.value = state.roundStatuses.final;
+  }
 }
 
 function buildResultGameCard(game) {
@@ -4674,20 +4717,40 @@ function setupEvents() {
       if (!confirm(`⚠️ Move BACK to ${newLabel}?\n\nCurrent round is "${curLabel}". Rolling back will change the active round for all players. Confirm?`)) return;
     }
     state.currentRound = newRound;
-    state.roundStatus  = 'open'; // advancing to a new round always opens picks; use Set Status to close
+    state.roundStatus  = 'open';
+    // Final weekend: third + final run simultaneously — initialise per-round statuses
+    if (newRound === 'third') {
+      state.roundStatuses = { third: 'open', final: 'open' };
+    } else {
+      // Advancing past the final weekend clears per-round overrides
+      state.roundStatuses = {};
+    }
     const statusSel = document.getElementById('admin-status-sel');
     if (statusSel) statusSel.value = 'open';
-    saveState({ _setRound: true }); // flag allows server round ratchet to accept any direction
+    saveState({ _setRound: true });
     updateRoundStatus();
+    populateRoundSelects();
     showToast(`Round set to ${ROUND_CONFIG.find(r => r.id === state.currentRound)?.label} — picks are open`, 'success');
   });
 
   document.getElementById('set-status-btn')?.addEventListener('click', () => {
     const statusSel = document.getElementById('admin-status-sel');
     state.roundStatus = statusSel.value;
+    // Keep per-round override in sync during final weekend
+    if (state.roundStatuses[state.currentRound] !== undefined) {
+      state.roundStatuses[state.currentRound] = statusSel.value;
+    }
     saveState({ _setStatus: true });
     updateRoundStatus();
-    showToast(`Status updated: ${state.roundStatus}`, 'info');
+    showToast(`${ROUND_CONFIG.find(r => r.id === state.currentRound)?.label} status: ${state.roundStatus}`, 'info');
+  });
+
+  document.getElementById('set-final-status-btn')?.addEventListener('click', () => {
+    const statusSel = document.getElementById('admin-final-status-sel');
+    state.roundStatuses.final = statusSel.value;
+    saveState({ _setStatus: true });
+    updateRoundStatus();
+    showToast(`Final status: ${state.roundStatuses.final}`, 'info');
   });
 
   document.getElementById('results-round-sel')?.addEventListener('change', () => {
