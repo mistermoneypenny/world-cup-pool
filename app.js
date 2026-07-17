@@ -2567,15 +2567,18 @@ function renderLeaderboard() {
 function renderLbTabs() {
   const tabs = document.getElementById('lb-tabs');
   tabs.innerHTML = '';
+  // 3RD is merged into FINAL — redirect if needed
+  if (state.lbRound === 'third') state.lbRound = 'final';
   const allBtn = document.createElement('button');
   allBtn.className = 'round-tab' + (state.lbRound === 'all' ? ' active' : '');
   allBtn.textContent = 'Total';
   allBtn.addEventListener('click', () => { state.lbRound = 'all'; renderLeaderboard(); });
   tabs.appendChild(allBtn);
   ROUND_CONFIG.forEach(cfg => {
+    if (cfg.id === 'third') return; // merged into FINAL tab
     const btn = document.createElement('button');
     btn.className = 'round-tab' + (state.lbRound === cfg.id ? ' active' : '');
-    btn.textContent = cfg.short;
+    btn.textContent = cfg.id === 'final' ? 'FIN WKD' : cfg.short;
     btn.addEventListener('click', () => { state.lbRound = cfg.id; renderLeaderboard(); });
     tabs.appendChild(btn);
   });
@@ -2596,11 +2599,17 @@ function renderLbBody() {
   });
   rows.sort((a, b) => b.total.total - a.total.total);
 
-  // Best score per round (for green highlight)
+  // Best score per round (for green highlight); 'final' uses merged 3rd+final score
   const roundBest = {};
   ROUND_CONFIG.forEach(cfg => {
+    if (cfg.id === 'third') return; // merged into 'final'
     let best = 0;
-    rows.forEach(r => { if (r.byRound[cfg.id].score > best) best = r.byRound[cfg.id].score; });
+    rows.forEach(r => {
+      const s = cfg.id === 'final'
+        ? r.byRound['third'].score + r.byRound['final'].score
+        : r.byRound[cfg.id].score;
+      if (s > best) best = s;
+    });
     if (best > 0) roundBest[cfg.id] = best;
   });
 
@@ -2636,7 +2645,10 @@ function renderLbBody() {
   let thHTML = '<tr><th>#</th><th>Player</th>';
   if (state.lbRound === 'all') {
     thHTML += '<th>Score</th><th style="text-align:center">Total Possible</th><th class="num lb-pm-th" title="% of group picks on Pot 3/4 (upset) teams">Pussy Meter<span class="lb-pm-sub">(upset pick %)</span></th><th class="num lb-best-th" title="Best possible finish rank">Best</th>';
-    ROUND_CONFIG.forEach(cfg => { thHTML += `<th class="num">${cfg.short}</th>`; });
+    ROUND_CONFIG.forEach(cfg => {
+      if (cfg.id === 'third') return;
+      thHTML += `<th class="num">${cfg.id === 'final' ? 'FIN WKD' : cfg.short}</th>`;
+    });
   } else {
     thHTML += '<th class="num">Score</th><th class="num">Total</th>';
   }
@@ -2698,14 +2710,27 @@ function renderLbBody() {
         })()}
         <td class="num lb-best-finish" title="Best possible finish if all remaining picks win">${bRankIcon}</td>`;
       ROUND_CONFIG.forEach(cfg => {
-        const s = row.byRound[cfg.id];
+        if (cfg.id === 'third') return; // merged into FINAL cell
+        const s = cfg.id === 'final'
+          ? { score:    row.byRound['third'].score    + row.byRound['final'].score,
+              correct:  row.byRound['third'].correct  + row.byRound['final'].correct,
+              wrong:    row.byRound['third'].wrong     + row.byRound['final'].wrong,
+              bonusPts: (row.byRound['third'].bonusPts || 0) + (row.byRound['final'].bonusPts || 0) }
+          : row.byRound[cfg.id];
         const isBest = roundBest[cfg.id] && s.score === roundBest[cfg.id];
         const wlTip = s.correct || s.wrong ? ` title="${s.correct}✔ ${s.wrong}✘"` : '';
         const bonusSuffix = s.bonusPts > 0 ? `<span class="lb-bonus">(+${s.bonusPts})</span>` : '';
         tdHTML += `<td class="lb-round-score num ${s.score === 0 && !s.correct && !s.wrong ? 'zero' : ''}${isBest ? ' round-best' : ''}"${wlTip}>${fmtScore(s.score)}${bonusSuffix}</td>`;
       });
     } else {
-      const s = row.byRound[state.lbRound];
+      // Single-round view: merge 3rd+final when viewing Final Weekend
+      const s = state.lbRound === 'final'
+        ? { score:    row.byRound['third'].score    + row.byRound['final'].score,
+            correct:  row.byRound['third'].correct  + row.byRound['final'].correct,
+            wrong:    row.byRound['third'].wrong     + row.byRound['final'].wrong,
+            bonusPts: (row.byRound['third'].bonusPts || 0) + (row.byRound['final'].bonusPts || 0),
+            possible: row.byRound['third'].possible  + row.byRound['final'].possible }
+        : row.byRound[state.lbRound];
       const isBest = roundBest[state.lbRound] && s.score === roundBest[state.lbRound];
       const wl = s.correct || s.wrong
         ? `<div class="lb-wl-row"><span class="lb-w">${s.correct} correct</span> <span class="lb-l">${s.wrong} wrong</span></div>`
@@ -3499,9 +3524,10 @@ function renderAnalytics() {
   }
   const soStarted = [
     mdHasResults(0), mdHasResults(1), mdHasResults(2),
-    roundHasResults('r32'), roundHasResults('r16'), roundHasResults('qf'), roundHasResults('sf'), roundHasResults('final'),
+    roundHasResults('r32'), roundHasResults('r16'), roundHasResults('qf'), roundHasResults('sf'),
+    roundHasResults('third') || roundHasResults('final'),
   ];
-  const soLabels  = ['MD1','MD2','MD3','R32','R16','QF','SF','FINAL'];
+  const soLabels  = ['MD1','MD2','MD3','R32','R16','QF','SF','FIN WKD'];
   const soHasData = soStarted.some(Boolean);
   addCard('ch-score-time', 'SCORE OVER TIME', 'Cumulative points per player by matchday', true, 360);
   if (soHasData) {
@@ -3521,7 +3547,7 @@ function renderAnalytics() {
             getPlayerRoundScore(p.id, 'r16').score,
             getPlayerRoundScore(p.id, 'qf').score,
             getPlayerRoundScore(p.id, 'sf').score,
-            getPlayerRoundScore(p.id, 'final').score,
+            getPlayerRoundScore(p.id, 'third').score + getPlayerRoundScore(p.id, 'final').score,
           ];
           let cum = 0;
           return {
@@ -3653,9 +3679,13 @@ function renderAnalytics() {
   }
 
   // 10 ── Round-by-Round Score Breakdown (LIVE when results exist)
-  const rrRoundIds = ['groups', 'r32', 'r16', 'qf', 'sf', 'final'];
+  const rrRoundIds = ['groups', 'r32', 'r16', 'qf', 'sf', 'third+final'];
   const rrColors   = [BB, '#00CFFF', '#FFFF00', '#FF3D6B', '#00FF99', '#FF8800'];
-  const rrScores   = allPlayers.map(p => rrRoundIds.map(r => getPlayerRoundScore(p.id, r).score));
+  const rrScores   = allPlayers.map(p => rrRoundIds.map(r =>
+    r === 'third+final'
+      ? getPlayerRoundScore(p.id, 'third').score + getPlayerRoundScore(p.id, 'final').score
+      : getPlayerRoundScore(p.id, r).score
+  ));
   const rrTotals   = rrScores.map(s => s.reduce((a, b) => a + b, 0));
   const hasRRData  = rrTotals.some(t => t > 0);
   addCard('ch-round-breakdown', 'ROUND-BY-ROUND SCORE BREAKDOWN', 'Points earned per round per player — sorted by total score', true, Math.max(320, n * 26 + 100));
@@ -3666,7 +3696,7 @@ function renderAnalytics() {
       data: {
         labels: rrOrder.map(i => allPlayers[i].name),
         datasets: rrRoundIds.map((r, ri) => ({
-          label: ROUND_CONFIG.find(c => c.id === r).short,
+          label: r === 'third+final' ? 'FIN WKD' : ROUND_CONFIG.find(c => c.id === r).short,
           data: rrOrder.map(i => rrScores[i][ri]),
           backgroundColor: rrColors[ri], borderWidth: 0, borderRadius: 0,
         }))
@@ -3697,7 +3727,7 @@ function renderAnalytics() {
       if (!total || !wrong) return;
       const pctWrong = wrong / total;
       costlyGames.push({
-        lbl: `[${cfg.short}] ${t1.name.split(' ')[0].slice(0,8)} v ${t2.name.split(' ')[0].slice(0,8)}`,
+        lbl: `[${cfg.id === 'third' ? 'FIN WKD' : cfg.short}] ${t1.name.split(' ')[0].slice(0,8)} v ${t2.name.split(' ')[0].slice(0,8)}`,
         cost: Math.round(pctWrong * cfg.pts * 10) / 10,
         pct: Math.round(pctWrong * 100),
       });
