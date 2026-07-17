@@ -71,7 +71,7 @@ const BONUS_CONFIG = {
   final: [
     { id: 'final_first_scorer', label: 'First Player to Score',                               points: 2, type: 'text' },
     { id: 'final_corners',      label: 'Total Corner Kicks in the Final',                     points: 2, type: 'select', options: Array.from({length: 31}, (_, i) => String(i)), scoring: 'closest' },
-    { id: 'final_exact_score',  label: 'Exact Final Score (e.g. 2-1)',                        points: 2, type: 'text' },
+    { id: 'final_exact_score',  label: 'Exact Final Score (eg Spain 2-1)',                     points: 2, type: 'text' },
     { id: 'final_header_goals', label: 'Number of Header Goals in the Final',                 points: 2, type: 'select', options: Array.from({length: 11}, (_, i) => String(i)), scoring: 'closest' },
   ],
 };
