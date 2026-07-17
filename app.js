@@ -2160,7 +2160,8 @@ function renderPicksBody() {
     renderBonusQuestions(BONUS_CONFIG.tournament || [], '&#127760; Tournament-Wide Predictions');
     renderBonusQuestions(BONUS_CONFIG.groups    || [], '&#11088; Group Stage Bonuses');
   } else {
-    renderBonusQuestions(getBonusList(roundId), '&#127775; Bonus Opportunity');
+    const bonusTitle = roundId === 'final' ? '&#127775; Bonus Opportunity <span style="font-size:0.75em;font-weight:500;opacity:0.7">(Finals Only)</span>' : '&#127775; Bonus Opportunity';
+    renderBonusQuestions(getBonusList(roundId), bonusTitle);
   }
 
   if (isOpen || isOpen3rd) {
