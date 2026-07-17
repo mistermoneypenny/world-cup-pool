@@ -4040,6 +4040,11 @@ function populateRoundSelects() {
       sel.appendChild(opt);
     });
   });
+  // Auto-initialize roundStatuses when on a final-weekend round (handles state set before this feature)
+  if (state.currentRound === 'third' || state.currentRound === 'final') {
+    if (state.roundStatuses.third === undefined) state.roundStatuses.third = state.roundStatus || 'open';
+    if (state.roundStatuses.final === undefined) state.roundStatuses.final = state.roundStatus || 'open';
+  }
   const isFinalWeekend = state.roundStatuses.third !== undefined && state.roundStatuses.final !== undefined;
 
   const statusSel = document.getElementById('admin-status-sel');
@@ -4833,8 +4838,9 @@ function setupEvents() {
     state.currentRound = newRound;
     state.roundStatus  = 'open';
     // Final weekend: third + final run simultaneously — initialise per-round statuses
-    if (newRound === 'third') {
-      state.roundStatuses = { third: 'open', final: 'open' };
+    if (newRound === 'third' || newRound === 'final') {
+      if (state.roundStatuses.third === undefined) state.roundStatuses.third = 'open';
+      if (state.roundStatuses.final === undefined) state.roundStatuses.final = 'open';
     } else {
       // Advancing past the final weekend clears per-round overrides
       state.roundStatuses = {};
