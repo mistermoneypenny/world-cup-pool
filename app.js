@@ -69,7 +69,6 @@ const BONUS_CONFIG = {
     { id: 'sf_goals',      label: 'Total Goals Across Both SF Matches',        points: 1.5, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)), scoring: 'closest' },
   ],
   final: [
-    { id: 'final_motm',         label: 'Man of the Match',                                    points: 3, type: 'text' },
     { id: 'final_first_scorer', label: 'First Player to Score',                               points: 2, type: 'text' },
     { id: 'final_corners',      label: 'Total Corner Kicks in the Final',                     points: 2, type: 'select', options: Array.from({length: 31}, (_, i) => String(i)), scoring: 'closest' },
     { id: 'final_exact_score',  label: 'Exact Final Score (e.g. 2-1)',                        points: 2, type: 'text' },
@@ -1703,7 +1702,6 @@ Semifinals
   · No bonus questions for this round
 
 Final
-  · Man of the Match — 3 pts
   · First Player to Score — 2 pts
   · Total Corner Kicks (closest score wins) — 2 pts
   · Exact Final Score (e.g. 2-1) — 2 pts
