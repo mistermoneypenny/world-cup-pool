@@ -19,7 +19,7 @@ const ROUND_CONFIG = [
   { id: 'r16',    label: 'Round of 16',       short: 'R16',   pts: 3,  multiplier: 1.3  },
   { id: 'qf',     label: 'Quarterfinals',     short: 'QF',    pts: 5,  multiplier: 1.6  },
   { id: 'sf',     label: 'Semifinals',        short: 'SF',    pts: 8,  multiplier: 2.0  },
-  { id: 'third',  label: '3rd Place Play-off', short: '3RD',  pts: 8,  multiplier: 2.0  },
+  { id: 'third',  label: '3rd Place Play-off', short: '3RD',  pts: 2,  multiplier: 1.0  },
   { id: 'final',  label: 'Final',             short: 'FINAL', pts: 15, multiplier: 3.0  },
 ];
 
@@ -69,7 +69,11 @@ const BONUS_CONFIG = {
     { id: 'sf_goals',      label: 'Total Goals Across Both SF Matches',        points: 1.5, type: 'select', options: Array.from({length: 21}, (_, i) => String(i)), scoring: 'closest' },
   ],
   final: [
-    { id: 'final_motm', label: 'Man of the Match', points: 3, type: 'text' },
+    { id: 'final_motm',         label: 'Man of the Match',                                    points: 3, type: 'text' },
+    { id: 'final_first_scorer', label: 'First Player to Score',                               points: 2, type: 'text' },
+    { id: 'final_corners',      label: 'Total Corner Kicks in the Final',                     points: 2, type: 'select', options: Array.from({length: 31}, (_, i) => String(i)), scoring: 'closest' },
+    { id: 'final_exact_score',  label: 'Exact Final Score (e.g. 2-1)',                        points: 2, type: 'text' },
+    { id: 'final_header_goals', label: 'Number of Header Goals in the Final',                 points: 2, type: 'select', options: Array.from({length: 11}, (_, i) => String(i)), scoring: 'closest' },
   ],
 };
 
@@ -464,19 +468,19 @@ function buildGames() {
       label: `${r1} vs ${r2}` };
   });
 
-  // 3rd Place Play-off: losers of both SFs
-  const tpid = gameId('third', null, 0);
-  games[tpid] = { id: tpid, round: 'third', region: null, idx: 0,
-    t1: null, t2: null,
-    p1: gameId('sf', null, 0), p2: gameId('sf', null, 1),
-    label: '3rd Place Play-off' };
-
   // Final
   const fid = gameId('final', null, 0);
   games[fid] = { id: fid, round: 'final', region: null, idx: 0,
     t1: null, t2: null,
     p1: gameId('sf', null, 0), p2: gameId('sf', null, 1),
     label: 'World Cup Final' };
+
+  // 3rd Place Play-off: losers of SF0 and SF1
+  const tpid = gameId('third', null, 0);
+  games[tpid] = { id: tpid, round: 'third', region: null, idx: 0,
+    t1: null, t2: null,
+    p1: gameId('sf', null, 0), p2: gameId('sf', null, 1),
+    label: '3rd Place Play-off' };
 
   return games;
 }
@@ -538,13 +542,9 @@ function getLoser(gid) {
 
 function resolveTeam(game, slot) {
   if (game.round === 'r32' || game.round === 'groups') return slot === 1 ? game.t1 : game.t2;
-  if (game.round === 'third') {
-    const parentId = slot === 1 ? game.p1 : game.p2;
-    if (!parentId) return null;
-    return getLoser(parentId);
-  }
   const parentId = slot === 1 ? game.p1 : game.p2;
   if (!parentId) return null;
+  if (game.round === 'third') return getLoser(parentId);
   return getWinner(parentId);
 }
 
@@ -1586,18 +1586,16 @@ function buildBracketCenter() {
     : `<div class="wb-label">&#9917; World Champion</div><div class="wb-team wb-tbd">TBD</div>`;
   finalContent.appendChild(winnerBox);
 
-  // 3rd Place Play-off
+  // 3rd Place Play-off (below winner box, separated)
+  const thirdSep = document.createElement('div');
+  thirdSep.className = 'third-place-sep';
+  finalContent.appendChild(thirdSep);
+  const thirdLabel = document.createElement('div');
+  thirdLabel.className = 'third-place-label';
+  thirdLabel.textContent = '3rd Place Play-off · Jul 18';
+  finalContent.appendChild(thirdLabel);
   const thirdGame = state.games[gameId('third', null, 0)];
   if (thirdGame) {
-    const thirdSep = document.createElement('div');
-    thirdSep.className = 'third-place-sep';
-    finalContent.appendChild(thirdSep);
-
-    const thirdInfo = document.createElement('div');
-    thirdInfo.className = 'champ-info';
-    thirdInfo.innerHTML = `<div class="third-place-label">&#129350; 3rd Place Play-off</div><div class="champ-date">Saturday, July 18, 2026</div>`;
-    finalContent.appendChild(thirdInfo);
-
     const thirdWrap = document.createElement('div');
     thirdWrap.className = 'matchup-wrap';
     thirdWrap.appendChild(buildMatchup(thirdGame));
@@ -1635,7 +1633,7 @@ Every correct pick earns base points, regardless of which team wins:
   Round of 16       3 pts
   Quarterfinals     5 pts
   Semifinals        8 pts
-  3rd Place         8 pts
+  3rd Place         2 pts
   Final            15 pts
 
 ——————————————————————————
@@ -1701,8 +1699,15 @@ Quarterfinals
 Semifinals
   · High Individual Scorer (Semi-Finals) — 3 pts
 
+3rd Place Play-off
+  · No bonus questions for this round
+
 Final
   · Man of the Match — 3 pts
+  · First Player to Score — 2 pts
+  · Total Corner Kicks (closest score wins) — 2 pts
+  · Exact Final Score (e.g. 2-1) — 2 pts
+  · Number of Header Goals (closest score wins) — 2 pts
 
 ——————————————————————————
 STANDINGS
