@@ -1815,12 +1815,10 @@ function renderPicks() {
 function renderPicksTabs() {
   const tabs = document.getElementById('picks-tabs');
   tabs.innerHTML = '';
-  const isFinalWeekend = state.roundStatuses.third !== undefined;
-  // During final weekend, redirect any active 'third' tab to 'final' (combined view)
-  if (isFinalWeekend && state.activePicksRound === 'third') state.activePicksRound = 'final';
+  // 3rd Place is always shown inside the FINAL tab — never a separate tab
+  if (state.activePicksRound === 'third') state.activePicksRound = 'final';
   ROUND_CONFIG.forEach(cfg => {
-    // During final weekend, 3rd Place is shown inside the FINAL tab — no separate tab
-    if (cfg.id === 'third' && isFinalWeekend) return;
+    if (cfg.id === 'third') return;
     const btn = document.createElement('button');
     btn.className = 'round-tab';
     btn.textContent = cfg.short;
@@ -1863,7 +1861,7 @@ function renderPicksBody() {
   const isLocked    = !isAdminView && isCurrentRound && roundSt === 'locked';
 
   const savedPicks = (state.picks[viewId] || {})[roundId] || {};
-  const isCombinedFinal = roundId === 'final' && state.roundStatuses.third !== undefined;
+  const isCombinedFinal = roundId === 'final';
   if (isCombinedFinal && !isAdminView) {
     const savedThirdPicks = (state.picks[viewId] || {})['third'] || {};
     state.pendingPicks = { ...savedThirdPicks, ...savedPicks };
@@ -2484,7 +2482,7 @@ function savePicks() {
   if (!state.picks[pid]) state.picks[pid] = {};
 
   // Combined Final Weekend: split pendingPicks between 'third' and 'final' and save both
-  if (rid === 'final' && state.roundStatuses.third !== undefined) {
+  if (rid === 'final') {
     const thirdKeys = new Set(getGamesForRound('third').map(g => getPickKey(g)));
     const thirdPicks = {}, finalPicks = {};
     Object.entries(state.pendingPicks).forEach(([k, v]) => {
