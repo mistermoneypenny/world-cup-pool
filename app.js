@@ -1815,7 +1815,12 @@ function renderPicks() {
 function renderPicksTabs() {
   const tabs = document.getElementById('picks-tabs');
   tabs.innerHTML = '';
+  const isFinalWeekend = state.roundStatuses.third !== undefined;
+  // During final weekend, redirect any active 'third' tab to 'final' (combined view)
+  if (isFinalWeekend && state.activePicksRound === 'third') state.activePicksRound = 'final';
   ROUND_CONFIG.forEach(cfg => {
+    // During final weekend, 3rd Place is shown inside the FINAL tab — no separate tab
+    if (cfg.id === 'third' && isFinalWeekend) return;
     const btn = document.createElement('button');
     btn.className = 'round-tab';
     btn.textContent = cfg.short;
@@ -1858,7 +1863,13 @@ function renderPicksBody() {
   const isLocked    = !isAdminView && isCurrentRound && roundSt === 'locked';
 
   const savedPicks = (state.picks[viewId] || {})[roundId] || {};
-  state.pendingPicks = isAdminView ? {} : { ...savedPicks };
+  const isCombinedFinal = roundId === 'final' && state.roundStatuses.third !== undefined;
+  if (isCombinedFinal && !isAdminView) {
+    const savedThirdPicks = (state.picks[viewId] || {})['third'] || {};
+    state.pendingPicks = { ...savedThirdPicks, ...savedPicks };
+  } else {
+    state.pendingPicks = isAdminView ? {} : { ...savedPicks };
+  }
 
   if (isAdminView) {
     const viewName = state.players.find(p => p.id === viewId)?.name || 'Player';
@@ -1892,6 +1903,19 @@ function renderPicksBody() {
     const viewName = state.players.find(p => p.id === viewId)?.name || 'Player';
     msg.className = 'picks-locked-msg';
     msg.textContent = `Viewing ${viewName}'s picks (read-only).`;
+  } else if (isCombinedFinal) {
+    const thirdSt = getRoundStatus('third');
+    const finalSt = getRoundStatus('final');
+    if (isOwnPicks && (thirdSt === 'open' || finalSt === 'open')) {
+      msg.className = 'picks-open-msg';
+      msg.textContent = `✔ Final Weekend — pick the 3rd Place Play-off (2 pts) and World Cup Final (15 pts).`;
+    } else if (thirdSt === 'locked' || finalSt === 'locked') {
+      msg.className = 'picks-locked-msg';
+      msg.textContent = `⚠ Picks are locked while Final Weekend games are in progress.`;
+    } else {
+      msg.className = 'picks-locked-msg';
+      msg.textContent = `Final Weekend is complete. Showing your results.`;
+    }
   } else if (isOpen) {
     msg.className = 'picks-open-msg';
     msg.textContent = `✔ ${cfg.label} is open — select your winners below (${cfg.pts} pt${cfg.pts > 1 ? 's' : ''} per correct pick).`;
@@ -1930,6 +1954,7 @@ function renderPicksBody() {
     body.appendChild(tsDiv);
   }
 
+  let isOpen3rd = false;
   if (roundId === 'groups') {
     // Group stage: 12 groups, 6 games each, organized in group sections
     const MATCHDAY_IDX_PICKS = [0, 0, 1, 1, 2, 2];
@@ -1965,6 +1990,40 @@ function renderPicksBody() {
       groupsContainer.appendChild(section);
     });
     body.appendChild(groupsContainer);
+  } else if (isCombinedFinal) {
+    const thirdCfg   = ROUND_CONFIG.find(r => r.id === 'third');
+    const thirdRoundSt = getRoundStatus('third');
+    isOpen3rd = !isAdminView && isOwnPicks && thirdRoundSt === 'open';
+    const savedThirdPicks = (state.picks[viewId] || {})['third'] || {};
+
+    const thirdHdr = document.createElement('div');
+    thirdHdr.className = 'picks-round-subheader';
+    thirdHdr.textContent = '3rd Place Play-off · Jul 18 · 2 pts per pick';
+    body.appendChild(thirdHdr);
+
+    const thirdGrid = document.createElement('div');
+    thirdGrid.className = 'picks-grid';
+    getGamesForRound('third').forEach(game => {
+      const { t1, t2 } = getTeams(game);
+      const winner = getWinner(game.id);
+      thirdGrid.appendChild(buildPickCard(game, t1, t2, winner, isOpen3rd, savedThirdPicks, thirdCfg));
+    });
+    body.appendChild(thirdGrid);
+
+    const finalHdr = document.createElement('div');
+    finalHdr.className = 'picks-round-subheader';
+    finalHdr.textContent = 'World Cup Final · Jul 19 · 15 pts per pick';
+    body.appendChild(finalHdr);
+
+    const finalGrid = document.createElement('div');
+    finalGrid.className = 'picks-grid';
+    getGamesForRound('final').forEach(game => {
+      const { t1, t2 } = getTeams(game);
+      const winner = getWinner(game.id);
+      finalGrid.appendChild(buildPickCard(game, t1, t2, winner, isOpen, savedPicks, cfg));
+    });
+    body.appendChild(finalGrid);
+
   } else {
     const grid = document.createElement('div');
     grid.className = 'picks-grid';
@@ -2107,7 +2166,7 @@ function renderPicksBody() {
     renderBonusQuestions(getBonusList(roundId), '&#127775; Bonus Opportunity');
   }
 
-  if (isOpen) {
+  if (isOpen || isOpen3rd) {
     saveBar.style.display = 'flex';
     updateSaveStatus();
   } else {
@@ -2423,6 +2482,46 @@ function savePicks() {
   const rid = state.activePicksRound;
   if (!pid) return;
   if (!state.picks[pid]) state.picks[pid] = {};
+
+  // Combined Final Weekend: split pendingPicks between 'third' and 'final' and save both
+  if (rid === 'final' && state.roundStatuses.third !== undefined) {
+    const thirdKeys = new Set(getGamesForRound('third').map(g => getPickKey(g)));
+    const thirdPicks = {}, finalPicks = {};
+    Object.entries(state.pendingPicks).forEach(([k, v]) => {
+      if (thirdKeys.has(k)) thirdPicks[k] = v; else finalPicks[k] = v;
+    });
+    state.picks[pid]['third'] = thirdPicks;
+    state.picks[pid]['final'] = finalPicks;
+    if (!state.pickSavedAt)      state.pickSavedAt      = {};
+    if (!state.pickSavedAt[pid]) state.pickSavedAt[pid] = {};
+    state.pickSavedAt[pid]['third'] = new Date().toISOString();
+    state.pickSavedAt[pid]['final'] = new Date().toISOString();
+    fetch(`/api/picks/${pid}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roundId: 'third', picks: thirdPicks, _sender: pid }),
+    }).catch(() => showToast('Save failed — working offline', 'error'));
+    if (!state.bonusPicks[pid]) state.bonusPicks[pid] = {};
+    const finalBonus = {};
+    (BONUS_CONFIG['final'] || []).forEach(b => {
+      if (b.type !== 'multi') {
+        const val = (state.bonusPicks[pid] || {})[b.id];
+        if (val !== undefined && val !== null && val !== '') finalBonus[b.id] = val;
+      }
+    });
+    fetch(`/api/picks/${pid}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roundId: 'final', picks: finalPicks,
+        bonusPicks: Object.keys(finalBonus).length ? finalBonus : undefined,
+        _sender: pid,
+      }),
+    }).catch(() => showToast('Save failed — working offline', 'error'));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ picks: state.picks, bonusPicks: state.bonusPicks })); } catch (e) {}
+    showToast('Picks saved!', 'success');
+    renderPicks();
+    return;
+  }
+
   state.picks[pid][rid] = { ...state.pendingPicks };
   // Re-sync any multi-bonus whose sourceRound is this round
   if (!state.bonusPicks[pid]) state.bonusPicks[pid] = {};
