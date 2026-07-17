@@ -4056,19 +4056,34 @@ async function showServerBackups() {
 }
 
 function populateRoundSelects() {
-  ['admin-round-sel', 'results-round-sel'].forEach(selId => {
-    const sel = document.getElementById(selId);
-    if (!sel) return;
-    const cur = sel.value || state.currentRound;
-    sel.innerHTML = '';
+  // Active Round dropdown: merge 3rd + Final into single "Final Weekend" option
+  const adminRoundSel = document.getElementById('admin-round-sel');
+  if (adminRoundSel) {
+    const cur = adminRoundSel.value || state.currentRound;
+    adminRoundSel.innerHTML = '';
+    ROUND_CONFIG.forEach(cfg => {
+      if (cfg.id === 'third') return;
+      const opt = document.createElement('option');
+      opt.value = cfg.id;
+      opt.textContent = cfg.id === 'final' ? 'Final Weekend' : cfg.label;
+      if (cfg.id === 'final' && (cur === 'third' || cur === 'final')) opt.selected = true;
+      else if (cfg.id !== 'final' && cfg.id === cur) opt.selected = true;
+      adminRoundSel.appendChild(opt);
+    });
+  }
+  // Results/Bonus round dropdown: keep separate 3rd and Final options
+  const resultsRoundSel = document.getElementById('results-round-sel');
+  if (resultsRoundSel) {
+    const cur = resultsRoundSel.value || state.currentRound;
+    resultsRoundSel.innerHTML = '';
     ROUND_CONFIG.forEach(cfg => {
       const opt = document.createElement('option');
       opt.value = cfg.id;
       opt.textContent = cfg.label;
       if (cfg.id === cur) opt.selected = true;
-      sel.appendChild(opt);
+      resultsRoundSel.appendChild(opt);
     });
-  });
+  }
   // Auto-initialize roundStatuses when on a final-weekend round (handles state set before this feature)
   if (state.currentRound === 'third' || state.currentRound === 'final') {
     if (state.roundStatuses.third === undefined) state.roundStatuses.third = state.roundStatus || 'open';
@@ -4873,7 +4888,8 @@ function setupEvents() {
     saveState({ _setRound: true });
     updateRoundStatus();
     populateRoundSelects();
-    showToast(`Round set to ${ROUND_CONFIG.find(r => r.id === state.currentRound)?.label} — picks are open`, 'success');
+    const roundLabel = (state.currentRound === 'final' && state.roundStatuses.third !== undefined) ? 'Final Weekend' : ROUND_CONFIG.find(r => r.id === state.currentRound)?.label;
+    showToast(`Round set to ${roundLabel} — picks are open`, 'success');
   });
 
   document.getElementById('set-status-btn')?.addEventListener('click', () => {
