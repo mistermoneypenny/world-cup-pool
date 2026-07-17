@@ -3838,13 +3838,18 @@ function renderPickStatusGrid() {
   const table = document.createElement('table');
   table.className = 'pick-status-table';
 
+  // Build column list: skip 'third', replace 'final' with merged 'FINAL WKND' column
+  const statusCols = ROUND_CONFIG
+    .filter(cfg => cfg.id !== 'third')
+    .map(cfg => cfg.id === 'final' ? { ...cfg, short: 'FINAL WKND', merged: true } : cfg);
+
   // Header row
   const thead = document.createElement('thead');
   const hRow = document.createElement('tr');
   const th0 = document.createElement('th');
   th0.textContent = 'Player';
   hRow.appendChild(th0);
-  ROUND_CONFIG.forEach(cfg => {
+  statusCols.forEach(cfg => {
     const th = document.createElement('th');
     th.textContent = cfg.short;
     hRow.appendChild(th);
@@ -3860,37 +3865,49 @@ function renderPickStatusGrid() {
     td0.textContent = p.name;
     td0.className = 'psg-name';
     tr.appendChild(td0);
-    ROUND_CONFIG.forEach(cfg => {
+    statusCols.forEach(cfg => {
       const td = document.createElement('td');
-      const roundPicks = (state.picks[p.id] || {})[cfg.id] || {};
-      const games = getGamesForRound(cfg.id).filter(g => getTeams(g).t1 && getTeams(g).t2);
-      const pickCount = Object.keys(roundPicks).length;
-      const allGamesDone = games.length > 0 && pickCount >= games.length;
 
-      // Bonus questions for this round (groups also includes tournament-wide)
-      const bonusQs = cfg.id === 'groups'
-        ? [...(BONUS_CONFIG.tournament || []), ...(BONUS_CONFIG.groups || [])]
-        : (BONUS_CONFIG[cfg.id] || []);
-      // Only require manually-entered fields (not multi, which is auto-derived from picks)
-      const requiredBonus = bonusQs.filter(b => b.type !== 'multi');
-      const playerBP = (state.bonusPicks[p.id] || {});
-      const bonusDone = requiredBonus.filter(b => {
-        const v = playerBP[b.id];
-        return v !== undefined && v !== null && v !== '';
-      }).length;
-      const allBonusDone = requiredBonus.length === 0 || bonusDone >= requiredBonus.length;
+      let pickCount, totalGames, bonusDone, totalBonus;
+      if (cfg.merged) {
+        // Merge 3rd + final picks and final bonus questions
+        const thirdPicks = (state.picks[p.id] || {})['third'] || {};
+        const finalPicks = (state.picks[p.id] || {})['final'] || {};
+        const thirdGames = getGamesForRound('third').filter(g => getTeams(g).t1 && getTeams(g).t2);
+        const finalGames = getGamesForRound('final').filter(g => getTeams(g).t1 && getTeams(g).t2);
+        pickCount  = Object.keys(thirdPicks).length + Object.keys(finalPicks).length;
+        totalGames = thirdGames.length + finalGames.length;
+        const bonusQs = (BONUS_CONFIG['final'] || []).filter(b => b.type !== 'multi');
+        const playerBP = (state.bonusPicks[p.id] || {});
+        bonusDone  = bonusQs.filter(b => { const v = playerBP[b.id]; return v !== undefined && v !== null && v !== ''; }).length;
+        totalBonus = bonusQs.length;
+      } else {
+        const roundPicks = (state.picks[p.id] || {})[cfg.id] || {};
+        const games = getGamesForRound(cfg.id).filter(g => getTeams(g).t1 && getTeams(g).t2);
+        pickCount  = Object.keys(roundPicks).length;
+        totalGames = games.length;
+        const bonusQs = cfg.id === 'groups'
+          ? [...(BONUS_CONFIG.tournament || []), ...(BONUS_CONFIG.groups || [])]
+          : (BONUS_CONFIG[cfg.id] || []);
+        const requiredBonus = bonusQs.filter(b => b.type !== 'multi');
+        const playerBP = (state.bonusPicks[p.id] || {});
+        bonusDone  = requiredBonus.filter(b => { const v = playerBP[b.id]; return v !== undefined && v !== null && v !== ''; }).length;
+        totalBonus = requiredBonus.length;
+      }
 
+      const allGamesDone  = totalGames > 0 && pickCount >= totalGames;
+      const allBonusDone  = totalBonus === 0 || bonusDone >= totalBonus;
       const allDone = allGamesDone && allBonusDone;
       const anyDone = pickCount > 0 || bonusDone > 0;
 
       if (allDone) {
         td.textContent = '✓';
         td.className = 'psg-yes';
-        td.title = `${pickCount}/${games.length} picks, ${bonusDone}/${requiredBonus.length} bonus`;
+        td.title = `${pickCount}/${totalGames} picks, ${bonusDone}/${totalBonus} bonus`;
       } else if (anyDone) {
         td.textContent = '✓';
         td.className = 'psg-partial';
-        td.title = `${pickCount}/${games.length} picks, ${bonusDone}/${requiredBonus.length} bonus — incomplete`;
+        td.title = `${pickCount}/${totalGames} picks, ${bonusDone}/${totalBonus} bonus — incomplete`;
       } else {
         td.textContent = '✗';
         td.className = 'psg-no';
