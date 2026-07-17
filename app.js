@@ -1037,12 +1037,11 @@ function updateSessionHeader() {
 function updateRoundStatus() {
   const pill   = document.getElementById('round-status');
   const labels = { open: 'Open', locked: 'Locked', closed: 'Closed' };
-  // Final weekend: both rounds active simultaneously
+  // Final weekend: single combined status
   if (state.roundStatuses.third !== undefined && state.roundStatuses.final !== undefined) {
-    const ts = state.roundStatuses.third;
-    const fs = state.roundStatuses.final;
-    pill.textContent = `3rd: ${labels[ts] ?? ts} · Final: ${labels[fs] ?? fs}`;
-    pill.className   = `status-pill ${(ts === 'locked' || fs === 'locked') ? 'locked' : ts}`;
+    const st = state.roundStatuses.third;
+    pill.textContent = `Final Weekend — ${labels[st] ?? st}`;
+    pill.className   = `status-pill ${st}`;
     return;
   }
   const cfg = ROUND_CONFIG.find(r => r.id === state.currentRound);
@@ -4083,14 +4082,8 @@ function populateRoundSelects() {
   if (roundSel) roundSel.value = state.currentRound;
 
   // Show/hide dual status controls for final weekend
-  const finalStatusRow = document.getElementById('final-status-row');
   const statusRowLabel = document.getElementById('admin-status-row-label');
-  if (finalStatusRow) finalStatusRow.style.display = isFinalWeekend ? '' : 'none';
-  if (statusRowLabel) statusRowLabel.textContent = isFinalWeekend ? '3rd Place Status:' : 'Round Status:';
-  if (isFinalWeekend) {
-    const finalStatusSel = document.getElementById('admin-final-status-sel');
-    if (finalStatusSel) finalStatusSel.value = state.roundStatuses.final;
-  }
+  if (statusRowLabel) statusRowLabel.textContent = isFinalWeekend ? 'Final Weekend Status:' : 'Round Status:';
 }
 
 function buildResultGameCard(game) {
@@ -4886,21 +4879,14 @@ function setupEvents() {
   document.getElementById('set-status-btn')?.addEventListener('click', () => {
     const statusSel = document.getElementById('admin-status-sel');
     state.roundStatus = statusSel.value;
-    // Keep per-round override in sync during final weekend
-    if (state.roundStatuses[state.currentRound] !== undefined) {
-      state.roundStatuses[state.currentRound] = statusSel.value;
+    if (state.roundStatuses.third !== undefined) {
+      state.roundStatuses.third = statusSel.value;
+      state.roundStatuses.final = statusSel.value;
     }
     saveState({ _setStatus: true });
     updateRoundStatus();
-    showToast(`${ROUND_CONFIG.find(r => r.id === state.currentRound)?.label} status: ${state.roundStatus}`, 'info');
-  });
-
-  document.getElementById('set-final-status-btn')?.addEventListener('click', () => {
-    const statusSel = document.getElementById('admin-final-status-sel');
-    state.roundStatuses.final = statusSel.value;
-    saveState({ _setStatus: true });
-    updateRoundStatus();
-    showToast(`Final status: ${state.roundStatuses.final}`, 'info');
+    const label = state.roundStatuses.third !== undefined ? 'Final Weekend' : ROUND_CONFIG.find(r => r.id === state.currentRound)?.label;
+    showToast(`${label} status: ${statusSel.value}`, 'info');
   });
 
   document.getElementById('results-round-sel')?.addEventListener('change', () => {
