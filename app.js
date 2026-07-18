@@ -923,6 +923,8 @@ function isAdmin() {
 function getRoundStatus(roundId) {
   if (state.roundStatuses[roundId] !== undefined) return state.roundStatuses[roundId];
   if (roundId === state.currentRound) return state.roundStatus;
+  // During Final Weekend, 'third' is co-active with 'final' — share the same status
+  if (roundId === 'third' && state.currentRound === 'final') return state.roundStatus;
   return null;
 }
 
